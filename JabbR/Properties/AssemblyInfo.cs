@@ -4,4 +4,4 @@
 using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
-[assembly: System.Runtime.InteropServices.Guid("a51af1a7-9f3c-4d04-b9f9-1a32916e29fc")]
+[assembly: Guid("a51af1a7-9f3c-4d04-b9f9-1a32916e29fc")]
