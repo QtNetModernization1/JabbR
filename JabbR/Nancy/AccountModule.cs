@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.Services;
@@ -25,12 +26,12 @@ public class AccountModule : NancyModule
         {
             Get("/", parameters =>
             {
-                if (!IsAuthenticated)
+                if (!User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
                 return GetProfileView(authService, user);
             });
