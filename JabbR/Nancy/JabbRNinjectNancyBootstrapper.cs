@@ -10,7 +10,6 @@ using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
-using Nancy.Security;
 
 using Ninject;
 
@@ -23,6 +22,21 @@ namespace JabbR.Nancy
         public JabbRNinjectNancyBootstrapper(IKernel kernel)
         {
             _kernel = kernel;
+        }
+
+        public interface IUserIdentity
+        {
+            string UserName { get; }
+        }
+
+        private class ClaimsPrincipalUserIdentity : ClaimsPrincipal, IUserIdentity
+        {
+            public ClaimsPrincipalUserIdentity(ClaimsPrincipal principal) : base(principal)
+            {
+                UserName = principal.Identity.Name;
+            }
+
+            public string UserName { get; }
         }
 
         protected override IKernel GetApplicationContainer()
