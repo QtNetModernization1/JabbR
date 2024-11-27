@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Security.Principal;
 using Nancy.Security;
 
 namespace JabbR.Nancy
 {
-    public class ClaimsPrincipalUserIdentity : IUserIdentity
+    public class ClaimsPrincipalUserIdentity : IIdentity
     {
         public ClaimsPrincipalUserIdentity(ClaimsPrincipal claimsPrincipal)
         {
@@ -21,8 +22,14 @@ namespace JabbR.Nancy
 
         public string UserName
         {
-            get;
-            set;
+            get => ClaimsPrincipal.Identity.Name;
+            set => throw new System.NotImplementedException();
         }
+
+        public string AuthenticationType => ClaimsPrincipal.Identity.AuthenticationType;
+
+        public bool IsAuthenticated => ClaimsPrincipal.Identity.IsAuthenticated;
+
+        public string Name => ClaimsPrincipal.Identity.Name;
     }
 }
