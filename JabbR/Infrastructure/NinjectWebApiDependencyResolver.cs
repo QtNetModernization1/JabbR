@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Web.Http.Dependencies;
+using Microsoft.AspNetCore.Http;
 using Ninject;
 using Ninject.Syntax;
 
