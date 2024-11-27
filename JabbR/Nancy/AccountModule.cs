@@ -9,6 +9,7 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
 using Nancy.Routing;
+using Nancy.Security;
 
 namespace JabbR.Nancy
 {
@@ -25,12 +26,12 @@ public class AccountModule : NancyModule
         {
             Get("/", parameters =>
             {
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 return GetProfileView(authService, user);
             });
