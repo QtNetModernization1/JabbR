@@ -1,46 +1,38 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Middleware
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-
     public class RequireHttpsHandler
     {
-        private readonly AppFunc _next;
+        private readonly RequestDelegate _next;
 
-        public RequireHttpsHandler(AppFunc next)
+        public RequireHttpsHandler(RequestDelegate next)
         {
             _next = next;
         }
 
-        public Task Invoke(IDictionary<string, object> env)
+        public async Task Invoke(HttpContext context)
         {
-            var request = new OwinRequest(env);
-            var response = new OwinResponse(env);
+            var request = context.Request;
+            var response = context.Response;
 
-            if (!request.Uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+            if (!request.IsHttps)
             {
-                var builder = new UriBuilder(request.Uri);
+                var builder = new UriBuilder(request.Scheme, request.Host.Host, request.Host.Port ?? -1, request.Path, request.QueryString.ToString());
                 builder.Scheme = "https";
 
-                if (request.Uri.IsDefaultPort)
+                if (builder.Port == 80)
                 {
                     builder.Port = -1;
                 }
 
-                response.Headers.Set("Location", builder.ToString());
-                response.StatusCode = 302;
+                response.Redirect(builder.ToString(), true);
+                return;
+            }
 
-                return TaskAsyncHelper.Empty;
-            }
-            else
-            {
-                return _next(env);
-            }
+            await _next(context);
         }
     }
 }
