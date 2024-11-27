@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Web.Http.Hosting;
 using JabbR.WebApi.Model;
 
 namespace JabbR.Infrastructure
@@ -108,17 +109,18 @@ namespace JabbR.Infrastructure
         /// <returns>
         ///   <c>true</c> if the specified request message is local; otherwise, <c>false</c>.
         /// </returns>
-        private const string IsLocalKey = "JabbR.IsLocal";
-
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            if (requestMessage.Properties.TryGetValue(IsLocalKey, out object isLocalObj) && isLocalObj is Lazy<bool> isLocal)
+            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
+            var isLocal = requestMessage.Properties[HttpPropertyKeys.IsLocalKey] as Lazy<bool>;
+            if (isLocal != null)
             {
                 return isLocal.Value;
             }
 
             return false;
         }
+
 
         /// <summary>
         /// Sets IsLocal for the specified HttpRequestMessage
@@ -128,7 +130,8 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            requestMessage.Properties[IsLocalKey] = new Lazy<bool>(() => value);
+            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
+            requestMessage.Properties[HttpPropertyKeys.IsLocalKey] = new Lazy<bool>(()=>value);
         }
 
         /// <summary>
