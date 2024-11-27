@@ -25,6 +25,11 @@ namespace JabbR.Nancy
             _kernel = kernel;
         }
 
+        protected override INancyEnvironment GetEnvironment()
+        {
+            return GetEnvironmentConfigurator().ConfigureEnvironment(x => { });
+        }
+
         public interface IUserIdentity
         {
             string UserName { get; }
@@ -90,6 +95,11 @@ namespace JabbR.Nancy
                 configuration?.Invoke(environment);
                 return environment;
             }
+        }
+
+        protected override void ConfigureRequestContainer(IKernel container, NancyContext context)
+        {
+            base.ConfigureRequestContainer(container, context);
         }
 
         private Response FlowPrincipal(NancyContext context)
