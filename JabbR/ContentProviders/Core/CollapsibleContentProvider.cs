@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ganss.XSS;
+using Microsoft.Security.Application;
 
 namespace JabbR.ContentProviders.Core
 {
@@ -16,8 +16,7 @@ namespace JabbR.ContentProviders.Core
             {
                 if (GetIsCollapsible(request.RequestUri) && result != null)
                 {
-            var sanitizer = new HtmlSanitizer();
-            string contentTitle = String.Format(LanguageResources.Content_HeaderAndToggle, sanitizer.Sanitize(result.Title));
+                    string contentTitle = String.Format(LanguageResources.Content_HeaderAndToggle, Encoder.HtmlEncode(result.Title));
                     result.Content = String.Format(ContentFormat, contentTitle, result.Content);
                 }
 
