@@ -498,7 +498,11 @@ public class AccountModule : NancyModule
 
             Post("/resetpassword/{id}", parameters =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
