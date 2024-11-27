@@ -9,7 +9,6 @@ using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
 using PagedList;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JabbR
 {
