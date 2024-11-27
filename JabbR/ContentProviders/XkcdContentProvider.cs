@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using JabbR.ContentProviders.Core;
 using JabbR.Infrastructure;
 using RestSharp.Extensions;
-using System.Text.RegularExpressions;
 
 namespace JabbR.ContentProviders
 {
