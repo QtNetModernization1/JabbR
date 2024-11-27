@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using JabbR.ContentProviders.Core;
@@ -67,7 +67,7 @@ namespace JabbR.ContentProviders
 
         public override bool IsValidContent(Uri uri)
         {
-            return uri.AbsoluteUri.Matches(@"https?:\/\/xkcd.com\/\d+\/?");
+            return System.Text.RegularExpressions.Regex.IsMatch(uri.AbsoluteUri, @"https?:\/\/xkcd.com\/\d+\/?");
         }
 
 
