@@ -47,7 +47,7 @@ namespace JabbR.ContentProviders
 
                     string fileName = Path.GetFileName(request.RequestUri.LocalPath);
                     string contentType = GetContentType(request.RequestUri);
-                    long contentLength = response.ContentLength;
+                    long? contentLength = response.Content.Headers.ContentLength;
 
                     Trace.TraceInformation("Status code: " + response.StatusCode);
                     Trace.TraceInformation("response.GetResponseStream()");
