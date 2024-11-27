@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -19,21 +19,19 @@ namespace JabbR.ContentProviders
 
         private static readonly string[] WhiteListHtml = new[] { "br", "#text" };
 
-        protected override Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
+        protected override async Task<ContentProviderResult?> GetCollapsibleContent(ContentProviderHttpRequest request)
         {
-            return ExtractFromResponse(request).Then(pageInfo =>
+            var pageInfo = await ExtractFromResponse(request);
+            if (pageInfo == null)
             {
-                if (pageInfo == null)
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                return new ContentProviderResult
-                {
-                    Content = String.Format(ContentFormat, pageInfo.PageURL, pageInfo.QuoteNumber, pageInfo.Quote),
-                    Title = pageInfo.PageURL
-                };
-            });
+            return new ContentProviderResult
+            {
+                Content = String.Format(ContentFormat, pageInfo.PageURL, pageInfo.QuoteNumber, pageInfo.Quote),
+                Title = pageInfo.PageURL
+            };
         }
 
         private Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
