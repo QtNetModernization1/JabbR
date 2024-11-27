@@ -321,7 +321,7 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.NotFound;
                 }
 
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
@@ -368,7 +368,7 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
