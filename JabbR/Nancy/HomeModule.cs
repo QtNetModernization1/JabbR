@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,7 +12,7 @@ using JabbR.Services;
 using JabbR.UploadHandlers;
 using JabbR.ViewModels;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.Security.Application;
+using System.Web;
 using Nancy;
 
 namespace JabbR.Nancy
@@ -203,7 +203,7 @@ namespace JabbR.Nancy
                 }
             }
 
-            return String.Join(",", resourcesToEmbed.Select(e => string.Format("'{0}': {1}", e.Key, Encoder.JavaScriptEncode(e.Value))));
+return String.Join(",", resourcesToEmbed.Select(e => string.Format("'{0}': {1}", e.Key, HttpUtility.JavaScriptStringEncode(e.Value))));
         }
     }
 }
