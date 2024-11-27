@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Encodings.Web;
 using JabbR.Infrastructure;
 using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
 using PagedList;
-using AntiXSS = Microsoft.Security.Application;
 
 namespace JabbR
 {
@@ -20,9 +20,9 @@ namespace JabbR
             var checkBoxBuilder = new StringBuilder();
 
             checkBoxBuilder.Append(@"<input id=""");
-            checkBoxBuilder.Append(AntiXSS.Encoder.HtmlAttributeEncode(Name));
+            checkBoxBuilder.Append(HtmlEncoder.Default.Encode(Name));
             checkBoxBuilder.Append(@""" data-name=""");
-            checkBoxBuilder.Append(AntiXSS.Encoder.HtmlAttributeEncode(Name));
+            checkBoxBuilder.Append(HtmlEncoder.Default.Encode(Name));
             checkBoxBuilder.Append(@""" type=""checkbox""");
             if (value)
             {
@@ -34,7 +34,7 @@ namespace JabbR
             }
 
             checkBoxBuilder.Append(@"<input name=""");
-            checkBoxBuilder.Append(AntiXSS.Encoder.HtmlAttributeEncode(Name));
+            checkBoxBuilder.Append(HtmlEncoder.Default.Encode(Name));
             checkBoxBuilder.Append(@""" type=""hidden"" value=""");
             checkBoxBuilder.Append(value.ToString().ToLowerInvariant());
             checkBoxBuilder.Append(@""" />");
