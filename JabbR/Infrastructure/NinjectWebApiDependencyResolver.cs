@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Web.Http.Dependencies;
+using Microsoft.Extensions.DependencyInjection;
 using Ninject;
 using Ninject.Syntax;
 
 
 namespace JabbR.Infrastructure
 {
-    public class NinjectDependencyScope : IDependencyScope
+public class NinjectDependencyScope : IServiceScope
     {
         private IResolutionRoot resolver;
 
@@ -45,7 +45,7 @@ namespace JabbR.Infrastructure
         }
     }
 
-    public class NinjectWebApiDependencyResolver : NinjectDependencyScope, IDependencyResolver
+public class NinjectWebApiDependencyResolver : NinjectDependencyScope, IServiceProvider
     {
         private IKernel kernel;
 
@@ -55,7 +55,7 @@ namespace JabbR.Infrastructure
             this.kernel = kernel;
         }
 
-        public IDependencyScope BeginScope()
+public IServiceScope CreateScope()
         {
             return new NinjectDependencyScope(kernel.BeginBlock());
         }
