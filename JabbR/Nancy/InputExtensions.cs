@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Nancy;
 using Nancy.ViewEngines.Razor;
 
@@ -7,7 +9,21 @@ namespace JabbR
 {
     public class HtmlHelpers<TModel>
     {
-        // Add any necessary properties or methods
+        public ModelStateDictionary ModelState { get; }
+
+        public HtmlHelpers(ModelStateDictionary modelState)
+        {
+            ModelState = modelState;
+        }
+
+        public IEnumerable<string> GetErrorsForProperty(string propertyName)
+        {
+            if (ModelState.TryGetValue(propertyName, out var entry) && entry.Errors.Any())
+            {
+                return entry.Errors.Select(e => e.ErrorMessage);
+            }
+            return Enumerable.Empty<string>();
+        }
     }
 
     public static class InputExtensions
