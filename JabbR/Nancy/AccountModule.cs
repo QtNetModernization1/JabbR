@@ -211,7 +211,11 @@ public class AccountModule : NancyModule
 
             Post("/unlink", param =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
