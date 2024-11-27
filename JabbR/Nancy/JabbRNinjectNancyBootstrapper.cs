@@ -11,6 +11,7 @@ using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
+using Nancy.Bootstrapper;
 
 using Ninject;
 
@@ -45,11 +46,6 @@ namespace JabbR.Nancy
             return _kernel;
         }
 
-        public override INancyEnvironment GetEnvironment()
-        {
-            return new DefaultNancyEnvironment();
-        }
-
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);
@@ -71,7 +67,18 @@ namespace JabbR.Nancy
             // Register the INancyEnvironment in the container
             container.Bind<INancyEnvironment>().ToConstant(environment);
 
-            // You can add additional configuration for the Nancy environment here
+            // Configure tracing
+            environment.Tracing(enabled: false, displayErrorTraces: true);
+        }
+
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return NancyInternalConfiguration.Default;
+        }
+
+        protected override void ConfigureEnvironment(ConfigurableNancyEnvironment environment)
+        {
+            base.ConfigureEnvironment(environment);
             environment.Tracing(enabled: false, displayErrorTraces: true);
         }
 
