@@ -50,19 +50,17 @@ namespace JabbR
                 return new HtmlString(String.Empty);
             }
 
-            var validationSummary = htmlHelper.ValidationSummary();
-            return validationSummary;
-
             var summaryBuilder = new StringBuilder();
-
             summaryBuilder.Append(@"<ul class=""validation-summary-errors"">");
-            foreach (var modelValidationError in validationResult.Errors)
+
+            foreach (var modelState in htmlHelper.ViewData.ModelState.Values)
             {
-                foreach (var memberName in modelValidationError.MemberNames)
+                foreach (var error in modelState.Errors)
                 {
-                    summaryBuilder.AppendFormat("<li>{0}</li>", modelValidationError.GetMessage(memberName));
+                    summaryBuilder.AppendFormat("<li>{0}</li>", HtmlEncoder.Default.Encode(error.ErrorMessage));
                 }
             }
+
             summaryBuilder.Append(@"</ul>");
 
             return new HtmlString(summaryBuilder.ToString());
