@@ -363,7 +363,11 @@ public class AccountModule : NancyModule
 
             Post("/changeusername", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
