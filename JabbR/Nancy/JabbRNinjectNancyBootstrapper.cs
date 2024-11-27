@@ -10,7 +10,6 @@ using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
-using Nancy.Serialization.JsonNet;
 
 using Ninject;
 
@@ -23,11 +22,6 @@ namespace JabbR.Nancy
         public JabbRNinjectNancyBootstrapper(IKernel kernel)
         {
             _kernel = kernel;
-        }
-
-        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
-        {
-            return NancyInternalConfiguration.WithOverrides(c => c.Serializers = new[] { typeof(JsonNetSerializer) });
         }
 
         public interface IUserIdentity
