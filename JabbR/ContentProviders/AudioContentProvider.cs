@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
+using System.Web;
 using JabbR.ContentProviders.Core;
-using Microsoft.Security.Application;
 
 namespace JabbR.ContentProviders
 {
@@ -19,7 +19,7 @@ namespace JabbR.ContentProviders
             string url = request.RequestUri.ToString();
             return TaskAsyncHelper.FromResult(new ContentProviderResult()
             {
-                Content = String.Format(@"<audio controls=""controls"" src=""{1}"">{0}</audio>", LanguageResources.AudioTagSupportRequired, Encoder.HtmlAttributeEncode(url)),
+                Content = String.Format(@"<audio controls=""controls"" src=""{1}"">{0}</audio>", LanguageResources.AudioTagSupportRequired, HttpUtility.HtmlAttributeEncode(url)),
                 Title = request.RequestUri.AbsoluteUri
             });
         }
