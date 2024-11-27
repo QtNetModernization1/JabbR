@@ -8,15 +8,16 @@ using JabbR.Infrastructure;
 using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
 using PagedList;
+using Microsoft.AspNetCore.Html;
 
 namespace JabbR
 {
     public static class HtmlHelperExtensions
     {
-        public static IHtmlString CheckBox<T>(this HtmlHelpers<T> helper, string Name, bool value)
+        public static IHtmlContent CheckBox<T>(this HtmlHelpers<T> helper, string Name, bool value)
         {
             string input = String.Empty;
-            
+
             var checkBoxBuilder = new StringBuilder();
 
             checkBoxBuilder.Append(@"<input id=""");
@@ -39,15 +40,15 @@ namespace JabbR
             checkBoxBuilder.Append(value.ToString().ToLowerInvariant());
             checkBoxBuilder.Append(@""" />");
 
-            return new NonEncodedHtmlString(checkBoxBuilder.ToString());
+            return new HtmlString(checkBoxBuilder.ToString());
         }
 
-        public static IHtmlString ValidationSummary<TModel>(this HtmlHelpers<TModel> htmlHelper)
+        public static IHtmlContent ValidationSummary<TModel>(this HtmlHelpers<TModel> htmlHelper)
         {
             var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
             if (validationResult.IsValid)
             {
-                return new NonEncodedHtmlString(String.Empty);
+                return new HtmlString(String.Empty);
             }
 
             var summaryBuilder = new StringBuilder();
@@ -62,22 +63,22 @@ namespace JabbR
             }
             summaryBuilder.Append(@"</ul>");
 
-            return new NonEncodedHtmlString(summaryBuilder.ToString());
+            return new HtmlString(summaryBuilder.ToString());
         }
 
-        public static IHtmlString ValidationMessage<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
+        public static IHtmlContent ValidationMessage<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
         {
             var errorsForField = htmlHelper.GetErrorsForProperty(propertyName).ToList();
 
             if (!errorsForField.Any())
             {
-                return new NonEncodedHtmlString(String.Empty);
+                return new HtmlString(String.Empty);
             }
 
-            return new NonEncodedHtmlString(errorsForField.First().GetMessage(propertyName));
+            return new HtmlString(errorsForField.First().GetMessage(propertyName));
         }
 
-        public static IHtmlString AlertMessages<TModel>(this HtmlHelpers<TModel> htmlHelper)
+        public static IHtmlContent AlertMessages<TModel>(this HtmlHelpers<TModel> htmlHelper)
         {
             const string message = @"<div class=""alert alert-{0}"">{1}</div>";
             var alertsDynamicValue = htmlHelper.RenderContext.Context.ViewBag.Alerts;
@@ -85,7 +86,7 @@ namespace JabbR
 
             if (alerts == null || !alerts.Messages.Any())
             {
-                return new NonEncodedHtmlString(String.Empty);
+                return new HtmlString(String.Empty);
             }
 
             var builder = new StringBuilder();
@@ -95,7 +96,7 @@ namespace JabbR
                 builder.AppendFormat(message, messageDetail.Key, messageDetail.Value);
             }
 
-            return new NonEncodedHtmlString(builder.ToString());
+            return new HtmlString(builder.ToString());
         }
 
         internal static IEnumerable<ModelValidationError> GetErrorsForProperty<TModel>(this HtmlHelpers<TModel> htmlHelper,
@@ -114,7 +115,7 @@ namespace JabbR
             return errorsForField;
         }
 
-        public static IHtmlString SimplePager<TModel>(this HtmlHelpers<TModel> htmlHelper, IPagedList pagedList, string baseUrl)
+        public static IHtmlContent SimplePager<TModel>(this HtmlHelpers<TModel> htmlHelper, IPagedList pagedList, string baseUrl)
         {
             var pagerBuilder = new StringBuilder();
 
@@ -132,17 +133,17 @@ namespace JabbR
             pagerBuilder.Append(@"</ul>");
             pagerBuilder.Append(@"</div>");
 
-            return new NonEncodedHtmlString(pagerBuilder.ToString());
+            return new HtmlString(pagerBuilder.ToString());
         }
 
-        public static IHtmlString DisplayNoneIf<TModel>(this HtmlHelpers<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
+        public static IHtmlContent DisplayNoneIf<TModel>(this HtmlHelpers<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
         {
             if (expression.Compile()(htmlHelper.Model))
             {
-                return new NonEncodedHtmlString(@" style=""display:none;"" ");
+                return new HtmlString(@" style=""display:none;"" ");
             }
 
-            return NonEncodedHtmlString.Empty;
+            return HtmlString.Empty;
         }
 
         public static string RequestQuery<TModel>(this HtmlHelpers<TModel> htmlHelper)
