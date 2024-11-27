@@ -132,12 +132,16 @@ public class AccountModule : NancyModule
 
             Post("/create", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                bool requirePassword = !Principal.Identity.IsAuthenticated;
+                bool requirePassword = !Context.CurrentUser.IsAuthenticated();
 
                 if (requirePassword &&
                     !applicationSettings.AllowUserRegistration)
