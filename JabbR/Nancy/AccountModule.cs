@@ -11,6 +11,7 @@ using Nancy;
 using Nancy.Routing;
 using Nancy.Security;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace JabbR.Nancy
 {
@@ -260,14 +261,15 @@ public class AccountModule : NancyModule
                 return HttpStatusCode.BadRequest;
             });
 
-            Post("/newpassword", _ =>
+            Post("/newpassword", async _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                var antiforgery = Context.GetService<IAntiforgery>();
+                if (!await antiforgery.IsRequestValidAsync(Context))
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
