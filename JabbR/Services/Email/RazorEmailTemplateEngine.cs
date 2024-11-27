@@ -9,7 +9,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace JabbR.Services
 {
@@ -22,7 +21,7 @@ namespace JabbR.Services
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
         private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-private static readonly RazorEngine _razorEngine = CreateRazorEngine();
+        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
         private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
@@ -248,16 +247,22 @@ private static readonly RazorEngine _razorEngine = CreateRazorEngine();
             return new DynamicModel(propertyMap);
         }
 
-private static RazorEngine CreateRazorEngine()
-{
-    var builder = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("."), (b) =>
-    {
-        b.SetNamespace(NamespaceName);
-        b.SetBaseType(typeof(EmailTemplate).FullName);
-    });
+        private static RazorTemplateEngine CreateRazorEngine()
+        {
+            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
+                           {
+                               DefaultBaseClass = typeof(EmailTemplate).FullName,
+                               DefaultNamespace = NamespaceName
+                           };
 
-    return builder.Engine;
-}
+            host.NamespaceImports.Add("System");
+            host.NamespaceImports.Add("System.Collections");
+            host.NamespaceImports.Add("System.Collections.Generic");
+            host.NamespaceImports.Add("System.Dynamic");
+            host.NamespaceImports.Add("System.Linq");
+
+            return new RazorTemplateEngine(host);
+        }
 
         private static IEnumerable<string> BuildReferenceList()
         {
