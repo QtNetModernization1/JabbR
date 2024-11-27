@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ninject;
 using Ninject.Syntax;
 
 
 namespace JabbR.Infrastructure
 {
-    public class NinjectDependencyScope : IDependencyScope
+    public class NinjectDependencyScope : IServiceProvider, IDisposable
     {
         private IResolutionRoot resolver;
 
@@ -21,8 +22,7 @@ namespace JabbR.Infrastructure
 
         public void Dispose()
         {
-            IDisposable disposable = resolver as IDisposable;
-            if (disposable != null)
+            if (resolver is IDisposable disposable)
                 disposable.Dispose();
 
             resolver = null;
@@ -45,7 +45,7 @@ namespace JabbR.Infrastructure
         }
     }
 
-    public class NinjectWebApiDependencyResolver : NinjectDependencyScope, IDependencyResolver
+    public class NinjectWebApiDependencyResolver : NinjectDependencyScope, IServiceProvider
     {
         private IKernel kernel;
 
@@ -55,9 +55,26 @@ namespace JabbR.Infrastructure
             this.kernel = kernel;
         }
 
-        public IDependencyScope BeginScope()
+        public IServiceScope CreateScope()
         {
-            return new NinjectDependencyScope(kernel.BeginBlock());
+            return new NinjectServiceScope(kernel.BeginBlock());
+        }
+    }
+
+    public class NinjectServiceScope : IServiceScope
+    {
+        private readonly NinjectDependencyScope _scope;
+
+        public NinjectServiceScope(IResolutionRoot resolver)
+        {
+            _scope = new NinjectDependencyScope(resolver);
+        }
+
+        public IServiceProvider ServiceProvider => _scope;
+
+        public void Dispose()
+        {
+            _scope.Dispose();
         }
     }
 }
