@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Linq;
-using Nancy;
 using Nancy.ViewEngines.Razor;
 
 namespace JabbR
@@ -19,7 +18,7 @@ namespace JabbR
 
         public static IHtmlString TextBox<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName, string className, string placeholder)
         {
-            return InputHelper(htmlHelper, "text", propertyName, GetValueForProperty(htmlHelper, propertyName), className, placeholder);
+            return InputHelper(htmlHelper, "text", propertyName, htmlHelper.GetValueForProperty(propertyName), className, placeholder);
         }
 
         public static IHtmlString Password<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
@@ -40,15 +39,15 @@ namespace JabbR
         private const string InputTemplate = @"<input type=""{0}"" id=""{1}"" name=""{2}"" value=""{3}"" class=""{4}"" placeholder=""{5}"" />";
         private static IHtmlString InputHelper<TModel>(HtmlHelpers<TModel> htmlHelper, string inputType, string propertyName, string value, string className, string placeholder)
         {
-            bool hasError = htmlHelper.HasErrors(propertyName);
+            bool hasError = htmlHelper.GetErrorsForProperty(propertyName).Any();
 
             return new NonEncodedHtmlString(String.Format(InputTemplate, inputType, propertyName, propertyName, value, hasError ? String.Format("{0} {1}", className, "error").Trim() : className, placeholder));
         }
 
-        internal static string GetValueForProperty<TModel>(HtmlHelpers<TModel> htmlHelper, string propertyName)
+        internal static string GetValueForProperty<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
         {
             var propInfo =
-                typeof(TModel).GetProperties()
+                typeof (TModel).GetProperties()
                                .FirstOrDefault(
                                    x => x.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
 
