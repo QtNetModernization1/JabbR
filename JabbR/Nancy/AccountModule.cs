@@ -260,7 +260,7 @@ public class AccountModule : NancyModule
                 return HttpStatusCode.BadRequest;
             });
 
-            Post["/newpassword"] = _ =>
+            Post("/newpassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -272,12 +272,12 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                string password = Request.Form.password;
-                string confirmPassword = Request.Form.confirmPassword;
+                string password = Request.Form["password"];
+                string confirmPassword = Request.Form["confirmPassword"];
 
                 ValidatePassword(password, confirmPassword);
 
-                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
+                var user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 try
                 {
@@ -299,9 +299,9 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
-            Post["/changepassword"] = _ =>
+            Post("/changepassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -318,9 +318,9 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                string oldPassword = Request.Form.oldPassword;
-                string password = Request.Form.password;
-                string confirmPassword = Request.Form.confirmPassword;
+                string oldPassword = Request.Form["oldPassword"];
+                string password = Request.Form["password"];
+                string confirmPassword = Request.Form["confirmPassword"];
 
                 if (String.IsNullOrEmpty(oldPassword))
                 {
@@ -329,7 +329,7 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
+                var user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 try
                 {
@@ -351,9 +351,9 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
-            Post["/changeusername"] = _ =>
+            Post("/changeusername", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -365,12 +365,12 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                string username = Request.Form.username;
-                string confirmUsername = Request.Form.confirmUsername;
+                string username = Request.Form["username"];
+                string confirmUsername = Request.Form["confirmUsername"];
 
                 ValidateUsername(username, confirmUsername);
 
-                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
+                var user = repository.GetUserById(Context.CurrentUser.Identity.Name);
                 string oldUsername = user.Name;
 
                 try
@@ -395,7 +395,7 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
             Get("/requestresetpassword", _ =>
             {
