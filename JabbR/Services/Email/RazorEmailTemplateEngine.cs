@@ -196,14 +196,19 @@ namespace JabbR.Services
 
         private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
         {
-            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
+            var templateResults = templates.Select(pair =>
+            {
+                var sourceDocument = RazorSourceDocument.Create(pair.Value, pair.Key);
+                var codeDocument = _razorEngine.Process(sourceDocument, null, new List<RazorSourceDocument>(), new List<TagHelperDescriptor>());
+                return codeDocument.GetCSharpDocument();
+            }).ToList();
 
-            if (templateResults.Any(result => result.ParserErrors != null && result.ParserErrors.Any()))
+            if (templateResults.Any(result => result.Diagnostics != null && result.Diagnostics.Any()))
             {
                 var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
-                    templateResults.Where(r => r.ParserErrors != null)
-                                   .SelectMany(r => r.ParserErrors)
-                                   .Select(e => (e.Location != null ? e.Location.ToString() : "Unknown Location") + ":" + Environment.NewLine + e.Message)
+                    templateResults.Where(r => r.Diagnostics != null)
+                                   .SelectMany(r => r.Diagnostics)
+                                   .Select(e => (e.Span != null ? e.Span.ToString() : "Unknown Location") + ":" + Environment.NewLine + e.GetMessage())
                                    .ToArray());
 
                 throw new InvalidOperationException(parseExceptionMessage);
@@ -259,8 +264,9 @@ namespace JabbR.Services
                 b.SetBaseType(typeof(EmailTemplate).FullName);
                 b.ConfigureClass((document, @class) =>
                 {
-                    @class.ClassName = document.Source.FilePath;
+                    @class.ClassName = Path.GetFileNameWithoutExtension(document.Source.FilePath);
                 });
+                b.AddDirective(DirectiveDescriptor.CreateDirective("model", DirectiveKind.SingleLine));
             });
 
             return builder;
