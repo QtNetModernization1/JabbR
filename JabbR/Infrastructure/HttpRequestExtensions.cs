@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using JabbR.WebApi.Model;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace JabbR.Infrastructure
 {
@@ -119,22 +118,10 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            // Check if the request has the IHttpConnectionFeature
-            var connectionFeature = requestMessage.HttpContext?.Features.Get<IHttpConnectionFeature>();
-            if (connectionFeature != null)
+            //Web API sets IsLocal as a bool in the Options dictionary
+            if (requestMessage.Options.TryGetValue(HttpPropertyKeys.IsLocalKey, out var isLocalObj) && isLocalObj is bool isLocal)
             {
-                return connectionFeature.LocalIpAddress != null &&
-                       connectionFeature.RemoteIpAddress != null &&
-                       (connectionFeature.LocalIpAddress.Equals(connectionFeature.RemoteIpAddress) ||
-                        IPAddress.IsLoopback(connectionFeature.RemoteIpAddress));
-            }
-
-            // Fallback to checking if the remote IP address is a loopback address
-            if (requestMessage.Properties.TryGetValue("MS_HttpContext", out object httpContextObj) &&
-                httpContextObj is HttpContext httpContext)
-            {
-                var remoteIpAddress = httpContext.Connection.RemoteIpAddress;
-                return remoteIpAddress != null && IPAddress.IsLoopback(remoteIpAddress);
+                return isLocal;
             }
 
             return false;
@@ -149,9 +136,8 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            // In .NET 8, we can't directly set this value.
-            // Instead, we can add it to the Properties dictionary if needed for compatibility
-            requestMessage.Properties["MS_IsLocal"] = value;
+            //Web API sets IsLocal as a bool in the Options dictionary
+            requestMessage.Options[HttpPropertyKeys.IsLocalKey] = value;
         }
 
         /// <summary>
