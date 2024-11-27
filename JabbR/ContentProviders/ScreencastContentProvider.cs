@@ -31,15 +31,15 @@ namespace JabbR.ContentProviders
             return uri.Host.IndexOf("screencast.com", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
+        private async Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
         {
             //Force https for the url
             var builder = new UriBuilder(request.RequestUri) { Scheme = "https" };
 
-            return Http.GetAsync(builder.Uri).Then(response =>
+using (var response = await Http.GetAsync(builder.Uri))
             {
                 var pageInfo = new PageInfo();
-                using (Stream responseStream = response.GetResponseStream())
+using (Stream responseStream = await response.Content.ReadAsStreamAsync())
                 {
                     var htmlDocument = new HtmlDocument();
                     htmlDocument.Load(responseStream);
@@ -51,7 +51,7 @@ namespace JabbR.ContentProviders
                 }
 
                 return pageInfo;
-            });
+            }
         }
 
         private class PageInfo
