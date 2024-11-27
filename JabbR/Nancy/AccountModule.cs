@@ -8,10 +8,11 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
+using Nancy.Routing;
 
 namespace JabbR.Nancy
 {
-    public class AccountModule : JabbRModule
+public class AccountModule : NancyModule
     {
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
