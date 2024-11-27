@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Globalization;
-using PagedList;
+using PagedList.Core;
 
 namespace JabbR.ViewModels
 {
