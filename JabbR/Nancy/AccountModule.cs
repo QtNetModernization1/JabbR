@@ -588,7 +588,7 @@ public class AccountModule : NancyModule
 
             if (Context.CurrentUser.IsAuthenticated())
             {
-                user = repository.GetUserById(Principal.GetUserId());
+                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
             }
 
             var viewModel = new LoginViewModel(applicationSettings, authService.GetProviders(), user != null ? user.Identities : null);
