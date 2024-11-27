@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Security.Application;
+using System.Net;
 
 namespace JabbR.ContentProviders.Core
 {
@@ -12,12 +12,13 @@ namespace JabbR.ContentProviders.Core
     {
         public virtual Task<ContentProviderResult> GetContent(ContentProviderHttpRequest request)
         {
-            return GetCollapsibleContent(request).Then(result =>
+            return GetCollapsibleContent(request).ContinueWith(task =>
             {
+                var result = task.Result;
                 if (GetIsCollapsible(request.RequestUri) && result != null)
                 {
-                    string contentTitle = String.Format(LanguageResources.Content_HeaderAndToggle, Encoder.HtmlEncode(result.Title));
-                    result.Content = String.Format(ContentFormat, contentTitle, result.Content);
+                    string contentTitle = string.Format(LanguageResources.Content_HeaderAndToggle, WebUtility.HtmlEncode(result.Title));
+                    result.Content = string.Format(ContentFormat, contentTitle, result.Content);
                 }
 
                 return result;
