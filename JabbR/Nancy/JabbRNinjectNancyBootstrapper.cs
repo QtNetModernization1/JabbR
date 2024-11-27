@@ -25,6 +25,16 @@ namespace JabbR.Nancy
             _kernel = kernel;
         }
 
+        public override INancyEnvironment GetEnvironment()
+        {
+            return GetEnvironmentConfigurator().ConfigureEnvironment(ConfigureEnvironment);
+        }
+
+        protected virtual void ConfigureEnvironment(INancyEnvironment environment)
+        {
+            // Add any additional environment configuration here
+        }
+
         public interface IUserIdentity
         {
             string UserName { get; }
