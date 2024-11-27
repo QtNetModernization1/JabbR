@@ -13,7 +13,6 @@ using Nancy.Owin;
 using Nancy.Security;
 
 using Ninject;
-using Microsoft.AspNetCore.Identity;
 
 namespace JabbR.Nancy
 {
@@ -86,16 +85,6 @@ namespace JabbR.Nancy
             }
 
             return null;
-        }
-
-        private class ClaimsPrincipalUserIdentity : ClaimsPrincipal, IUserIdentity
-        {
-            public ClaimsPrincipalUserIdentity(ClaimsPrincipal principal) : base(principal)
-            {
-                UserName = principal.Identity.Name;
-            }
-
-            public string UserName { get; private set; }
         }
 
         private Response SetCulture(NancyContext ctx)
