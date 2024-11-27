@@ -264,7 +264,7 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 try
                 {
@@ -316,7 +316,7 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 try
                 {
@@ -357,7 +357,7 @@ public class AccountModule : NancyModule
 
                 ValidateUsername(username, confirmUsername);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                user = repository.GetUserById(Context.CurrentUser.Identity.Name);
                 string oldUsername = user.Name;
 
                 try
@@ -586,7 +586,7 @@ public class AccountModule : NancyModule
         {
             ChatUser user = null;
 
-            if (IsAuthenticated)
+            if (Context.CurrentUser.IsAuthenticated())
             {
                 user = repository.GetUserById(Principal.GetUserId());
             }
