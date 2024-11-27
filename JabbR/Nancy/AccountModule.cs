@@ -403,7 +403,11 @@ public class AccountModule : NancyModule
 
             Post("/requestresetpassword", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
