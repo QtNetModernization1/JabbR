@@ -1,20 +1,23 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
+using System.IO;
 
 using JabbR.Services;
 
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
+using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
+    public class ErrorPageHandler : IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
+        private readonly IViewFactory _viewFactory;
 
-        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
-            : base(factory)
+        public ErrorPageHandler(IViewFactory viewFactory, IJabbrRepository repository)
         {
+            _viewFactory = viewFactory;
             _repository = repository;
         }
 
@@ -40,18 +43,29 @@ namespace JabbR.Nancy
                 }
             }
 
-            var response = RenderView(
-                context, 
-                "errorPage", 
-                new 
-                { 
-                    Error = statusCode,
-                    ErrorCode = (int)statusCode,
-                    SuggestRoomName = suggestRoomName
-                });
+            var model = new
+            {
+                Error = statusCode,
+                ErrorCode = (int)statusCode,
+                SuggestRoomName = suggestRoomName
+            };
 
-            response.StatusCode = statusCode;
-            context.Response = response;
+            try
+            {
+                var viewLocationContext = new ViewLocationContext { Context = context };
+                var response = _viewFactory.RenderView("errorPage", model, viewLocationContext);
+                var memoryStream = new MemoryStream();
+                response.Contents.Invoke(memoryStream);
+                memoryStream.Position = 0;
+                var reader = new StreamReader(memoryStream);
+                var content = reader.ReadToEnd();
+
+                context.Response = new TextResponse(statusCode, content);
+            }
+            catch
+            {
+                context.Response = new TextResponse(statusCode, "An error occurred");
+            }
         }
     }
 }
