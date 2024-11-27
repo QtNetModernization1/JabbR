@@ -34,7 +34,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             });
 
-            Get["/login"] = (parameters, ct) =>
+            Get["/login"] = _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -44,7 +44,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            Post["/login"] = (parameters, ct) =>
+            Post["/login"] = param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -90,7 +90,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            Post["/logout"] = (parameters, ct) =>
+            Post["/logout"] = _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -104,7 +104,7 @@ namespace JabbR.Nancy
                 return response;
             };
 
-            Get["/register"] = (parameters, ct) =>
+            Get["/register"] = _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -124,7 +124,7 @@ namespace JabbR.Nancy
                 return View["register"];
             };
 
-            Post["/create"] = (parameters, ct) =>
+            Post["/create"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
