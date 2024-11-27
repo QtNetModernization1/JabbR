@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Nancy.ViewEngines.Razor;
 using Microsoft.AspNetCore.Html;
+using Nancy;
 
 namespace JabbR
 {
