@@ -16,14 +16,26 @@ namespace JabbR.Infrastructure
             _cryptoService = cryptoService;
         }
 
-        public byte[] Protect(byte[] userData)
+        public byte[] Protect(byte[] plaintext)
         {
-            return _cryptoService.Protect(userData);
+            return _cryptoService.Protect(plaintext);
         }
 
         public byte[] Unprotect(byte[] protectedData)
         {
-            return _cryptoService.Unprotect(protectedData);
+            return _crypttoService.Unprotect(protectedData);
+        }
+
+        public IDataProtector CreateProtector(string purpose)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+        {
+            requiresMigration = false;
+            wasRevoked = false;
+            return Unprotect(protectedData);
         }
     }
 }
