@@ -6,29 +6,29 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
-using Nancy.Helpers;
 using Nancy.ModelBinding;
+using Nancy.Responses;
 using PagedList.Core;
 
 namespace JabbR.Nancy
 {
-    public class NotificationsModule : JabbRModule
+    public class NotificationsModule : NancyModule
     {
-        public NotificationsModule(IJabbrRepository repository, 
-                                   IChatService chatService, 
+        public NotificationsModule(IJabbrRepository repository,
+                                   IChatService chatService,
                                    IChatNotificationService notificationService)
             : base("/notifications")
         {
-            Get["/"] = _ =>
+            Get("/", parameters =>
             {
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
-                    return Response.AsRedirect(String.Format("~/account/login?returnUrl={0}", HttpUtility.UrlEncode(Request.Path)));
+                    return Response.AsRedirect($"~/account/login?returnUrl={Request.Url.Path}");
                 }
 
                 var request = this.Bind<NotificationRequestModel>();
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Context.CurrentUser.Identity.Name);
                 int unreadCount = repository.GetUnreadNotificationsCount(user);
                 IPagedList<NotificationViewModel> notifications = GetNotifications(repository, user, all: request.All, page: request.Page, roomName: request.Room);
 
@@ -40,16 +40,16 @@ namespace JabbR.Nancy
                 };
 
                 return View["index", viewModel];
-            };
+            });
 
-            Post["/markasread"] = _ =>
+            Post("/markasread", parameters =>
             {
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                int notificationId = Request.Form.notificationId;
+                int notificationId = Request.Form["notificationId"];
 
                 Notification notification = repository.GetNotificationById(notificationId);
 
@@ -58,7 +58,7 @@ namespace JabbR.Nancy
                     return HttpStatusCode.NotFound;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 if (notification.UserKey != user.Key)
                 {
@@ -70,19 +70,17 @@ namespace JabbR.Nancy
 
                 UpdateUnreadCountInChat(repository, notificationService, user);
 
-                var response = Response.AsJson(new { success = true });
+                return Response.AsJson(new { success = true });
+            });
 
-                return response;
-            };
-
-            Post["/markallasread"] = _ =>
+            Post("/markallasread", parameters =>
             {
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Context.CurrentUser.Identity.Name);
                 IList<Notification> unReadNotifications = repository.GetNotificationsByUser(user).Unread().ToList();
 
                 if (!unReadNotifications.Any())
@@ -99,10 +97,8 @@ namespace JabbR.Nancy
 
                 UpdateUnreadCountInChat(repository, notificationService, user);
 
-                var response = Response.AsJson(new { success = true });
-
-                return response;
-            };
+                return Response.AsJson(new { success = true });
+            });
         }
 
         private static void UpdateUnreadCountInChat(IJabbrRepository repository, IChatNotificationService notificationService,
