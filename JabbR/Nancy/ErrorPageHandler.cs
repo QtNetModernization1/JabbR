@@ -1,11 +1,10 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
-using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
@@ -41,12 +40,11 @@ namespace JabbR.Nancy
                 }
             }
 
-            var viewLocationContext = new ViewLocationContext { Context = context };
             var response = RenderView(
-                viewLocationContext,
-                "errorPage",
-                new
-                {
+                context, 
+                "errorPage", 
+                new 
+                { 
                     Error = statusCode,
                     ErrorCode = (int)statusCode,
                     SuggestRoomName = suggestRoomName
