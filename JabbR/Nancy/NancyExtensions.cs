@@ -5,23 +5,25 @@ using JabbR.Infrastructure;
 using JabbR.Models;
 using Nancy;
 using Nancy.Helpers;
+using Nancy.Owin;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Nancy
 {
     public static class NancyExtensions
     {
-    public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims)
-    {
-        var httpContext = module.Context.GetOwinEnvironment()["Microsoft.AspNetCore.Http.HttpContext"] as HttpContext;
+        public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims)
+        {
+            var env = module.Context.GetOwinEnvironment();
+            var owinContext = new OwinContext(env);
 
-        var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
-        httpContext.SignInAsync(Constants.JabbRAuthType, new ClaimsPrincipal(identity));
+            var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
+            owinContext.Authentication.SignIn(identity);
 
-        return module.AsRedirectQueryStringOrDefault("~/");
-    }
+            return module.AsRedirectQueryStringOrDefault("~/");
+        }
 
         public static Response SignIn(this NancyModule module, ChatUser user)
         {
@@ -37,12 +39,13 @@ namespace JabbR.Nancy
             return module.SignIn(claims);
         }
 
-    public static void SignOut(this NancyModule module)
-    {
-        var httpContext = module.Context.GetOwinEnvironment()["Microsoft.AspNetCore.Http.HttpContext"] as HttpContext;
+        public static void SignOut(this NancyModule module)
+        {
+            var env = module.Context.GetOwinEnvironment();
+            var owinContext = new OwinContext(env);
 
-        httpContext.SignOutAsync(Constants.JabbRAuthType);
-    }
+            owinContext.Authentication.SignOut(Constants.JabbRAuthType);
+        }
 
         public static void AddValidationError(this NancyModule module, string propertyName, string errorMessage)
         {
