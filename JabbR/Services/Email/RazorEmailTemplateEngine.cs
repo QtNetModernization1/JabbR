@@ -270,7 +270,7 @@ namespace JabbR.Services
 
         private static IEnumerable<string> BuildReferenceList()
         {
-            string currentAssemblyLocation = typeof(RazorEmailTemplateEngine).Assembly.CodeBase.Replace("file:///", String.Empty).Replace("/", "\\");
+            string currentAssemblyLocation = typeof(RazorEmailTemplateEngine).Assembly.Location.Replace("/", "\\");
 
             return new List<string>
                        {
