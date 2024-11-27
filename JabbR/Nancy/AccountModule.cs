@@ -10,6 +10,7 @@ using JabbR.ViewModels;
 using Nancy;
 using Nancy.Routing;
 using Nancy.Security;
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Nancy
 {
@@ -189,19 +190,27 @@ public class AccountModule : NancyModule
                         else
                         {
                             // Add the required claims to this identity
-                            var identity = Principal.Identity as ClaimsIdentity;
+                            var identity = Context.CurrentUser.Identity as ClaimsIdentity;
 
-                            if (!Principal.HasClaim(ClaimTypes.Name))
+                            if (identity != null)
                             {
-                                identity.AddClaim(new Claim(ClaimTypes.Name, username));
-                            }
+                                if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
+                                {
+                                    identity.AddClaim(new Claim(ClaimTypes.Name, username));
+                                }
 
-                            if (!Principal.HasClaim(ClaimTypes.Email))
+                                if (!identity.HasClaim(c => c.Type == ClaimTypes.Email))
+                                {
+                                    identity.AddClaim(new Claim(ClaimTypes.Email, email));
+                                }
+
+                                return this.SignIn(identity.Claims);
+                            }
+                            else
                             {
-                                identity.AddClaim(new Claim(ClaimTypes.Email, email));
+                                // Handle the case where identity is null
+                                throw new InvalidOperationException("User identity is not available.");
                             }
-
-                            return this.SignIn(Principal.Claims);
                         }
                     }
                 }
