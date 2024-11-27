@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -22,19 +22,16 @@ namespace JabbR.Nancy
                              IEmailService emailService)
             : base("/account")
         {
-            Get["/"] = parameters =>
+            Get["/"] = _ =>
             {
-                return _ =>
+                if (!IsAuthenticated)
                 {
-                    if (!IsAuthenticated)
-                    {
-                        return HttpStatusCode.Forbidden;
-                    }
+                    return HttpStatusCode.Forbidden;
+                }
 
-                    ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Principal.GetUserId());
 
-                    return GetProfileView(authService, user);
-                };
+                return GetProfileView(authService, user);
             };
 
             Get["/login"] = _ =>
