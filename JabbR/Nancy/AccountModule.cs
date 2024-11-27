@@ -48,12 +48,12 @@ public class AccountModule : NancyModule
 
             Post("/login", param =>
             {
-                if (!this.ValidateCsrfToken())
+                if (!HasValidCsrfTokenOrSecHeader)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (Context.CurrentUser.IsAuthenticated())
+                if (IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
