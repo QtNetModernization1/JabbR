@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using JabbR.ContentProviders.Core;
 using Microsoft.Security.Application;
@@ -17,7 +17,7 @@ namespace JabbR.ContentProviders
         public Task<ContentProviderResult> GetContent(ContentProviderHttpRequest request)
         {
             string url = request.RequestUri.ToString();
-            return TaskAsyncHelper.FromResult(new ContentProviderResult()
+            return Task.FromResult(new ContentProviderResult()
             {
                 Content = String.Format(@"<audio controls=""controls"" src=""{1}"">{0}</audio>", LanguageResources.AudioTagSupportRequired, Encoder.HtmlAttributeEncode(url)),
                 Title = request.RequestUri.AbsoluteUri
