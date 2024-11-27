@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -7,9 +8,7 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using JabbR.Infrastructure;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System.Runtime.Loader;
+using Microsoft.CSharp;
 
 namespace JabbR.Services
 {
@@ -215,34 +214,25 @@ namespace JabbR.Services
                 throw new InvalidOperationException(parseExceptionMessage);
             }
 
-            var syntaxTrees = templateResults.Select(r => CSharpSyntaxTree.ParseText(r.GeneratedCode)).ToArray();
-
-            var references = _referencedAssemblies.Select(a => MetadataReference.CreateFromFile(a)).ToList();
-            references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-
-            var compilation = CSharpCompilation.Create(
-                "DynamicAssembly",
-                syntaxTrees,
-                references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    .WithOptimizationLevel(OptimizationLevel.Release)
-                    .WithPlatform(Platform.AnyCpu));
-
-using (var ms = new MemoryStream())
+            using (var codeProvider = new CSharpCodeProvider())
             {
-                var result = compilation.Emit(ms);
+                var compilerParameter = new CompilerParameters(_referencedAssemblies)
+                                            {
+                                                IncludeDebugInformation = false,
+                                                GenerateInMemory = true,
+                                                CompilerOptions = "/optimize"
+                                            };
 
-                if (!result.Success)
+                var compilerResults = codeProvider.CompileAssemblyFromDom(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
+
+                if (compilerResults.Errors.HasErrors)
                 {
-                    var compileExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
-                        result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
-                            .Select(d => $"{d.Location}: {d.GetMessage()}"));
+                    var compileExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, compilerResults.Errors.OfType<CompilerError>().Where(ce => !ce.IsWarning).Select(e => e.FileName + ":" + Environment.NewLine + e.ErrorText).ToArray());
 
                     throw new InvalidOperationException(compileExceptionMessage);
                 }
 
-                ms.Seek(0, SeekOrigin.Begin);
-                return AssemblyLoadContext.Default.LoadFromStream(ms);
+                return compilerResults.CompiledAssembly;
             }
         }
 
@@ -284,13 +274,14 @@ using (var ms = new MemoryStream())
 
         private static IEnumerable<string> BuildReferenceList()
         {
-            string currentAssemblyLocation = typeof(RazorEmailTemplateEngine).Assembly.Location;
+            string currentAssemblyLocation = typeof(RazorEmailTemplateEngine).Assembly.Location.Replace("/", "\\");
 
             return new List<string>
                        {
-                           typeof(object).Assembly.Location,
-                           typeof(Enumerable).Assembly.Location,
-                           typeof(CSharpCompilation).Assembly.Location,
+                           "mscorlib.dll",
+                           "system.dll",
+                           "system.core.dll",
+                           "microsoft.csharp.dll",
                            currentAssemblyLocation
                        };
         }
