@@ -262,12 +262,16 @@ public class AccountModule : NancyModule
 
             Post("/newpassword", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                try
+                {
+                    this.ValidateCsrfToken();
+                }
+                catch (CsrfValidationException)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
