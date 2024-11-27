@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Net.Http.Formatting;
@@ -23,15 +23,28 @@ using Nancy.Owin;
 
 using Newtonsoft.Json.Serialization;
 using Ninject;
-using Owin;
-
-[assembly: OwinStartup(typeof(Startup), "Configuration")]
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JabbR
 {
     public partial class Startup
     {
-        public void Configuration(IAppBuilder app)
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Configure services here
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // So that squishit works
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
@@ -55,14 +68,16 @@ namespace JabbR
 
             app.UseErrorPage();
 
-            SetupAuth(app, kernel);
-            SetupSignalR(configuration, kernel, app);
-            SetupWebApi(kernel, app);
-            SetupMiddleware(kernel, app);
-            SetupFileUpload(kernel, app);
-            SetupNancy(kernel, app);
+            // SetupAuth(app, kernel);
+            // SetupSignalR(configuration, kernel, app);
+            // SetupWebApi(kernel, app);
+            // SetupMiddleware(kernel, app);
+            // SetupFileUpload(kernel, app);
+            // SetupNancy(kernel, app);
 
-            SetupErrorHandling();
+            // SetupErrorHandling();
+
+            // TODO: Migrate these setups to ASP.NET Core equivalents
         }
 
         private void SetupFileUpload(IKernel kernel, IAppBuilder app)
