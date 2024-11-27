@@ -38,7 +38,7 @@ public class AccountModule : NancyModule
 
             Get("/login", _ =>
             {
-                if (IsAuthenticated)
+                if (User.Identity.IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -94,7 +94,7 @@ public class AccountModule : NancyModule
 
             Post("/logout", _ =>
             {
-                if (!IsAuthenticated)
+                if (!User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
