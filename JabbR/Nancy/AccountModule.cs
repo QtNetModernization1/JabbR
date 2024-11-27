@@ -384,7 +384,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            Get["/requestresetpassword"] = _ =>
+            Get("/requestresetpassword", _ =>
             {
                 if (Context.CurrentUser.IsAuthenticated())
                 {
@@ -399,9 +399,9 @@ public class AccountModule : NancyModule
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
-            Post["/requestresetpassword"] = _ =>
+            Post("/requestresetpassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -458,9 +458,9 @@ public class AccountModule : NancyModule
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
-            Get["/resetpassword/{id}"] = parameters =>
+            Get("/resetpassword/{id}", parameters =>
             {
                 if (!applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
@@ -490,9 +490,9 @@ public class AccountModule : NancyModule
                         return View["resetpassword", user.RequestPasswordResetId];
                     }
                 }
-            };
+            });
 
-            Post["/resetpassword/{id}"] = parameters =>
+            Post("/resetpassword/{id}", parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -538,7 +538,7 @@ public class AccountModule : NancyModule
                 }
 
                 return View["resetpassword", resetPasswordToken];
-            };
+            });
         }
 
         private void ValidatePassword(string password, string confirmPassword)
