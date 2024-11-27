@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,11 +17,11 @@ namespace JabbR.Nancy
                                     IEnumerable<IContentProvider> contentProviders)
             : base("/administration")
         {
-            Get("/", args =>
+            Get["/"] = _ =>
             {
                 if (!IsAuthenticated || !Principal.HasClaim(JabbRClaimTypes.Admin))
                 {
-                    return Response.AsRedirect("~/", Nancy.HttpStatusCode.Forbidden);
+                    return HttpStatusCode.Forbidden;
                 }
 
                 var allContentProviders = contentProviders
@@ -33,18 +33,18 @@ namespace JabbR.Nancy
                     ApplicationSettings = applicationSettings
                 };
                 return View["index", model];
-            });
+            };
 
-            Post("/", args =>
+            Post["/"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
-                    return Response.AsRedirect("~/", Nancy.HttpStatusCode.Forbidden);
+                    return HttpStatusCode.Forbidden;
                 }
 
                 if (!IsAuthenticated || !Principal.HasClaim(JabbRClaimTypes.Admin))
                 {
-                    return Response.AsRedirect("~/", Nancy.HttpStatusCode.Forbidden);
+                    return HttpStatusCode.Forbidden;
                 }
 
                 try
@@ -57,7 +57,7 @@ namespace JabbR.Nancy
                         .ToList();
 
                     var enabledContentProvidersResult = this.Bind<EnabledContentProvidersResult>();
-
+                    
                     // we posted the enabled ones, but we store the disabled ones. Flip it around...
                     settings.DisabledContentProviders =
                         new HashSet<string>(contentProviders
@@ -91,7 +91,7 @@ namespace JabbR.Nancy
                 }
 
                 return View["index", applicationSettings];
-            });
+            };
         }
 
         private class EnabledContentProvidersResult
