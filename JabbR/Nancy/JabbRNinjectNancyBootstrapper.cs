@@ -13,6 +13,7 @@ using Nancy.Owin;
 using Nancy.Security;
 
 using Ninject;
+using Nancy.Bootstrapper;
 
 namespace JabbR.Nancy
 {
@@ -28,6 +29,13 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
+        }
+
+        protected override INancyEnvironment GetEnvironment()
+        {
+            var environment = new DefaultNancyEnvironment();
+            RegisterNancyEnvironment(_kernel, environment);
+            return environment;
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
