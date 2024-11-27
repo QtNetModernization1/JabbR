@@ -5,10 +5,9 @@ using JabbR.Infrastructure;
 using JabbR.Models;
 using Nancy;
 using Nancy.Helpers;
-using Nancy.Owin;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
 namespace JabbR.Nancy
 {
@@ -16,11 +15,10 @@ namespace JabbR.Nancy
     {
         public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims)
         {
-            var env = module.Context.GetOwinEnvironment();
-            var owinContext = new OwinContext(env);
+            var httpContext = module.Context.GetHttpContext();
 
             var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
-            owinContext.Authentication.SignIn(identity);
+            httpContext.SignInAsync(Constants.JabbRAuthType, new ClaimsPrincipal(identity));
 
             return module.AsRedirectQueryStringOrDefault("~/");
         }
@@ -41,10 +39,14 @@ namespace JabbR.Nancy
 
         public static void SignOut(this NancyModule module)
         {
-            var env = module.Context.GetOwinEnvironment();
-            var owinContext = new OwinContext(env);
+            var httpContext = module.Context.GetHttpContext();
 
-            owinContext.Authentication.SignOut(Constants.JabbRAuthType);
+            httpContext.SignOutAsync(Constants.JabbRAuthType);
+        }
+
+        private static HttpContext GetHttpContext(this NancyContext context)
+        {
+            return context.Items["HttpContext"] as HttpContext;
         }
 
         public static void AddValidationError(this NancyModule module, string propertyName, string errorMessage)
