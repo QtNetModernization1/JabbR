@@ -1,18 +1,14 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
-using Microsoft.AspNetCore.Razor;
+using System.Text.RegularExpressions;
 using JabbR.Infrastructure;
-using Microsoft.CSharp;
 
 namespace JabbR.Services
 {
-    public class RazorEmailTemplateEngine : IEmailTemplateEngine
+    public class SimpleEmailTemplateEngine : IEmailTemplateEngine
     {
         public const string DefaultSharedTemplateSuffix = "";
         public const string DefaultHtmlTemplateSuffix = "html";
@@ -20,24 +16,18 @@ namespace JabbR.Services
 
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
-        private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
-        private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
-        private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
-
         private readonly IEmailTemplateContentReader _contentReader;
         private readonly string _sharedTemplateSuffix;
         private readonly string _htmlTemplateSuffix;
         private readonly string _textTemplateSuffix;
         private readonly IDictionary<string, string> _templateSuffixes;
 
-        public RazorEmailTemplateEngine(IEmailTemplateContentReader contentReader)
+        public SimpleEmailTemplateEngine(IEmailTemplateContentReader contentReader)
             : this(contentReader, DefaultSharedTemplateSuffix, DefaultHtmlTemplateSuffix, DefaultTextTemplateSuffix)
         {
-            _contentReader = contentReader;
         }
 
-        public RazorEmailTemplateEngine(IEmailTemplateContentReader contentReader, string sharedTemplateSuffix, string htmlTemplateSuffix, string textTemplateSuffix)
+        public SimpleEmailTemplateEngine(IEmailTemplateContentReader contentReader, string sharedTemplateSuffix, string htmlTemplateSuffix, string textTemplateSuffix)
         {
             if (contentReader == null)
             {
@@ -58,177 +48,91 @@ namespace JabbR.Services
 
         public Email RenderTemplate(string templateName, object model = null)
         {
-            if (String.IsNullOrWhiteSpace(templateName))
+            if (string.IsNullOrWhiteSpace(templateName))
             {
-                throw new System.ArgumentException(String.Format(System.Globalization.CultureInfo.CurrentUICulture, "\"{0}\" cannot be blank.", "templateName"));
+                throw new ArgumentException("Template name cannot be blank.", nameof(templateName));
             }
 
-            var templates = CreateTemplateInstances(templateName);
+            var email = new Email();
+            var expandoModel = CreateModel(model);
 
-            foreach (var pair in templates)
+            foreach (var suffix in _templateSuffixes)
             {
-                pair.Value.SetModel(CreateModel(model));
-                pair.Value.Execute();
-            }
-
-            var mail = new Email();
-
-            templates.SelectMany(x => x.Value.To)
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .Each(email => mail.To.Add(email));
-
-            templates.SelectMany(x => x.Value.ReplyTo)
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .Each(email => mail.ReplyTo.Add(email));
-
-            templates.SelectMany(x => x.Value.Bcc)
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .Each(email => mail.Bcc.Add(email));
-
-            templates.SelectMany(x => x.Value.CC)
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .Each(email => mail.CC.Add(email));
-
-            IEmailTemplate template = null;
-
-            // text template (.text.cshtml file)
-            if (templates.TryGetValue(ContentTypes.Text, out template))
-            {
-                SetProperties(template, mail, body => { mail.TextBody = body; });
-            }
-            // html template (.html.cshtml file)
-            if (templates.TryGetValue(ContentTypes.Html, out template))
-            {
-                SetProperties(template, mail, body => { mail.HtmlBody = body; });
-            }
-            // shared template (.cshtml file)
-            if (templates.TryGetValue(String.Empty, out template))
-            {
-                SetProperties(template, mail, null);
-            }
-
-            return mail;
-        }
-
-        private IDictionary<string, IEmailTemplate> CreateTemplateInstances(string templateName)
-        {
-            return GetTemplateTypes(templateName).Select(pair => new { ContentType = pair.Key, Template = (IEmailTemplate)Activator.CreateInstance(pair.Value) })
-                                                 .ToDictionary(k => k.ContentType, e => e.Template);
-        }
-
-        private IDictionary<string, Type> GetTemplateTypes(string templateName)
-        {
-            IDictionary<string, Type> templateTypes;
-
-            _syncLock.EnterUpgradeableReadLock();
-
-            try
-            {
-                if (!_typeMapping.TryGetValue(templateName, out templateTypes))
+                var content = _contentReader.Read(templateName, suffix.Key);
+                if (!string.IsNullOrWhiteSpace(content))
                 {
-                    _syncLock.EnterWriteLock();
-
-                    try
-                    {
-                        templateTypes = GenerateTemplateTypes(templateName);
-                        _typeMapping.Add(templateName, templateTypes);
-                    }
-                    finally
-                    {
-                        _syncLock.ExitWriteLock();
-                    }
+                    var renderedContent = RenderTemplate(content, expandoModel);
+                    ApplyRenderedContent(email, suffix.Value, renderedContent);
                 }
             }
-            finally
+
+            return email;
+        }
+
+        private string RenderTemplate(string template, dynamic model)
+        {
+            return Regex.Replace(template, @"\{\{(.+?)\}\}", match =>
             {
-                _syncLock.ExitUpgradeableReadLock();
+                string propertyName = match.Groups[1].Value.Trim();
+                return GetPropertyValue(model, propertyName)?.ToString() ?? string.Empty;
+            });
+        }
+
+        private object GetPropertyValue(dynamic obj, string propertyName)
+        {
+            if (obj is IDictionary<string, object> dict)
+            {
+                return dict.TryGetValue(propertyName, out var value) ? value : null;
             }
-
-            return templateTypes;
+            return null;
         }
 
-        private IDictionary<string, Type> GenerateTemplateTypes(string templateName)
+        private void ApplyRenderedContent(Email email, string contentType, string content)
         {
-            var templates = _templateSuffixes.Select(pair => new
-                                                    {
-                                                        Suffix = pair.Key,
-                                                        TemplateName = templateName + pair.Key,
-                                                        Content = _contentReader.Read(templateName, pair.Key),
-                                                        ContentType = pair.Value
-                                                    })
-                                             .Where(x => !String.IsNullOrWhiteSpace(x.Content))
-                                             .ToList();
-
-            var compilableTemplates = templates.Select(x => new KeyValuePair<string, string>(x.TemplateName, x.Content)).ToArray();
-            var assembly = GenerateAssembly(compilableTemplates);
-
-            return templates.Select(x => new { ContentType = x.ContentType, Type = assembly.GetType(NamespaceName + "." + x.TemplateName, true, false) })
-                            .ToDictionary(k => k.ContentType, e => e.Type);
-        }
-
-        private static void SetProperties(IEmailTemplate template, Email mail, Action<string> updateBody)
-        {
-            if (template != null)
+            var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            foreach (var line in lines)
             {
-                if (!String.IsNullOrWhiteSpace(template.From))
+                if (line.StartsWith("To:", StringComparison.OrdinalIgnoreCase))
+                    email.To.Add(line.Substring(3).Trim());
+                else if (line.StartsWith("From:", StringComparison.OrdinalIgnoreCase))
+                    email.From = line.Substring(5).Trim();
+                else if (line.StartsWith("Subject:", StringComparison.OrdinalIgnoreCase))
+                    email.Subject = line.Substring(8).Trim();
+                else if (line.StartsWith("Cc:", StringComparison.OrdinalIgnoreCase))
+                    email.CC.Add(line.Substring(3).Trim());
+                else if (line.StartsWith("Bcc:", StringComparison.OrdinalIgnoreCase))
+                    email.Bcc.Add(line.Substring(4).Trim());
+                else
                 {
-                    mail.From = template.From;
-                }
-
-                if (!String.IsNullOrWhiteSpace(template.Sender))
-                {
-                    mail.Sender = template.Sender;
-                }
-
-                if (!String.IsNullOrWhiteSpace(template.Subject))
-                {
-                    mail.Subject = template.Subject;
-                }
-
-                template.Headers.Each(pair => mail.Headers[pair.Key] = pair.Value);
-
-                if (updateBody != null)
-                {
-                    updateBody(template.Body);
+                    if (contentType == ContentTypes.Html)
+                        email.HtmlBody += line + "\n";
+                    else if (contentType == ContentTypes.Text)
+                        email.TextBody += line + "\n";
                 }
             }
         }
 
-        private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
+        private static dynamic CreateModel(object model)
         {
-            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
-
-            if (templateResults.Any(result => result.ParserErrors != null && result.ParserErrors.Any()))
+            if (model == null)
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
-                    templateResults.Where(r => r.ParserErrors != null)
-                                   .SelectMany(r => r.ParserErrors)
-                                   .Select(e => (e.Location != null ? e.Location.ToString() : "Unknown Location") + ":" + Environment.NewLine + e.Message)
-                                   .ToArray());
-
-                throw new InvalidOperationException(parseExceptionMessage);
+                return new ExpandoObject();
             }
 
-            using (var codeProvider = new CSharpCodeProvider())
+            if (model is IDynamicMetaObjectProvider)
             {
-                var compilerParameter = new CompilerParameters(_referencedAssemblies)
-                                            {
-                                                IncludeDebugInformation = false,
-                                                GenerateInMemory = true,
-                                                CompilerOptions = "/optimize"
-                                            };
-
-                var compilerResults = codeProvider.CompileAssemblyFromDom(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
-
-                if (compilerResults.Errors.HasErrors)
-                {
-                    var compileExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, compilerResults.Errors.OfType<CompilerError>().Where(ce => !ce.IsWarning).Select(e => e.FileName + ":" + Environment.NewLine + e.ErrorText).ToArray());
-
-                    throw new InvalidOperationException(compileExceptionMessage);
-                }
-
-                return compilerResults.CompiledAssembly;
+                return model;
             }
+
+            var expandoObj = new ExpandoObject();
+            var expandoDict = (IDictionary<string, object>)expandoObj;
+
+            foreach (var prop in model.GetType().GetProperties())
+            {
+                expandoDict[prop.Name] = prop.GetValue(model);
+            }
+
+            return expandoObj;
         }
 
         private static dynamic CreateModel(object model)
@@ -251,35 +155,5 @@ namespace JabbR.Services
             return new DynamicModel(propertyMap);
         }
 
-        private static RazorTemplateEngine CreateRazorEngine()
-        {
-            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
-                           {
-                               DefaultBaseClass = typeof(EmailTemplate).FullName,
-                               DefaultNamespace = NamespaceName
-                           };
-
-            host.NamespaceImports.Add("System");
-            host.NamespaceImports.Add("System.Collections");
-            host.NamespaceImports.Add("System.Collections.Generic");
-            host.NamespaceImports.Add("System.Dynamic");
-            host.NamespaceImports.Add("System.Linq");
-
-            return new RazorTemplateEngine(host);
-        }
-
-        private static IEnumerable<string> BuildReferenceList()
-        {
-            string currentAssemblyLocation = typeof(RazorEmailTemplateEngine).Assembly.CodeBase.Replace("file:///", String.Empty).Replace("/", "\\");
-
-            return new List<string>
-                       {
-                           "mscorlib.dll",
-                           "system.dll",
-                           "system.core.dll",
-                           "microsoft.csharp.dll",
-                           currentAssemblyLocation
-                       };
-        }
     }
 }
