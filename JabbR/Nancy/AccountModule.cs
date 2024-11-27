@@ -10,25 +10,20 @@ using JabbR.ViewModels;
 using Nancy;
 using Nancy.Routing;
 using Nancy.Security;
-using Microsoft.AspNetCore.Identity;
 
 namespace JabbR.Nancy
 {
 public class AccountModule : NancyModule
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
                              IJabbrRepository repository,
                              IAuthenticationService authService,
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
-                             IEmailService emailService,
-                             UserManager<ApplicationUser> userManager)
+                             IEmailService emailService)
             : base("/account")
         {
-            _userManager = userManager;
             Get("/", parameters =>
             {
                 if (!Context.CurrentUser.IsAuthenticated())
@@ -593,7 +588,7 @@ public class AccountModule : NancyModule
 
             if (Context.CurrentUser.IsAuthenticated())
             {
-                user = repository.GetUserById(_userManager.GetUserId(User));
+                user = repository.GetUserById(Principal.GetUserId());
             }
 
             var viewModel = new LoginViewModel(applicationSettings, authService.GetProviders(), user != null ? user.Identities : null);
