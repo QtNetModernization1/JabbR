@@ -130,7 +130,7 @@ public class AccountModule : NancyModule
                 return View["register"];
             });
 
-            Post["/create"] = _ =>
+            Post["/create"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -247,7 +247,7 @@ public class AccountModule : NancyModule
                 return HttpStatusCode.BadRequest;
             });
 
-            Post["/newpassword"] = _ =>
+            Post["/newpassword"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -288,7 +288,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            Post["/changepassword"] = _ =>
+            Post["/changepassword"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -340,7 +340,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            Post["/changeusername"] = _ =>
+            Post["/changeusername"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -384,7 +384,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            Get["/requestresetpassword"] = _ =>
+            Get["/requestresetpassword"] = parameters =>
             {
                 if (Context.CurrentUser.IsAuthenticated())
                 {
@@ -401,7 +401,7 @@ public class AccountModule : NancyModule
                 return View["requestresetpassword"];
             };
 
-            Post["/requestresetpassword"] = _ =>
+            Post["/requestresetpassword"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
