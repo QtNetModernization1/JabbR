@@ -5,6 +5,11 @@ using Nancy.ViewEngines.Razor;
 
 namespace JabbR
 {
+    public class HtmlHelpers<TModel>
+    {
+        // Add any necessary properties or methods
+    }
+
     public static class InputExtensions
     {
         public static string TextBox<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
