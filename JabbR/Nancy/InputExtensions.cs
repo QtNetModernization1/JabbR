@@ -2,8 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Nancy;
-using Nancy.ViewEngines.Razor;
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR
 {
@@ -11,11 +10,13 @@ namespace JabbR
     {
         public ModelStateDictionary ModelState { get; }
         public TModel Model { get; }
+        public HttpContext HttpContext { get; }
 
-        public HtmlHelpers(ModelStateDictionary modelState, TModel model)
+        public HtmlHelpers(ModelStateDictionary modelState, TModel model, HttpContext httpContext)
         {
             ModelState = modelState;
             Model = model;
+            HttpContext = httpContext;
         }
 
         public IEnumerable<string> GetErrorsForProperty(string propertyName)
@@ -82,14 +83,14 @@ namespace JabbR
                 value = propInfo.GetValue(htmlHelper.Model) as string;
             }
 
-            if (String.IsNullOrWhiteSpace(value))
+            if (String.IsNullOrWhiteSpace(value) && htmlHelper.HttpContext.Request.HasFormContentType)
             {
-                value = htmlHelper.RenderContext.Context.Request.Form[propertyName];
+                value = htmlHelper.HttpContext.Request.Form[propertyName];
             }
 
             if (String.IsNullOrWhiteSpace(value))
             {
-                value = htmlHelper.RenderContext.Context.Request.Query[propertyName];
+                value = htmlHelper.HttpContext.Request.Query[propertyName];
             }
 
             return value;
