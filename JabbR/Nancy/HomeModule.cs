@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +14,7 @@ using JabbR.ViewModels;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Security.Application;
 using Nancy;
+using System.Web;
 
 namespace JabbR.Nancy
 {
