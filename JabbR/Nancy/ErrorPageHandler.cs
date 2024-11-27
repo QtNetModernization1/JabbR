@@ -1,11 +1,10 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
-using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
@@ -41,24 +40,18 @@ namespace JabbR.Nancy
                 }
             }
 
-            var response = RenderSharedView(
-                "errorPage",
-                new
-                {
+            var response = RenderView(
+                context, 
+                "errorPage", 
+                new 
+                { 
                     Error = statusCode,
                     ErrorCode = (int)statusCode,
                     SuggestRoomName = suggestRoomName
-                }) as Response;
+                });
 
-            if (response != null)
-            {
-                response.StatusCode = statusCode;
-                context.Response = response;
-            }
-            else
-            {
-                context.Response = new TextResponse(statusCode, "An error occurred");
-            }
+            response.StatusCode = statusCode;
+            context.Response = response;
         }
     }
 }
