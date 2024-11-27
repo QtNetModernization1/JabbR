@@ -35,11 +35,6 @@ namespace JabbR.Nancy
             return new DefaultNancyEnvironment();
         }
 
-        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
-        {
-            return NancyInternalConfiguration.Default;
-        }
-
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);
