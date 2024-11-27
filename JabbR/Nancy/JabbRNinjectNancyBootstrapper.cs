@@ -24,6 +24,11 @@ namespace JabbR.Nancy
             _kernel = kernel;
         }
 
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return NancyInternalConfiguration.WithOverrides(c => { });
+        }
+
         public interface IUserIdentity
         {
             string UserName { get; }
