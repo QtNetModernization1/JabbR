@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace JabbR.Nancy
                                     IEnumerable<IContentProvider> contentProviders)
             : base("/administration")
         {
-            Get["/"] = _ =>
+            Get("/", _ =>
             {
                 if (!IsAuthenticated || !Principal.HasClaim(JabbRClaimTypes.Admin))
                 {
@@ -33,9 +33,9 @@ namespace JabbR.Nancy
                     ApplicationSettings = applicationSettings
                 };
                 return View["index", model];
-            };
+            });
 
-            Post["/"] = _ =>
+            Post("/", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -57,7 +57,7 @@ namespace JabbR.Nancy
                         .ToList();
 
                     var enabledContentProvidersResult = this.Bind<EnabledContentProvidersResult>();
-                    
+
                     // we posted the enabled ones, but we store the disabled ones. Flip it around...
                     settings.DisabledContentProviders =
                         new HashSet<string>(contentProviders
@@ -91,7 +91,7 @@ namespace JabbR.Nancy
                 }
 
                 return View["index", applicationSettings];
-            };
+            });
         }
 
         private class EnabledContentProvidersResult
