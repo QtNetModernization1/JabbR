@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using JabbR.ContentProviders.Core;
@@ -35,17 +35,16 @@ namespace JabbR.ContentProviders
                    uri.AbsoluteUri.StartsWith("http://dictionary.com", StringComparison.OrdinalIgnoreCase);
         }
 
-        private Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
+        private async Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
         {
-            return Http.GetAsync(request.RequestUri).Then(response =>
+            var response = await Http.GetAsync(request.RequestUri);
+            var pageInfo = new PageInfo();
+using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
-                var pageInfo = new PageInfo();
-                using (var responseStream = response.GetResponseStream())
-                {
-                    var htmlDocument = new HtmlDocument();
-                    htmlDocument.Load(responseStream);
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.Load(responseStream);
 
-                    var title = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:title']");
+                var title = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:title']");
                     var imageURL = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:image']");
                     pageInfo.Title = title != null ? title.Attributes["content"].Value : String.Empty;
                     pageInfo.ImageURL = imageURL != null ? imageURL.Attributes["content"].Value : String.Empty;
@@ -53,7 +52,6 @@ namespace JabbR.ContentProviders
                 }
 
                 return pageInfo;
-            });
         }
 
         private string GetWordDefinition(HtmlDocument htmlDocument)
