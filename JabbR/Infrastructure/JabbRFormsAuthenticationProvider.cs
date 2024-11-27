@@ -52,19 +52,17 @@ namespace JabbR.Infrastructure
                 Success = true
             };
 
-            ChatUser loggedInUser = GetLoggedInUser(context);
-
-            var principal = new ClaimsPrincipal(context.Identity);
+            ChatUser loggedInUser = GetLoggedInUser(principal);
 
             // Do nothing if it's authenticated
-            if (principal.IsAuthenticated())
+            if (principal.Identity.IsAuthenticated)
             {
-                EnsurePersistentCookie(context);
+                EnsurePersistentProperties(properties);
                 return;
             }
 
             ChatUser user = _repository.GetUser(principal);
-            authResult.ProviderName = principal.GetIdentityProvider();
+            authResult.ProviderName = principal.Identity.AuthenticationType;
 
             // The user exists so add the claim
             if (user != null)
@@ -76,14 +74,13 @@ namespace JabbR.Infrastructure
                     authResult.Success = false;
 
                     // Keep the old user logged in
-                    context.Identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, loggedInUser.Id));
+                    ((ClaimsIdentity)principal.Identity).AddClaim(new Claim(JabbRClaimTypes.Identifier, loggedInUser.Id));
                 }
                 else
                 {
                     // Login this user
-                    AddClaim(context, user);
+                    AddClaim((ClaimsIdentity)principal.Identity, user);
                 }
-
             }
             else if (principal.HasAllClaims())
             {
@@ -109,22 +106,15 @@ namespace JabbR.Infrastructure
                     targetUser = loggedInUser;
                 }
 
-                AddClaim(context, targetUser);
+                AddClaim((ClaimsIdentity)principal.Identity, targetUser);
             }
             else if(!principal.HasPartialIdentity())
             {
                 // A partial identity means the user needs to add more claims to login
-                context.Identity.AddClaim(new Claim(JabbRClaimTypes.PartialIdentity, "true"));
+                ((ClaimsIdentity)principal.Identity).AddClaim(new Claim(JabbRClaimTypes.PartialIdentity, "true"));
             }
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true
-            };
-
-            context.Response.Cookies.Append(Constants.AuthResultCookie,
-                                       JsonConvert.SerializeObject(authResult),
-                                       cookieOptions);
+            // Note: Cookie handling should be done at a higher level, not in this method
         }
 
         private static void AddClaim(ClaimsIdentity identity, ChatUser user)
