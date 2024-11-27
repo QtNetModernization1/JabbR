@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -7,7 +7,6 @@ using System.Threading;
 
 using Nancy;
 using Nancy.Bootstrapper;
-using Nancy.Bootstrappers.Ninject;
 using Nancy.Owin;
 using Nancy.Security;
 
@@ -15,7 +14,7 @@ using Ninject;
 
 namespace JabbR.Nancy
 {
-    public class JabbRNinjectNancyBootstrapper : NinjectNancyBootstrapper
+    public class JabbRNinjectNancyBootstrapper : NancyBootstrapperBase<IKernel>
     {
         private readonly IKernel _kernel;
 
