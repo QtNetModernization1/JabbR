@@ -209,7 +209,7 @@ public class AccountModule : NancyModule
                 return View["register"];
             };
 
-            Post["/unlink"] = param =>
+            Post("/unlink", param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -222,7 +222,7 @@ public class AccountModule : NancyModule
                 }
 
                 string provider = Request.Form.provider;
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(Context.CurrentUser.Identity.Name);
 
                 if (user.Identities.Count == 1 && !user.HasUserNameAndPasswordCredentials())
                 {
@@ -241,7 +241,7 @@ public class AccountModule : NancyModule
                 }
 
                 return HttpStatusCode.BadRequest;
-            };
+            });
 
             Post["/newpassword"] = _ =>
             {
