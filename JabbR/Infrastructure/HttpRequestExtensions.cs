@@ -25,7 +25,8 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static HttpResponseMessage CreateJabbrSuccessMessage<T>(this HttpRequestMessage request, HttpStatusCode statusCode, T data, string filenamePrefix)
         {
-            var responseMessage = request.CreateResponse(statusCode, data);
+            var responseMessage = new HttpResponseMessage(statusCode);
+            responseMessage.Content = new ObjectContent<T>(data, new System.Net.Http.Formatting.JsonMediaTypeFormatter());
             return AddResponseHeaders(request, responseMessage, filenamePrefix);
         }
         /// <summary>
@@ -39,7 +40,8 @@ namespace JabbR.Infrastructure
         /// <returns>HttpResponseMessage that wraps the given payload</returns>
         public static HttpResponseMessage CreateJabbrSuccessMessage<T>(this HttpRequestMessage Request, HttpStatusCode statusCode, T data)
         {
-            var responseMessage = Request.CreateResponse(statusCode, data);
+            var responseMessage = new HttpResponseMessage(statusCode);
+            responseMessage.Content = new ObjectContent<T>(data, new System.Net.Http.Formatting.JsonMediaTypeFormatter());
             return AddResponseHeaders(Request, responseMessage, null);
         }
 
