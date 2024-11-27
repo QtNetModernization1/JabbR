@@ -45,9 +45,10 @@ namespace JabbR.Nancy
             return _kernel;
         }
 
-        public override INancyEnvironment GetEnvironment()
+        protected override void ConfigureApplicationContainer(IKernel existingContainer)
         {
-            return new DefaultNancyEnvironment();
+            base.ConfigureApplicationContainer(existingContainer);
+            // Add any application container configurations here
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
@@ -60,18 +61,8 @@ namespace JabbR.Nancy
             pipelines.BeforeRequest.AddItemToStartOfPipeline(SetCulture);
         }
 
-        protected override void ConfigureApplicationContainer(IKernel existingContainer)
+        protected override void ConfigureEnvironment(INancyEnvironment environment)
         {
-            base.ConfigureApplicationContainer(existingContainer);
-            // Add any application container configurations here
-        }
-
-        protected override void RegisterNancyEnvironment(IKernel container, INancyEnvironment environment)
-        {
-            // Register the INancyEnvironment in the container
-            container.Bind<INancyEnvironment>().ToConstant(environment);
-
-            // You can add additional configuration for the Nancy environment here
             environment.Tracing(enabled: false, displayErrorTraces: true);
         }
 
