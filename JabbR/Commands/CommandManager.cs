@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Composition.Hosting;
+using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Text.RegularExpressions;
 using JabbR.Models;
