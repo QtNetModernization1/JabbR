@@ -1,15 +1,14 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
+using Microsoft.CSharp;
 
 namespace JabbR.Services
 {
@@ -22,7 +21,7 @@ namespace JabbR.Services
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
         private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-        private static readonly RazorEngine _razorEngine = CreateRazorEngine();
+        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
         private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
@@ -252,42 +251,21 @@ namespace JabbR.Services
             return new DynamicModel(propertyMap);
         }
 
-        private static RazorEngine CreateRazorEngine()
+        private static RazorTemplateEngine CreateRazorEngine()
         {
-            var builder = new RazorProjectEngineBuilder()
-                .SetNamespace(NamespaceName)
-                .SetBaseType(typeof(EmailTemplate).FullName);
+            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
+                           {
+                               DefaultBaseClass = typeof(EmailTemplate).FullName,
+                               DefaultNamespace = NamespaceName
+                           };
 
-            builder.ConfigureClass((document, classNode) =>
-            {
-                classNode.BaseType = typeof(EmailTemplate).FullName;
-            });
+            host.NamespaceImports.Add("System");
+            host.NamespaceImports.Add("System.Collections");
+            host.NamespaceImports.Add("System.Collections.Generic");
+            host.NamespaceImports.Add("System.Dynamic");
+            host.NamespaceImports.Add("System.Linq");
 
-            builder.Features.Add(new DefaultImportFeature("System", "System.Collections", "System.Collections.Generic", "System.Dynamic", "System.Linq"));
-
-            return builder.Build().Engine;
-        }
-
-        private class DefaultImportFeature : IRazorEngineFeature
-        {
-            private readonly string[] _imports;
-
-            public DefaultImportFeature(params string[] imports)
-            {
-                _imports = imports;
-            }
-
-            public void OnInitialized(RazorProjectEngineBuilder builder)
-            {
-                var directives = builder.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault();
-                if (directives != null)
-                {
-                    foreach (var import in _imports)
-                    {
-                        directives.Directives.Add(DirectiveDescriptor.CreateDirective("using", import));
-                    }
-                }
-            }
+            return new RazorTemplateEngine(host);
         }
 
         private static IEnumerable<string> BuildReferenceList()
