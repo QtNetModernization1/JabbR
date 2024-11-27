@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using JabbR.WebApi.Model;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace JabbR.Infrastructure
 {
@@ -118,13 +119,18 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            //Web API sets IsLocal as a bool in the Options dictionary
-            if (requestMessage.Options.TryGetValue(HttpPropertyKeys.IsLocalKey, out var isLocalObj) && isLocalObj is bool isLocal)
+            // Try to get the IsLocal value from Options
+            var isLocalKey = new HttpRequestOptionsKey<bool>("MS_IsLocal");
+            if (requestMessage.Options.TryGetValue(isLocalKey, out bool isLocal))
             {
                 return isLocal;
             }
 
-            return false;
+            // If not found in Options, try to determine based on the host
+            var host = requestMessage.RequestUri?.Host;
+            return host != null && (host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                                    host.Equals("127.0.0.1") ||
+                                    host.Equals("::1"));
         }
 
 
@@ -136,8 +142,9 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            //Web API sets IsLocal as a bool in the Options dictionary
-            requestMessage.Options[HttpPropertyKeys.IsLocalKey] = value;
+            // Set the IsLocal value in Options
+            var isLocalKey = new HttpRequestOptionsKey<bool>("MS_IsLocal");
+            requestMessage.Options.Set(isLocalKey, value);
         }
 
         /// <summary>
