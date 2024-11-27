@@ -34,7 +34,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             });
 
-            Get["/login"] = _ =>
+            Get("/login", _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -42,9 +42,9 @@ namespace JabbR.Nancy
                 }
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
-            Post["/login"] = param =>
+            Post("/login", param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -82,13 +82,13 @@ namespace JabbR.Nancy
                 }
                 catch
                 {
-                    // Swallow the exception    
+                    // Swallow the exception
                 }
 
                 this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
             Post("/logout", _ =>
             {
@@ -104,7 +104,7 @@ namespace JabbR.Nancy
                 return response;
             });
 
-            Get["/register"] = _ =>
+            Get("/register", _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -122,7 +122,7 @@ namespace JabbR.Nancy
                 ViewBag.requirePassword = requirePassword;
 
                 return View["register"];
-            };
+            });
 
             Post["/create"] = _ =>
             {
