@@ -10,7 +10,6 @@ using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
-using Nancy.Bootstrapper;
 
 using Ninject;
 
@@ -23,11 +22,6 @@ namespace JabbR.Nancy
         public JabbRNinjectNancyBootstrapper(IKernel kernel)
         {
             _kernel = kernel;
-        }
-
-        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
-        {
-            return new DefaultNancyEnvironmentConfigurator();
         }
 
         public interface IUserIdentity
