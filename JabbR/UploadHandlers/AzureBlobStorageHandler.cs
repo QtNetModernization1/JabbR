@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,10 +43,10 @@ namespace JabbR.UploadHandlers
                                 "_" +
                                 Guid.NewGuid().ToString().Substring(0, 4) + Path.GetExtension(fileName);
 
-            if (container.CreateIfNotExists())
+            if (await container.CreateIfNotExistsAsync())
             {
                 // We need this to make files servable from blob storage
-                container.SetPermissions(new BlobContainerPermissions
+                await container.SetPermissionsAsync(new BlobContainerPermissions
                 {
                     PublicAccess = BlobContainerPublicAccessType.Blob
                 });
@@ -55,7 +55,7 @@ namespace JabbR.UploadHandlers
             CloudBlockBlob blockBlob = container.GetBlockBlobReference(randomFile);
             blockBlob.Properties.ContentType = contentType;
 
-            await Task.Factory.FromAsync((cb, state) => blockBlob.BeginUploadFromStream(stream, cb, state), ar => blockBlob.EndUploadFromStream(ar), null);
+            await blockBlob.UploadFromStreamAsync(stream);
 
             var result = new UploadResult
             {
