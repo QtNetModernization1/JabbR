@@ -24,6 +24,14 @@ namespace JabbR.Nancy
             _kernel = kernel;
         }
 
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return new DefaultNancyEnvironmentConfigurator(
+                new DefaultNancyEnvironmentFactory(),
+                new[] { new DefaultNancyEnvironmentConfigurationProvider() }
+            );
+        }
+
         public interface IUserIdentity
         {
             string UserName { get; }
