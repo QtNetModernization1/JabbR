@@ -1,0 +1,963 @@
+==========
+References
+==========
+JabbR.Commands
+JabbR.Models
+System
+JabbR
+JabbR.Services
+JabbR.ContentProviders
+JabbR.ContentProviders.Core
+System.Text.RegularExpressions
+JabbR.Infrastructure
+
+System.IO
+System.Net
+System.Linq
+System.Text
+System.CodeDom.Compiler
+System.Diagnostics
+System.Runtime.CompilerServices
+System.Resources
+System.Globalization
+System.Diagnostics.CodeAnalysis
+System.ComponentModel
+JabbR.Nancy
+JabbR.UploadHandlers
+System.Threading.Tasks
+System.Collections.Generic
+JabbR.Hubs
+System.Security.Principal
+System.Security.Claims
+System.Security.Cryptography
+JabbR.Middleware
+JabbR.Models.Migrations
+System.ComponentModel.DataAnnotations
+JabbR.Models.Mapping
+System.Reflection
+<global namespace>
+System.Linq.Expressions
+System.Configuration
+System.Threading
+JabbR.ViewModels
+System.Collections
+System.Dynamic
+Microsoft.CSharp
+System.Net.Mail
+System.Collections.ObjectModel
+System.Net.Mime
+System.Collections.Concurrent
+System.Runtime.Caching
+System.ComponentModel.Composition
+System.ComponentModel.Composition.Hosting
+JabbR.WebApi.Model
+System.Net.Http
+System.Net.Http.Headers
+JabbR.WebApi
+System.Diagnostics.Contracts
+System.ComponentModel.DataAnnotations.Schema
+System.Runtime.InteropServices
+Microsoft.AspNet.SignalR
+System.Web
+HtmlAgilityPack
+RestSharp.Extensions
+SimpleAuthentication.Core
+SimpleAuthentication.Core.Providers
+Microsoft.AspNet.SignalR.Hubs
+Microsoft.Owin.Security.DataProtection
+Microsoft.Owin.Security.Cookies
+Nancy.Bootstrappers.Ninject
+Nancy.SimpleAuthentication
+Newtonsoft.Json
+Ninject
+Microsoft.AspNet.SignalR.Infrastructure
+Microsoft.Owin.Security
+Microsoft.Owin
+System.Data.Entity.ModelConfiguration
+Nancy
+Nancy.ModelBinding
+Nancy.Security
+Nancy.ErrorHandling
+Nancy.ViewEngines
+Nancy.Validation
+Nancy.ViewEngines.Razor
+PagedList
+Microsoft.Security.Application
+Nancy.Helpers
+Nancy.Owin
+System.Data.Entity
+System.Data.Entity.Migrations
+Owin
+Nancy.Bootstrapper
+System.Runtime.Serialization
+Nancy.Session
+System.Web.Razor
+System.Data.Entity.SqlServer
+Microsoft.AspNet.SignalR.Hosting
+Microsoft.AspNet.SignalR.Transports
+Microsoft.WindowsAzure.Storage
+Microsoft.WindowsAzure.Storage.Blob
+System.Web.Http.Hosting
+System.Web.Http
+System.Net.Http.Formatting
+Microsoft.AspNet.SignalR.Configuration
+Microsoft.Owin.Security.DataHandler
+Newtonsoft.Json.Serialization
+Microsoft.Ajax.Utilities
+System.Web.Http.Dependencies
+Ninject.Syntax
+System.Data.Entity.Core.Objects
+System.Data.Entity.Infrastructure
+System.Data.Entity.Core.Objects.DataClasses
+project.all
+
+===============
+DownloadedFiles
+===============
+project.all.json
+microsoft.owin.security.datahandler.json
+system.web.http.json
+owin.json
+system.data.entity.json
+microsoft.owin.json
+microsoft.owin.security.json
+microsoft.owin.security.cookies.json
+microsoft.owin.security.dataprotection.json
+system.web.json
+system.net.http.json
+system.runtime.caching.json
+system.configuration.json
+
+==============
+ProjectResults
+==============
+----------------------
+Showing results for: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/JabbR.csproj
+----------------------
+---------------------------
+Target Versions:
+---------------------------
+net8.0
+---------------------------
+Source Versions:
+---------------------------
+net48
+---------------------------
+Upgrade packages:
+---------------------------
+Microsoft.AspNet.SignalR.ServiceBus,->2.2.0
+Microsoft.Owin.StaticFiles,->2.1.0
+jquery.keytips,->1.0.6
+jQuery.Templates,->0.1.0
+Microsoft.AspNet.SignalR.SystemWeb,->2.2.0
+SquishIt,->0.9.3
+jQuery.Cookie,->1.3.1
+Microsoft.Owin.Diagnostics,->2.1.0
+Highlight.js,->1.0.4
+json2,->1.0.2
+jquery.captureDocumentWrite,->1.0.0
+Microsoft.AspNet.WebApi.Client,->6.0.0
+EcmaScript.Net,->2.0.0
+WindowsAzure.Storage,->9.3.3
+YUICompressor.NET,->3.1.0
+Microsoft.AspNet.SignalR.JS,->2.4.3
+Newtonsoft.Json,->13.0.3
+EntityFramework,->6.5.1
+HtmlAgilityPack,->1.11.65
+RestSharp,->112.0.0
+System.Spatial,->5.8.5
+Microsoft.AspNet.SignalR,->2.4.3
+Nancy,->2.0.0
+jQuery,->3.7.0
+Iesi.Collections,->4.1.1
+Twitter.Bootstrap,->3.0.1.1
+Microsoft.Data.Edm,->5.8.5
+Microsoft.Data.OData,->5.8.5
+Ninject.Extensions.ChildKernel,->3.3.0
+Ninject,->3.3.6
+marked,->0.3.3
+---------------------------
+Action packages:
+---------------------------
+Microsoft.AspNetCore.SystemWebAdapters,1.4.0
+Microsoft.AspNetCore.Owin,6.0.29
+System.Configuration.ConfigurationManager,*
+System.Runtime.Caching,*
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/JabbRFormsAuthenticationProvider.cs
+---------------------------
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.OAuth
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/AuthenticationResult.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/JabbRDataProtection.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/DefaultCache.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/ContentProviders/UrbanDictionaryContentProvider.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: Project
+---------------------------
+
+Action Type: Project
+Action Name: ArchiveFiles
+Action Value: Startup.Auth.cs
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Project
+Action Name: ArchiveFiles
+Action Value: BundleConfig.cs,FilterConfig.cs,RouteConfig.cs,WebApiConfig.cs,global.asax.cs,global.asax,AssemblyInfo.cs,packages.config
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Project
+Action Name: MigrateConfig
+Action Value: 
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: ProjectFile
+Action Name: MigrateProjectFile
+Action Value: 
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/LogType.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/RequireHttpsHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/ILogger.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/WindowsPrincipalHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/UploadHandlers/UploadResult.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Nancy/NancyExtensions.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/IJabbrConfiguration.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/CustomAuthHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/App_Start/Startup.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataHandler
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/JabbrConfiguration.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/DetectSchemeHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/App_Start/Startup.DependencyInjection.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+
+----------------------
+Showing results for: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/JabbR.csproj
+----------------------
+---------------------------
+Target Versions:
+---------------------------
+net8.0
+---------------------------
+Source Versions:
+---------------------------
+net48
+---------------------------
+Upgrade packages:
+---------------------------
+Microsoft.AspNet.SignalR.ServiceBus,->2.2.0
+Microsoft.Owin.StaticFiles,->2.1.0
+jquery.keytips,->1.0.6
+jQuery.Templates,->0.1.0
+Microsoft.AspNet.SignalR.SystemWeb,->2.2.0
+SquishIt,->0.9.3
+jQuery.Cookie,->1.3.1
+Microsoft.Owin.Diagnostics,->2.1.0
+Highlight.js,->1.0.4
+json2,->1.0.2
+jquery.captureDocumentWrite,->1.0.0
+Microsoft.AspNet.WebApi.Client,->6.0.0
+EcmaScript.Net,->2.0.0
+WindowsAzure.Storage,->9.3.3
+YUICompressor.NET,->3.1.0
+Microsoft.AspNet.SignalR.JS,->2.4.3
+Newtonsoft.Json,->13.0.3
+EntityFramework,->6.5.1
+HtmlAgilityPack,->1.11.65
+RestSharp,->112.0.0
+System.Spatial,->5.8.5
+Microsoft.AspNet.SignalR,->2.4.3
+Nancy,->2.0.0
+jQuery,->3.7.0
+Iesi.Collections,->4.1.1
+Twitter.Bootstrap,->3.0.1.1
+Microsoft.Data.Edm,->5.8.5
+Microsoft.Data.OData,->5.8.5
+Ninject.Extensions.ChildKernel,->3.3.0
+Ninject,->3.3.6
+marked,->0.3.3
+---------------------------
+Action packages:
+---------------------------
+Microsoft.AspNetCore.SystemWebAdapters,1.4.0
+Microsoft.AspNetCore.Owin,6.0.29
+System.Configuration.ConfigurationManager,*
+System.Runtime.Caching,*
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/JabbRFormsAuthenticationProvider.cs
+---------------------------
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.OAuth
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/AuthenticationResult.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/JabbRDataProtection.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/DefaultCache.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/ContentProviders/UrbanDictionaryContentProvider.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: Project
+---------------------------
+
+Action Type: Project
+Action Name: ArchiveFiles
+Action Value: Startup.Auth.cs
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Project
+Action Name: ArchiveFiles
+Action Value: BundleConfig.cs,FilterConfig.cs,RouteConfig.cs,WebApiConfig.cs,global.asax.cs,global.asax,AssemblyInfo.cs,packages.config
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Project
+Action Name: MigrateConfig
+Action Value: 
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: ProjectFile
+Action Name: MigrateProjectFile
+Action Value: 
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/LogType.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/RequireHttpsHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Infrastructure/ILogger.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/WindowsPrincipalHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/UploadHandlers/UploadResult.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Nancy/NancyExtensions.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/IJabbrConfiguration.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/CustomAuthHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/App_Start/Startup.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataHandler
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Services/JabbrConfiguration.cs
+---------------------------
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/Middleware/DetectSchemeHandler.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Owin
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+---------------------------
+Executed Actions for file: /tmp/tempfspartition/QnetTransformArtifacts/MidTransformCode/sourceCode/JabbR/App_Start/Startup.DependencyInjection.cs
+---------------------------
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.DataProtection
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: AddDirective
+Action Value: Microsoft.AspNetCore.Authentication.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+Action Type: Using
+Action Name: RemoveDirective
+Action Value: Microsoft.Owin.Security.Cookies
+Times Run: 1
+Executions With Error: 0
+Invalid Executions: 0
+
+
+
+===========
+BuildErrors
+===========
+
+
