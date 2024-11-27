@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using JabbR.Infrastructure;
 using JabbR.Models;
-using Microsoft.Owin;
 using Nancy;
 using Nancy.Helpers;
 using Nancy.Owin;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Nancy
 {

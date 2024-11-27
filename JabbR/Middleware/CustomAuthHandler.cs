@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.Owin;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Middleware
 {
