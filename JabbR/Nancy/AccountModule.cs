@@ -13,6 +13,23 @@ using Nancy.Security;
 
 namespace JabbR.Nancy
 {
+public static class NancyCompatibilityExtensions
+{
+    public static void RegisterCompatibleRoute(this NancyModule module, string method, string path, Func<dynamic, dynamic> action)
+    {
+        switch (method.ToUpper())
+        {
+            case "GET":
+                module.Get(path, action);
+                break;
+            case "POST":
+                module.Post(path, action);
+                break;
+            // Add other HTTP methods as needed
+        }
+    }
+}
+
 public class AccountModule : NancyModule
     {
         public AccountModule(ApplicationSettings applicationSettings,
