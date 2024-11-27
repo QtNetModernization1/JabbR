@@ -10,6 +10,7 @@ using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
+using Nancy.Security;
 
 using Ninject;
 
