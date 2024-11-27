@@ -38,7 +38,7 @@ public class AccountModule : NancyModule
 
             Get("/login", _ =>
             {
-                if (IsAuthenticated)
+                if (Context.CurrentUser.IsAuthenticated())
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -94,7 +94,7 @@ public class AccountModule : NancyModule
 
             Post("/logout", _ =>
             {
-                if (!IsAuthenticated)
+                if (!Context.CurrentUser.IsAuthenticated())
                 {
                     return HttpStatusCode.Forbidden;
                 }
@@ -108,12 +108,12 @@ public class AccountModule : NancyModule
 
             Get("/register", _ =>
             {
-                if (IsAuthenticated)
+                if (Context.CurrentUser.IsAuthenticated())
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
 
-                bool requirePassword = !Principal.Identity.IsAuthenticated;
+                bool requirePassword = !Context.CurrentUser.IsAuthenticated();
 
                 if (requirePassword &&
                     !applicationSettings.AllowUserRegistration)
@@ -141,7 +141,7 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.NotFound;
                 }
 
-                if (IsAuthenticated)
+                if (Context.CurrentUser.IsAuthenticated())
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -378,12 +378,12 @@ public class AccountModule : NancyModule
 
             Get["/requestresetpassword"] = _ =>
             {
-                if (IsAuthenticated)
+                if (Context.CurrentUser.IsAuthenticated())
                 {
                     return Response.AsRedirect("~/account/#changePassword");
                 }
 
-                if (!Principal.Identity.IsAuthenticated &&
+                if (!Context.CurrentUser.IsAuthenticated() &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
@@ -400,12 +400,12 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (IsAuthenticated)
+                if (Context.CurrentUser.IsAuthenticated())
                 {
                     return Response.AsRedirect("~/account/#changePassword");
                 }
 
-                if (!Principal.Identity.IsAuthenticated &&
+                if (!Context.CurrentUser.IsAuthenticated() &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
