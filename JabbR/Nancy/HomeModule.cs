@@ -26,7 +26,7 @@ namespace JabbR.Nancy
                           IConnectionManager connectionManager,
                           IJabbrRepository jabbrRepository)
         {
-            Get["/"] = _ =>
+            Get("/", _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -54,30 +54,27 @@ namespace JabbR.Nancy
                     return Response.AsRedirect("~/account/register");
                 }
 
-                return HttpStatusCode.Unauthorized;
-            };
+                return (Response)HttpStatusCode.Unauthorized;
+            });
 
-            Get["/monitor"] = _ =>
+            Get("/monitor", _ =>
             {
                 ClaimsPrincipal principal = Principal;
 
                 if (principal == null ||
                     !principal.HasClaim(JabbRClaimTypes.Admin))
                 {
-                    return HttpStatusCode.Forbidden;
+                    return (Response)HttpStatusCode.Forbidden;
                 }
 
                 return View["monitor"];
-            };
+            });
 
-            Get["/status", runAsync: true] = async (_, token) =>
+            Get("/status", async (_, ct) =>
             {
                 var model = new StatusViewModel();
 
                 // Try to send a message via SignalR
-                // NOTE: Ideally we'd like to actually receive a message that we send, but right now
-                // that would require a full client instance. SignalR 2.1.0 plans to add a feature to
-                // easily support this on the server.
                 var signalrStatus = new SystemStatus { SystemName = "SignalR messaging" };
                 model.Systems.Add(signalrStatus);
 
@@ -85,7 +82,7 @@ namespace JabbR.Nancy
                 {
                     var hubContext = connectionManager.GetHubContext<Chat>();
                     await (Task)hubContext.Clients.Client("doesn't exist").noMethodCalledThis();
-                    
+
                     signalrStatus.SetOK();
                 }
                 catch (Exception ex)
@@ -117,7 +114,7 @@ namespace JabbR.Nancy
                     {
                         var azure = new AzureBlobStorageHandler(settings);
                         UploadResult result;
-                        using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("test")))
+using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("test")))
                         {
                             result = await azure.UploadFile("statusCheck.txt", "text/plain", stream);
                         }
@@ -144,7 +141,7 @@ namespace JabbR.Nancy
                     {
                         var local = new LocalFileSystemStorageHandler(settings);
                         UploadResult localResult;
-                        using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("test")))
+using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("test")))
                         {
                             localResult = await local.UploadFile("statusCheck.txt", "text/plain", stream);
                         }
@@ -162,7 +159,7 @@ namespace JabbR.Nancy
                 }
 
                 // Force failure
-                if (Context.Request.Query.fail)
+                if (Request.Query["fail"].HasValue)
                 {
                     var failedSystem = new SystemStatus { SystemName = "Forced failure" };
                     failedSystem.SetException(new ApplicationException("Forced failure for test purposes"));
@@ -177,7 +174,7 @@ namespace JabbR.Nancy
                 }
 
                 return view;
-            };
+            });
         }
 
         private static string BuildClientResources()
@@ -199,7 +196,7 @@ namespace JabbR.Nancy
                     catch (InvalidOperationException)
                     {
                         // The resource specified by name is not a String.
-                    }   
+                    }
                 }
             }
 
