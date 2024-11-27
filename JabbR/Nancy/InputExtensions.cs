@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Nancy;
-using Nancy.ViewEngines.Razor;
 
 namespace JabbR
 {
