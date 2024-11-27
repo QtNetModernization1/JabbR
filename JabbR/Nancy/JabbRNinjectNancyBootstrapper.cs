@@ -68,7 +68,7 @@ namespace JabbR.Nancy
                 var principal = Get<IPrincipal>(env, "server.User") as ClaimsPrincipal;
                 if (principal != null)
                 {
-                    context.CurrentUser = new Nancy.Security.ClaimsPrincipalUserIdentity(principal);
+                    context.CurrentUser = new ClaimsPrincipalUserIdentity(principal);
                 }
 
                 var appMode = Get<string>(env, "host.AppMode");
