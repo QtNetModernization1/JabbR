@@ -247,7 +247,7 @@ public class AccountModule : NancyModule
                 return HttpStatusCode.BadRequest;
             });
 
-            ((dynamic)Post)["/newpassword"] = _ =>
+            Post["/newpassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -288,7 +288,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            ((dynamic)Post)["/changepassword"] = _ =>
+            Post["/changepassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -340,7 +340,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            ((dynamic)Post)["/changeusername"] = _ =>
+            Post["/changeusername"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -401,7 +401,7 @@ public class AccountModule : NancyModule
                 return View["requestresetpassword"];
             };
 
-            ((dynamic)Post)["/requestresetpassword"] = _ =>
+            Post["/requestresetpassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -492,7 +492,7 @@ public class AccountModule : NancyModule
                 }
             };
 
-            ((dynamic)Post)["/resetpassword/{id}"] = parameters =>
+            Post["/resetpassword/{id}"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
