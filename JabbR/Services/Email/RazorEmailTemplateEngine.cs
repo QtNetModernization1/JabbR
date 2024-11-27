@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Language;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
 
@@ -198,9 +199,13 @@ namespace JabbR.Services
         {
             var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
 
-            if (templateResults.Any(result => result.ParserErrors.Any()))
+            if (templateResults.Any(result => result.Diagnostics.Any(d => d.Severity == RazorDiagnosticSeverity.Error)))
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
+                    templateResults.SelectMany(r => r.Diagnostics)
+                                   .Where(d => d.Severity == RazorDiagnosticSeverity.Error)
+                                   .Select(e => e.Location + ":" + Environment.NewLine + e.GetMessage())
+                                   .ToArray());
 
                 throw new InvalidOperationException(parseExceptionMessage);
             }
