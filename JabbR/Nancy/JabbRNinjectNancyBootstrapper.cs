@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -37,12 +37,6 @@ namespace JabbR.Nancy
 
             pipelines.BeforeRequest.AddItemToStartOfPipeline(FlowPrincipal);
             pipelines.BeforeRequest.AddItemToStartOfPipeline(SetCulture);
-        }
-
-        protected override void RegisterNancyEnvironment(IKernel container, INancyEnvironment environment)
-        {
-            // Add any Nancy-specific environment configurations here
-            base.RegisterNancyEnvironment(container, environment);
         }
 
         private Response FlowPrincipal(NancyContext context)
