@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Net.Http.Formatting;
@@ -25,12 +25,11 @@ using Newtonsoft.Json.Serialization;
 using Ninject;
 using Owin;
 
-[assembly: OwinStartup(typeof(Startup), "Configuration")]
-
 namespace JabbR
 {
     public partial class Startup
     {
+        // TODO: Update this method signature when migrating to ASP.NET Core
         public void Configuration(IAppBuilder app)
         {
             // So that squishit works
