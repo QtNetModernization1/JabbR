@@ -119,7 +119,8 @@ namespace JabbR.Infrastructure
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
             //Web API sets IsLocal as a bool in the Options dictionary
-            if (requestMessage.Options.TryGetValue(HttpPropertyKeys.IsLocalKey, out var isLocalObj) && isLocalObj is bool isLocal)
+            const string IsLocalKey = "MS_IsLocal";
+            if (requestMessage.Options.TryGetValue(IsLocalKey, out var isLocalObj) && isLocalObj is bool isLocal)
             {
                 return isLocal;
             }
@@ -137,7 +138,8 @@ namespace JabbR.Infrastructure
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
             //Web API sets IsLocal as a bool in the Options dictionary
-            requestMessage.Options[HttpPropertyKeys.IsLocalKey] = value;
+            const string IsLocalKey = "MS_IsLocal";
+            requestMessage.Options[IsLocalKey] = value;
         }
 
         /// <summary>
