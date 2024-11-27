@@ -21,7 +21,7 @@ namespace JabbR.WebApi
             _repository = repository;
         }
 
-        public HttpResponseMessage GetAllMessages(string room, string range)
+        public IActionResult GetAllMessages(string room, string range)
         {
             if (String.IsNullOrWhiteSpace(range))
             {
@@ -49,7 +49,7 @@ namespace JabbR.WebApi
                     start = DateTime.MinValue;
                     break;
                 default:
-                    return Request.CreateJabbrErrorMessage(HttpStatusCode.BadRequest, "range value not recognized");
+                    return BadRequest(new { error = "range value not recognized", filename = room });
             }
 
             var filenamePrefix = room + ".";
@@ -70,13 +70,13 @@ namespace JabbR.WebApi
             }
             catch (Exception ex)
             {
-                return Request.CreateJabbrErrorMessage(HttpStatusCode.NotFound, ex.Message, filenamePrefix);
+                return NotFound(new { error = ex.Message, filename = filenamePrefix });
             }
 
             if (chatRoom.Private)
             {
-                // TODO: Allow viewing messages using auth token
-                return Request.CreateJabbrErrorMessage(HttpStatusCode.NotFound, String.Format(LanguageResources.RoomNotFound, chatRoom.Name), filenamePrefix);
+// TODO: Allow viewing messages using auth token
+                return NotFound(new { error = String.Format(LanguageResources.RoomNotFound, chatRoom.Name), filename = filenamePrefix });
             }
 
             var messages = _repository.GetMessagesByRoom(chatRoom)
@@ -91,7 +91,7 @@ namespace JabbR.WebApi
                 });
 
 
-            return Request.CreateJabbrSuccessMessage(HttpStatusCode.OK, messages, filenamePrefix);
+            return Ok(new { messages = messages, filename = filenamePrefix });
         }
     }
 }
