@@ -118,11 +118,10 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
-            var isLocal = requestMessage.Properties[HttpPropertyKeys.IsLocalKey] as Lazy<bool>;
-            if (isLocal != null)
+            //Web API sets IsLocal as a bool in the Options dictionary
+            if (requestMessage.Options.TryGetValue(HttpPropertyKeys.IsLocalKey, out var isLocalObj) && isLocalObj is bool isLocal)
             {
-                return isLocal.Value;
+                return isLocal;
             }
 
             return false;
@@ -137,8 +136,8 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
-            requestMessage.Properties[HttpPropertyKeys.IsLocalKey] = new Lazy<bool>(()=>value);
+            //Web API sets IsLocal as a bool in the Options dictionary
+            requestMessage.Options[HttpPropertyKeys.IsLocalKey] = value;
         }
 
         /// <summary>
