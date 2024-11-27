@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +17,6 @@ namespace JabbR.Nancy
                                     IEnumerable<IContentProvider> contentProviders)
             : base("/administration")
         {
-            Get("/", parameters => Get["/"].Invoke(parameters));
             Get["/"] = _ =>
             {
                 if (!IsAuthenticated || !Principal.HasClaim(JabbRClaimTypes.Admin))
@@ -36,7 +35,6 @@ namespace JabbR.Nancy
                 return View["index", model];
             };
 
-            Post("/", parameters => Post["/"].Invoke(parameters));
             Post["/"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
