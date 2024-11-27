@@ -10,10 +10,12 @@ namespace JabbR
     public class HtmlHelpers<TModel>
     {
         public ModelStateDictionary ModelState { get; }
+        public TModel Model { get; }
 
-        public HtmlHelpers(ModelStateDictionary modelState)
+        public HtmlHelpers(ModelStateDictionary modelState, TModel model)
         {
             ModelState = modelState;
+            Model = model;
         }
 
         public IEnumerable<string> GetErrorsForProperty(string propertyName)
