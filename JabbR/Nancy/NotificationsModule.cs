@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JabbR.Infrastructure;
@@ -8,7 +8,7 @@ using JabbR.ViewModels;
 using Nancy;
 using Nancy.Helpers;
 using Nancy.ModelBinding;
-using PagedList;
+using PagedList.Core;
 
 namespace JabbR.Nancy
 {
