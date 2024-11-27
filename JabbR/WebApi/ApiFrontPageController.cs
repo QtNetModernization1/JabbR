@@ -1,13 +1,13 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http;
-using System.Web.Http;
+using Microsoft.AspNetCore.Mvc;
 using JabbR.Infrastructure;
 using JabbR.Services;
 using JabbR.WebApi.Model;
 
 namespace JabbR.WebApi
 {
-    public class ApiFrontPageController : ApiController
+    public class ApiFrontPageController : ControllerBase
     {
         private ApplicationSettings _appSettings;
 
