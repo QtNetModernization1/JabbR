@@ -126,13 +126,14 @@ namespace JabbR
             await OnUserInitialize(clientState, user, reconnecting);
         }
 
-        private async Task CheckStatus()
-        {
-            if (OutOfSync)
-            {
-                await Clients.Caller.SendAsync("outOfSync");
-            }
-        }
+private Task CheckStatus()
+{
+    if (OutOfSync)
+    {
+        return Clients.Caller.SendAsync("outOfSync");
+    }
+    return Task.CompletedTask;
+}
 
         private async Task OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
         {
@@ -146,25 +147,25 @@ namespace JabbR
             await LogOn(user, Context.ConnectionId, reconnecting);
         }
 
-        public bool Send(string content, string roomName)
-        {
-            var message = new ClientMessage
-            {
-                Content = content,
-                Room = roomName
-            };
+public async Task<bool> Send(string content, string roomName)
+{
+    var message = new ClientMessage
+    {
+        Content = content,
+        Room = roomName
+    };
 
-            return Send(message);
-        }
+    return await Send(message);
+}
 
-        public bool Send(ClientMessage clientMessage)
-        {
-            CheckStatus();
+public async Task<bool> Send(ClientMessage clientMessage)
+{
+    await CheckStatus();
 
-            // reject it if it's too long
-            if (_settings.MaxMessageLength > 0 && clientMessage.Content.Length > _settings.MaxMessageLength)
-            {
-                throw new HubException(String.Format(LanguageResources.SendMessageTooLong, _settings.MaxMessageLength));
+    // reject it if it's too long
+    if (_settings.MaxMessageLength > 0 && clientMessage.Content.Length > _settings.MaxMessageLength)
+    {
+        throw new HubException(String.Format(LanguageResources.SendMessageTooLong, _settings.MaxMessageLength));
             }
 
             // See if this is a valid command (starts with /)
