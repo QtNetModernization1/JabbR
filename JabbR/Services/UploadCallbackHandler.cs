@@ -1,30 +1,47 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using JabbR.ContentProviders.Core;
 using JabbR.Models;
 using JabbR.UploadHandlers;
 using JabbR.ViewModels;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Services
 {
+    public class AspNetCoreHubClientsAdapter : Microsoft.AspNet.SignalR.IHubConnectionContext<dynamic>
+    {
+        private readonly IHubClients _clients;
+
+        public AspNetCoreHubClientsAdapter(IHubContext<Chat> hubContext)
+        {
+            _clients = hubContext.Clients;
+        }
+
+        public dynamic All => _clients.All;
+        public dynamic AllExcept(string[] excludedConnectionIds) => _clients.AllExcept(excludedConnectionIds);
+        public dynamic Client(string connectionId) => _clients.Client(connectionId);
+        public dynamic Group(string groupName) => _clients.Group(groupName);
+        public dynamic Groups(string[] groupNames) => _clients.Groups(groupNames);
+        public dynamic Others => _clients.Others;
+        public dynamic User(string userId) => _clients.User(userId);
+    }
+
     public class UploadCallbackHandler
     {
         private readonly UploadProcessor _processor;
         private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly IHubContext _hubContext;
+        private readonly IHubContext<Chat> _hubContext;
         private readonly IChatService _service;
 
         public UploadCallbackHandler(UploadProcessor processor,
                                      ContentProviderProcessor resourceProcessor,
-                                     IConnectionManager connectionManager,
+                                     IHubContext<Chat> hubContext,
                                      IChatService service)
         {
             _processor = processor;
             _resourceProcessor = resourceProcessor;
-            _hubContext = connectionManager.GetHubContext<Chat>();
+            _hubContext = hubContext;
             _service = service;
         }
 
@@ -45,13 +62,13 @@ namespace JabbR.Services
                 if (result == null)
                 {
                     string messageContent = String.Format(LanguageResources.UploadFailed, Path.GetFileName(file));
-                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                     return;
                 }
                 else if (result.UploadTooLarge)
                 {
                     string messageContent = String.Format(LanguageResources.UploadTooLarge, Path.GetFileName(file), (result.MaxUploadSize / 1048576f).ToString("0.00"));
-                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                     return;
                 }
 
@@ -71,9 +88,9 @@ namespace JabbR.Services
             var messageViewModel = new MessageViewModel(message);
 
             // Notify all clients for the uploaded url
-            _hubContext.Clients.Group(roomName).addMessage(messageViewModel, roomName);
+            await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
 
-            _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
+            _resourceProcessor.ProcessUrls(new[] { result.Url }, new AspNetCoreHubClientsAdapter(_hubContext), roomName, message.Id);
         }
 
         private static string FormatBytes(long bytes)
