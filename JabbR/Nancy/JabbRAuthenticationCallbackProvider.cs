@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 
 using JabbR.Services;
 using Nancy;
-using Nancy.SimpleAuthentication;
 using SimpleAuthentication.Core;
 
 namespace JabbR.Nancy
