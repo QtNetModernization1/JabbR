@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using JabbR.Infrastructure;
-using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Hubs
 {
