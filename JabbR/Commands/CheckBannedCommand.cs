@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using JabbR.Models;
 using JabbR.Services;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Commands
 {
