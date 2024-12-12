@@ -11,6 +11,7 @@ using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
+using Nancy.Bootstrapper;
 
 using Ninject;
 
@@ -23,6 +24,11 @@ namespace JabbR.Nancy
         public JabbRNinjectNancyBootstrapper(IKernel kernel)
         {
             _kernel = kernel;
+        }
+
+        protected override INancyEnvironment GetEnvironment()
+        {
+            return new DefaultNancyEnvironment();
         }
 
         protected override IKernel GetApplicationContainer()
