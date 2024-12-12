@@ -140,10 +140,10 @@ namespace JabbR
             if (user.Rooms.Any(room => room.Name.Equals(clientState.ActiveRoom, StringComparison.OrdinalIgnoreCase)))
             {
                 // Update the active room on the client (only if it's still a valid room)
-                Clients.Caller.activeRoom = clientState.ActiveRoom;
+                await Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom);
             }
 
-            LogOn(user, Context.ConnectionId, reconnecting);
+            await LogOn(user, Context.ConnectionId, reconnecting);
         }
 
         public bool Send(string content, string roomName)
