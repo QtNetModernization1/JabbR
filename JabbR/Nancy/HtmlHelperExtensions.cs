@@ -73,7 +73,7 @@ namespace JabbR
             return new HtmlString(String.Empty);
             }
 
-            return new HtmlString(errorsForField.First().GetMessage(propertyName));
+            return new HtmlString(errorsForField.First().ErrorMessage);
         }
 
         public static IHtmlContent AlertMessages<TModel>(this IHtmlHelper<TModel> htmlHelper)
