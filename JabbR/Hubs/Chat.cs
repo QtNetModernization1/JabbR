@@ -10,6 +10,7 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 
@@ -25,6 +26,7 @@ namespace JabbR
         private readonly IRecentMessageCache _recentMessageCache;
         private readonly ICache _cache;
         private readonly ContentProviderProcessor _resourceProcessor;
+        private readonly IConnectionManager _connectionManager;
         private readonly ILogger _logger;
         private readonly ApplicationSettings _settings;
 
@@ -34,7 +36,8 @@ namespace JabbR
                     IJabbrRepository repository,
                     ICache cache,
                     ILogger logger,
-                    ApplicationSettings settings)
+                    ApplicationSettings settings,
+                    IConnectionManager connectionManager)
         {
             _resourceProcessor = resourceProcessor;
             _service = service;
@@ -43,6 +46,7 @@ namespace JabbR
             _cache = cache;
             _logger = logger;
             _settings = settings;
+            _connectionManager = connectionManager;
         }
 
         private string UserAgent
@@ -225,7 +229,8 @@ public async Task<bool> Send(ClientMessage clientMessage)
             var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
             if (urls.Count > 0)
             {
-                _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id);
+                var hubContext = _connectionManager.GetHubContext<Chat>();
+                _resourceProcessor.ProcessUrls(urls, hubContext, room.Name, chatMessage.Id);
             }
 
             return true;
