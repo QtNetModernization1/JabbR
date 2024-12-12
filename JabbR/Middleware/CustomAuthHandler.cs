@@ -4,32 +4,37 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class CustomAuthHandler
     {
-        private readonly RequestDelegate _next;
+        private readonly AppFunc _next;
 
-        public CustomAuthHandler(RequestDelegate next)
+        public CustomAuthHandler(AppFunc next)
         {
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(IDictionary<string, object> env)
         {
-            var claimsPrincipal = context.User;
+            var context = new OwinContext(env);
+
+            var claimsPrincipal = context.Request.User as ClaimsPrincipal;
 
             if (claimsPrincipal != null &&
                 !(claimsPrincipal is WindowsPrincipal) &&
                 claimsPrincipal.Identity.IsAuthenticated &&
-                !claimsPrincipal.Identity.IsAuthenticated &&
+                !claimsPrincipal.IsAuthenticated() &&
                 claimsPrincipal.HasClaim(ClaimTypes.NameIdentifier))
             {
                 var identity = new ClaimsIdentity(claimsPrincipal.Claims, Constants.JabbRAuthType);
 
-                var providerName = claimsPrincipal.FindFirstValue(ClaimTypes.AuthenticationMethod);
+                var providerName = claimsPrincipal.GetIdentityProvider();
 
                 if (String.IsNullOrEmpty(providerName))
                 {
@@ -37,10 +42,10 @@ namespace JabbR.Middleware
                     identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, "Custom"));
                 }
 
-                await context.SignInAsync(identity);
+                context.Authentication.SignIn(identity);
             }
 
-            await _next(context);
+            await _next(env);
         }
     }
 }
