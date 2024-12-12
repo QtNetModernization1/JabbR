@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -27,11 +27,6 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
-        }
-
-        protected override void RegisterNancyEnvironment(IKernel container, INancyEnvironment environment)
-        {
-            base.RegisterNancyEnvironment(container, environment);
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
