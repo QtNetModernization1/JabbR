@@ -1,10 +1,11 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+using System.Security.Principal;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JabbR.Infrastructure
 {
-    public class AuthorizeClaim : Attribute, IAuthorizationFilter
+    public class AuthorizeClaim : AuthorizeAttribute
     {
         private readonly string _claimType;
         public AuthorizeClaim(string claimType)
@@ -12,14 +13,11 @@ namespace JabbR.Infrastructure
             _claimType = claimType;
         }
 
-        public void OnAuthorization(AuthorizationFilterContext context)
+        protected override bool UserAuthorized(IPrincipal user)
         {
-            var user = context.HttpContext.User;
+            var claimsPrincipal = user as ClaimsPrincipal;
 
-            if (user == null || !user.HasClaim(claim => claim.Type == _claimType))
-            {
-                context.Result = new ForbidResult();
-            }
+            return claimsPrincipal != null && claimsPrincipal.HasClaim(_claimType);
         }
     }
 }
