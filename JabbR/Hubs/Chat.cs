@@ -336,13 +336,13 @@ namespace JabbR
             return Task.FromResult(0);
         }
 
-        public override Task OnDisconnected()
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             _logger.Log("OnDisconnected({0})", Context.ConnectionId);
 
             DisconnectClient(Context.ConnectionId, useThreshold: true);
 
-            return base.OnDisconnected();
+            await base.OnDisconnectedAsync(exception);
         }
 
         public object GetCommands()
