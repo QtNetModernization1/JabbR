@@ -44,20 +44,19 @@ namespace JabbR
 
         public static IHtmlContent ValidationSummary<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
-            var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
-            if (validationResult.IsValid)
+            if (htmlHelper.ViewData.ModelState.IsValid)
             {
-            return new HtmlString(String.Empty);
+                return new HtmlString(String.Empty);
             }
 
             var summaryBuilder = new StringBuilder();
 
             summaryBuilder.Append(@"<ul class=""validation-summary-errors"">");
-            foreach (var modelValidationError in validationResult.Errors)
+            foreach (var modelState in htmlHelper.ViewData.ModelState.Values)
             {
-                foreach (var memberName in modelValidationError.MemberNames)
+                foreach (var error in modelState.Errors)
                 {
-                    summaryBuilder.AppendFormat("<li>{0}</li>", modelValidationError.GetMessage(memberName));
+                    summaryBuilder.AppendFormat("<li>{0}</li>", error.ErrorMessage);
                 }
             }
             summaryBuilder.Append(@"</ul>");
@@ -101,17 +100,17 @@ namespace JabbR
         internal static IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError> GetErrorsForProperty<TModel>(this IHtmlHelper<TModel> htmlHelper,
                                                                          string propertyName)
         {
-            var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
-            if (validationResult.IsValid)
+            if (htmlHelper.ViewData.ModelState.IsValid)
             {
-                return Enumerable.Empty<ModelValidationError>();
+                return Enumerable.Empty<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError>();
             }
 
-            var errorsForField =
-                validationResult.Errors.Where(
-                    x => x.MemberNames.Any(y => y.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase)));
+            if (htmlHelper.ViewData.ModelState.TryGetValue(propertyName, out var modelStateEntry))
+            {
+                return modelStateEntry.Errors;
+            }
 
-            return errorsForField;
+            return Enumerable.Empty<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError>();
         }
 
         public static IHtmlContent SimplePager<TModel>(this IHtmlHelper<TModel> htmlHelper, IPagedList pagedList, string baseUrl)
@@ -147,9 +146,10 @@ namespace JabbR
 
         public static string RequestQuery<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
-            if (htmlHelper.RenderContext.Context.Request.Url != null && !String.IsNullOrEmpty(htmlHelper.RenderContext.Context.Request.Url.Query))
+            var httpContext = htmlHelper.ViewContext.HttpContext;
+            if (httpContext.Request.QueryString.HasValue)
             {
-                return "?" + htmlHelper.RenderContext.Context.Request.Url.Query;
+                return httpContext.Request.QueryString.Value;
             }
 
             return String.Empty;
