@@ -6,7 +6,7 @@ using Ninject;
 
 namespace JabbR.Infrastructure
 {
-    internal class NinjectSignalRDependencyResolver : DefaultDependencyResolver
+    internal class NinjectSignalRDependencyResolver : IHubActivator<Hub>
     {
         private readonly IKernel _kernel;
         public NinjectSignalRDependencyResolver(IKernel kernel)
@@ -14,14 +14,14 @@ namespace JabbR.Infrastructure
             _kernel = kernel;
         }
 
-        public override object GetService(Type serviceType)
+        public Hub Create(HubActivatorContext context)
         {
-            return _kernel.TryGet(serviceType) ?? base.GetService(serviceType);
+            return (Hub)_kernel.Get(context.HubType);
         }
 
-        public override IEnumerable<object> GetServices(Type serviceType)
+        public void Release(Hub hub)
         {
-            return _kernel.GetAll(serviceType).Concat(base.GetServices(serviceType));
+            // Ninject will handle the disposal of the hub
         }
     }
 }
