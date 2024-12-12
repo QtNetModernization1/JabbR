@@ -287,7 +287,7 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnectedAsync()
+        public override Task OnReconnected()
         {
             _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
@@ -336,13 +336,13 @@ namespace JabbR
             return Task.FromResult(0);
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override Task OnDisconnected()
         {
             _logger.Log("OnDisconnected({0})", Context.ConnectionId);
 
             DisconnectClient(Context.ConnectionId, useThreshold: true);
 
-            return base.OnDisconnectedAsync(exception);
+            return base.OnDisconnected();
         }
 
         public object GetCommands()
