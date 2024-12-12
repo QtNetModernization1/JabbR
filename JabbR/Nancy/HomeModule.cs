@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +11,7 @@ using JabbR.Infrastructure;
 using JabbR.Services;
 using JabbR.UploadHandlers;
 using JabbR.ViewModels;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Security.Application;
 using Nancy;
 
