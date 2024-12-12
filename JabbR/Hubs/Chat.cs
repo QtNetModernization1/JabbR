@@ -146,25 +146,25 @@ namespace JabbR
             await LogOn(user, Context.ConnectionId, reconnecting);
         }
 
-public async Task<bool> Send(string content, string roomName)
-{
-    var message = new ClientMessage
-    {
-        Content = content,
-        Room = roomName
-    };
+        public bool Send(string content, string roomName)
+        {
+            var message = new ClientMessage
+            {
+                Content = content,
+                Room = roomName
+            };
 
-    return await Send(message);
-}
+            return Send(message);
+        }
 
-public async Task<bool> Send(ClientMessage clientMessage)
-{
-    await CheckStatus();
+        public bool Send(ClientMessage clientMessage)
+        {
+            CheckStatus();
 
-    // reject it if it's too long
-    if (_settings.MaxMessageLength > 0 && clientMessage.Content.Length > _settings.MaxMessageLength)
-    {
-        throw new HubException(String.Format(LanguageResources.SendMessageTooLong, _settings.MaxMessageLength));
+            // reject it if it's too long
+            if (_settings.MaxMessageLength > 0 && clientMessage.Content.Length > _settings.MaxMessageLength)
+            {
+                throw new HubException(String.Format(LanguageResources.SendMessageTooLong, _settings.MaxMessageLength));
             }
 
             // See if this is a valid command (starts with /)
