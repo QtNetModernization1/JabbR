@@ -12,18 +12,16 @@ namespace JabbR.ContentProviders
     {
         private static readonly string ContentFormat = "<img src=\"{0}\" alt=\"{1}\" />";
 
-        protected override Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
+        protected override async Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
         {
-            return ExtractFromResponse(request).Then(pageInfo =>
+            var pageInfo = await ExtractFromResponse(request);
+            return new ContentProviderResult
             {
-                return new ContentProviderResult
-                {
-                    Content = String.Format(ContentFormat,
-                                            HttpUtility.HtmlAttributeEncode(pageInfo.ImageURL),
-                                            HttpUtility.HtmlAttributeEncode(pageInfo.Title)),
-                    Title = pageInfo.Title
-                };
-            });
+                Content = String.Format(ContentFormat,
+                                        HttpUtility.HtmlAttributeEncode(pageInfo.ImageURL),
+                                        HttpUtility.HtmlAttributeEncode(pageInfo.Title)),
+                Title = pageInfo.Title
+            };
         }
 
         public override bool IsValidContent(Uri uri)
@@ -31,27 +29,25 @@ namespace JabbR.ContentProviders
             return uri.Host.IndexOf("screencast.com", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
+        private async Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
         {
             //Force https for the url
             var builder = new UriBuilder(request.RequestUri) { Scheme = "https" };
 
-            return Http.GetAsync(builder.Uri).Then(response =>
+            var response = await Http.GetAsync(builder.Uri);
+            var pageInfo = new PageInfo();
+using (Stream responseStream = await response.Content.ReadAsStreamAsync())
             {
-                var pageInfo = new PageInfo();
-                using (Stream responseStream = response.GetResponseStream())
-                {
-                    var htmlDocument = new HtmlDocument();
-                    htmlDocument.Load(responseStream);
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.Load(responseStream);
 
-                    HtmlNode title = htmlDocument.DocumentNode.SelectSingleNode("//title");
-                    HtmlNode imageURL = htmlDocument.DocumentNode.SelectSingleNode("//img[@class='embeddedObject']");
-                    pageInfo.Title = title != null ? title.InnerText : String.Empty;
-                    pageInfo.ImageURL = imageURL != null ? imageURL.Attributes["src"].Value : String.Empty;
-                }
+                HtmlNode title = htmlDocument.DocumentNode.SelectSingleNode("//title");
+                HtmlNode imageURL = htmlDocument.DocumentNode.SelectSingleNode("//img[@class='embeddedObject']");
+                pageInfo.Title = title != null ? title.InnerText : String.Empty;
+                pageInfo.ImageURL = imageURL != null ? imageURL.Attributes["src"].Value : String.Empty;
+            }
 
-                return pageInfo;
-            });
+            return pageInfo;
         }
 
         private class PageInfo
