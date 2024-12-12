@@ -1,5 +1,5 @@
-﻿using JabbR.Infrastructure;
-using Microsoft.AspNet.SignalR;
+using JabbR.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Hubs
 {
