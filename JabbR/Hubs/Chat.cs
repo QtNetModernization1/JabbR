@@ -10,7 +10,6 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
-using System.Threading;
 using Newtonsoft.Json;
 
 namespace JabbR
@@ -289,11 +288,9 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        // OnReconnected is not available in SignalR Core.
-        // We'll handle reconnection logic in OnConnectedAsync
-        public override async Task OnConnectedAsync()
+        public override Task OnReconnected()
         {
-            _logger.Log("OnConnected({0})", Context.ConnectionId);
+            _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
             var userId = Context.User.GetUserId();
 
@@ -301,8 +298,8 @@ namespace JabbR
 
             if (user == null)
             {
-                _logger.Log("Connect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return;
+                _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
+                return Task.FromResult(0);
             }
 
             // Make sure this client is being tracked
@@ -312,7 +309,7 @@ namespace JabbR
 
             if (currentStatus == UserStatus.Offline)
             {
-                _logger.Log("{0}:{1} connected after being offline.", user.Name, Context.ConnectionId);
+                _logger.Log("{0}:{1} reconnected after temporary network problem and marked offline.", user.Name, Context.ConnectionId);
 
                 // Mark the user as inactive
                 user.Status = (int)UserStatus.Inactive;
@@ -327,24 +324,24 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
             {
-                _logger.Log("{0}:{1} connected.", user.Name, Context.ConnectionId);
+                _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
             }
 
             CheckStatus();
 
-            await base.OnConnectedAsync();
+            return Task.FromResult(0);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             _logger.Log("OnDisconnected({0})", Context.ConnectionId);
 
-            await Task.Run(() => DisconnectClient(Context.ConnectionId, useThreshold: true));
+            DisconnectClient(Context.ConnectionId, useThreshold: true);
 
             await base.OnDisconnectedAsync(exception);
         }
