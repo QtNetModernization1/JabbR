@@ -124,7 +124,7 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            if (requestMessage.Properties.TryGetValue(IsLocalKey, out var isLocalObj) && isLocalObj is Lazy<bool> isLocal)
+            if (requestMessage.Options.TryGetValue(new HttpRequestOptionsKey<Lazy<bool>>(IsLocalKey), out var isLocal))
             {
                 return isLocal.Value;
             }
@@ -141,7 +141,7 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            requestMessage.Properties[IsLocalKey] = new Lazy<bool>(() => value);
+            requestMessage.Options.Set(new HttpRequestOptionsKey<Lazy<bool>>(IsLocalKey), new Lazy<bool>(() => value));
         }
 
         /// <summary>
