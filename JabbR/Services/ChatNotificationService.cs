@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace JabbR.Services
 {
@@ -42,18 +42,18 @@ namespace JabbR.Services
             }
         }
 
-    private IHubContext<Chat> _hubContext;
-    private IHubContext<Chat> HubContext
-    {
-        get
+        private IHubContext _hubContext;
+        private IHubContext HubContext
         {
-            if (_hubContext == null)
+            get
             {
-                _hubContext = _connectionManager.GetHubContext<Chat>();
-            }
+                if (_hubContext == null)
+                {
+                    _hubContext = _connectionManager.GetHubContext<Chat>();
+                }
 
-            return _hubContext;
+                return _hubContext;
+            }
         }
-    }
     }
 }
