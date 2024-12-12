@@ -19,13 +19,13 @@ namespace JabbR.ContentProviders.Core
         }
 
         public void ProcessUrls(IEnumerable<string> links,
-                                IHubConnectionContext<dynamic> clients,
+                                IHubContext<Hub> hubContext,
                                 string roomName,
                                 string messageId)
         {
 
             var resourceProcessor = _kernel.Get<IResourceProcessor>();
-            
+
             var contentTasks = links.Select(resourceProcessor.ExtractResource).ToArray();
 
             Task.Factory.ContinueWhenAll(contentTasks, tasks =>
@@ -46,7 +46,7 @@ namespace JabbR.ContentProviders.Core
                     // Update the message with the content
 
                     // REVIEW: Does it even make sense to get multiple results?
-                    using (var repository = _kernel.Get<IJabbrRepository>())
+using (var repository = _kernel.Get<IJabbrRepository>())
                     {
                         var message = repository.GetMessageById(messageId);
 
@@ -57,7 +57,7 @@ namespace JabbR.ContentProviders.Core
                     }
 
                     // Notify the room
-                    clients.Group(roomName).addMessageContent(messageId, task.Result.Content, roomName);
+                    hubContext.Clients.Group(roomName).SendAsync("addMessageContent", messageId, task.Result.Content, roomName);
                 }
             });
         }
