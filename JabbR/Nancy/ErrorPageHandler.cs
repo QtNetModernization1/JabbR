@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
@@ -41,10 +41,9 @@ namespace JabbR.Nancy
             }
 
             var response = RenderView(
-                context, 
-                "errorPage", 
-                new 
-                { 
+                "errorPage",
+                new
+                {
                     Error = statusCode,
                     ErrorCode = (int)statusCode,
                     SuggestRoomName = suggestRoomName
