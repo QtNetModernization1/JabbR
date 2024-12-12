@@ -5,18 +5,17 @@ using System.Threading.Tasks;
 using JabbR.Models;
 using JabbR.Services;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Infrastructure
 {
-    public class JabbRFormsAuthenticationProvider : IAuthenticationHandler
+    public class JabbRFormsAuthenticationProvider : ICookieAuthenticationProvider
     {
         private readonly IJabbrRepository _repository;
         private readonly IMembershipService _membershipService;
-        private HttpContext _context;
-        private AuthenticationScheme _scheme;
 
         public JabbRFormsAuthenticationProvider(IJabbrRepository repository, IMembershipService membershipService)
         {
@@ -24,37 +23,12 @@ namespace JabbR.Infrastructure
             _membershipService = membershipService;
         }
 
-        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-        {
-            _scheme = scheme;
-            _context = context;
-            return Task.CompletedTask;
-        }
-
-        public Task<AuthenticateResult> AuthenticateAsync()
-        {
-            // Implement authentication logic here
-            throw new NotImplementedException();
-        }
-
-        public Task ChallengeAsync(AuthenticationProperties properties)
-        {
-            // Implement challenge logic here
-            throw new NotImplementedException();
-        }
-
-        public Task ForbidAsync(AuthenticationProperties properties)
-        {
-            // Implement forbid logic here
-            throw new NotImplementedException();
-        }
-
-        private Task ValidateIdentity(CookieValidateIdentityContext context)
+        public Task ValidateIdentity(CookieValidateIdentityContext context)
         {
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ResponseSignIn(CookieResponseSignInContext context)
+        public void ResponseSignIn(CookieResponseSignInContext context)
         {
             var authResult = new AuthenticationResult
             {
@@ -66,10 +40,10 @@ namespace JabbR.Infrastructure
             var principal = new ClaimsPrincipal(context.Identity);
 
             // Do nothing if it's authenticated
-            if (principal.Identity.IsAuthenticated)
+            if (principal.IsAuthenticated())
             {
                 EnsurePersistentCookie(context);
-                return Task.CompletedTask;
+                return;
             }
 
             ChatUser user = _repository.GetUser(principal);
@@ -178,7 +152,7 @@ namespace JabbR.Infrastructure
             return null;
         }
 
-        private void ApplyRedirect(CookieApplyRedirectContext context)
+        public void ApplyRedirect(CookieApplyRedirectContext context)
         {
             context.Response.Redirect(context.RedirectUri);
         }
