@@ -25,10 +25,7 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static HttpResponseMessage CreateJabbrSuccessMessage<T>(this HttpRequestMessage request, HttpStatusCode statusCode, T data, string filenamePrefix)
         {
-            var responseMessage = new HttpResponseMessage(statusCode)
-            {
-                Content = new ObjectContent<T>(data, new System.Net.Http.Formatting.JsonMediaTypeFormatter())
-            };
+            var responseMessage = request.CreateResponse(statusCode, data);
             return AddResponseHeaders(request, responseMessage, filenamePrefix);
         }
         /// <summary>
