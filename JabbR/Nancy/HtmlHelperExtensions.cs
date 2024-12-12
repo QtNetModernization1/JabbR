@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,19 +11,6 @@ using AntiXSS = Microsoft.Security.Application;
 
 namespace JabbR
 {
-    // Custom HtmlHelpers implementation
-    public class HtmlHelpers<T>
-    {
-        public T Model { get; set; }
-        public IRenderContext RenderContext { get; set; }
-
-        public HtmlHelpers(T model, IRenderContext renderContext)
-        {
-            Model = model;
-            RenderContext = renderContext;
-        }
-    }
-
     public static class HtmlHelperExtensions
     {
         public static IHtmlString CheckBox<T>(this HtmlHelpers<T> helper, string Name, bool value)
