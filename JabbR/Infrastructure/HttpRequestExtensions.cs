@@ -60,10 +60,11 @@ namespace JabbR.Infrastructure
         /// <returns>HttpResponseMessage that wraps the given payload</returns>
         public static HttpResponseMessage CreateJabbrErrorMessage(this HttpRequestMessage request, HttpStatusCode statusCode, string message, string filenamePrefix)
         {
-            var responseMessage = request.CreateResponse(
-                statusCode, 
-                new ErrorModel { Message = message }, 
-                new MediaTypeHeaderValue("application/json"));
+            var responseMessage = new HttpResponseMessage(statusCode)
+            {
+                Content = JsonContent.Create(new ErrorModel { Message = message })
+            };
+            responseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             return AddResponseHeaders(request, responseMessage, filenamePrefix);
         }
@@ -76,10 +77,11 @@ namespace JabbR.Infrastructure
         /// <returns>HttpResponseMessage that wraps the given payload</returns>
         public static HttpResponseMessage CreateJabbrErrorMessage(this HttpRequestMessage request, HttpStatusCode statusCode, string message)
         {
-            var responseMessage = request.CreateResponse(
-                statusCode, 
-                new ErrorModel { Message = message }, 
-                new MediaTypeHeaderValue("application/json"));
+            var responseMessage = new HttpResponseMessage(statusCode)
+            {
+                Content = JsonContent.Create(new ErrorModel { Message = message })
+            };
+            responseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             return AddResponseHeaders(request, responseMessage, null);
         }
