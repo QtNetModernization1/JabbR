@@ -11,6 +11,7 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 
 namespace JabbR
 {
@@ -207,12 +208,12 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 // send it to everyone. The assumption is that the client has some ui
                 // that it wanted to update immediately showing the message and
                 // then when the actual message is roundtripped it would "solidify it".
-                Clients.Group(room.Name).addMessage(messageViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
             }
             else
             {
                 // If the client did set an id then we need to give everyone the real id first
-                Clients.OthersInGroup(room.Name).addMessage(messageViewModel, room.Name);
+                await Clients.OthersInGroup(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
                 Clients.Caller.replaceMessage(clientMessage.Id, messageViewModel, room.Name);
@@ -708,14 +709,14 @@ public async Task<bool> Send(ClientMessage clientMessage)
             Clients.Group(room.Name).updateActivity(userViewModel, room.Name);
         }
 
-        private void LeaveRoom(ChatUser user, ChatRoom room)
+        private async Task LeaveRoom(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
-            Clients.Group(room.Name).leave(userViewModel, room.Name);
+            await Clients.Group(room.Name).SendAsync("leave", userViewModel, room.Name);
 
             foreach (var client in user.ConnectedClients)
             {
-                Groups.Remove(client.Id, room.Name);
+                await Groups.RemoveFromGroupAsync(client.Id, room.Name);
             }
 
             OnRoomChanged(room);
@@ -1019,9 +1020,9 @@ public async Task<bool> Send(ClientMessage clientMessage)
             Clients.Group(room.Name).nudge(user.Name, null, room.Name);
         }
 
-        void INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
+        async Task INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
         {
-            LeaveRoom(user, room);
+            await LeaveRoom(user, room);
         }
 
         void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)

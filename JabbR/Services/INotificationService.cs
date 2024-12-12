@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using JabbR.Models;
 
 namespace JabbR.Services
@@ -32,7 +33,7 @@ namespace JabbR.Services
 
         void PostNotification(ChatRoom room, ChatUser user, string message);
         void SendPrivateMessage(ChatUser user, ChatUser targetUser, string messageText);
-        void LeaveRoom(ChatUser user, ChatRoom room);
+        Task LeaveRoom(ChatUser user, ChatRoom room);
 
         void AddOwner(ChatUser targetUser, ChatRoom targetRoom);
         void RemoveOwner(ChatUser targetUser, ChatRoom targetRoom);
