@@ -12,20 +12,26 @@ namespace JabbR.WebApi
     public class ApiFrontPageController : ControllerBase
     {
         private ApplicationSettings _appSettings;
+        private readonly IUrlHelper _urlHelper;
 
-        public ApiFrontPageController(ApplicationSettings appSettings)
+        public ApiFrontPageController(ApplicationSettings appSettings, IUrlHelper urlHelper)
         {
             _appSettings = appSettings;
+            _urlHelper = urlHelper;
         }
 
         /// <summary>
         /// Returns an absolute URL (including host and protocol) that corresponds to the relative path passed as an argument.
         /// </summary>
         /// <param name="sitePath">Path within the aplication, may contain ~ to denote the application root</param>
-        /// <returns>A URL that corresponds to requested path using host and protocol of the request</returns>
+/// <returns>A URL that corresponds to requested path using host and protocol of the request</returns>
         public string ToAbsoluteUrl(string sitePath)
         {
-            return Request.GetAbsoluteUri(sitePath).AbsoluteUri;
+            var request = HttpContext.Request;
+            var host = request.Host.ToUriComponent();
+            var scheme = request.Scheme;
+
+            return $"{scheme}://{host}{_urlHelper.Content(sitePath)}";
         }
 
         public HttpResponseMessage GetFrontPage()
