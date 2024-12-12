@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
-    public class AjaxMinMinifier : IJavaScriptMinifier
+    public class JavaScriptMinifier
     {
         public string Minify(string source)
         {
