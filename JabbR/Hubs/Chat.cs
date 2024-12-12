@@ -216,7 +216,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 await Clients.OthersInGroup(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
-                Clients.Caller.replaceMessage(clientMessage.Id, messageViewModel, room.Name);
+                await Clients.Caller.SendAsync("replaceMessage", clientMessage.Id, messageViewModel, room.Name);
             }
 
             // Add mentions
