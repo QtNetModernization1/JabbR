@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
@@ -9,10 +9,8 @@ using System.Threading.Tasks;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Transports;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Ninject;
 
