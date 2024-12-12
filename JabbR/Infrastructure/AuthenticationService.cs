@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JabbR.Services;
@@ -25,7 +25,7 @@ namespace JabbR.Infrastructure
             }
             else
             {
-                _factory.RemoveProvider<FacebookProvider>();
+                _factory.RemoveProvider("Facebook");
             }
             if (!String.IsNullOrWhiteSpace(appSettings.TwitterConsumerKey) && !String.IsNullOrWhiteSpace(appSettings.TwitterConsumerSecret))
             {
@@ -37,7 +37,7 @@ namespace JabbR.Infrastructure
             }
             else
             {
-                _factory.RemoveProvider<TwitterProvider>();
+                _factory.RemoveProvider("Twitter");
             }
             if (!String.IsNullOrWhiteSpace(appSettings.GoogleClientID) && !String.IsNullOrWhiteSpace(appSettings.GoogleClientSecret))
             {
@@ -49,7 +49,7 @@ namespace JabbR.Infrastructure
             }
             else
             {
-                _factory.RemoveProvider<GoogleProvider>();
+                _factory.RemoveProvider("Google");
             }
         }
 
