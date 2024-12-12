@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -17,9 +17,9 @@ namespace JabbR.Infrastructure
 
         public static byte[] Protect(byte[] encryptionKey, byte[] validationKey, byte[] initializationVector, byte[] plainText)
         {
-            using (var provider = new AesCryptoServiceProvider())
+using (var provider = Aes.Create())
             {
-                using (ICryptoTransform transform = provider.CreateEncryptor(encryptionKey, initializationVector))
+using (ICryptoTransform transform = provider.CreateEncryptor(encryptionKey, initializationVector))
                 {
                     using (var ms = new MemoryStream())
                     {
@@ -52,7 +52,7 @@ namespace JabbR.Infrastructure
 
         public static byte[] Unprotect(byte[] encryptionKey, byte[] validationKey, byte[] payload)
         {
-            using (var provider = new AesCryptoServiceProvider())
+using (var provider = Aes.Create())
             {
                 var initializationVector = new byte[IVLength];
 
