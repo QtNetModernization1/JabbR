@@ -56,7 +56,7 @@ using (Stream stream = await response.Content.ReadAsStreamAsync())
                     {
                         Trace.TraceInformation("Uploading content " + imageUrl + ".");
 
-                        UploadResult result = await uploadProcessor.HandleUpload(fileName, contentType, stream, contentLength)
+                        UploadResult result = await uploadProcessor.HandleUpload(fileName, contentType, stream, contentLength ?? 0L)
                                                                    .ConfigureAwait(continueOnCapturedContext: false);
 
                         Trace.TraceInformation("Uploading " + imageUrl + " complete.");
