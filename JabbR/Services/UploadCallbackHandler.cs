@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using JabbR.ContentProviders.Core;
 using JabbR.Models;
 using JabbR.UploadHandlers;
 using JabbR.ViewModels;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -15,21 +14,18 @@ namespace JabbR.Services
     {
         private readonly UploadProcessor _processor;
         private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly Microsoft.AspNetCore.SignalR.IHubContext<Chat> _hubContext;
+        private readonly IHubContext _hubContext;
         private readonly IChatService _service;
-        private readonly IHubConnectionContext<dynamic> _legacyClients;
 
         public UploadCallbackHandler(UploadProcessor processor,
                                      ContentProviderProcessor resourceProcessor,
-                                     Microsoft.AspNetCore.SignalR.IHubContext<Chat> hubContext,
-                                     IChatService service,
-                                     IConnectionManager connectionManager)
+                                     IConnectionManager connectionManager,
+                                     IChatService service)
         {
             _processor = processor;
             _resourceProcessor = resourceProcessor;
-            _hubContext = hubContext;
+            _hubContext = connectionManager.GetHubContext<Chat>();
             _service = service;
-            _legacyClients = connectionManager.GetHubContext<Chat>().Clients;
         }
 
         public async Task Upload(string userId,
@@ -49,13 +45,13 @@ namespace JabbR.Services
                 if (result == null)
                 {
                     string messageContent = String.Format(LanguageResources.UploadFailed, Path.GetFileName(file));
-                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
+                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
                     return;
                 }
                 else if (result.UploadTooLarge)
                 {
                     string messageContent = String.Format(LanguageResources.UploadTooLarge, Path.GetFileName(file), (result.MaxUploadSize / 1048576f).ToString("0.00"));
-                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
+                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
                     return;
                 }
 
@@ -75,9 +71,9 @@ namespace JabbR.Services
             var messageViewModel = new MessageViewModel(message);
 
             // Notify all clients for the uploaded url
-            await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
+            _hubContext.Clients.Group(roomName).addMessage(messageViewModel, roomName);
 
-            _resourceProcessor.ProcessUrls(new[] { result.Url }, _legacyClients, roomName, message.Id);
+            _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
         }
 
         private static string FormatBytes(long bytes)
