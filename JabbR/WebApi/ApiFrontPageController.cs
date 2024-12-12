@@ -34,14 +34,14 @@ namespace JabbR.WebApi
             return $"{scheme}://{host}{_urlHelper.Content(sitePath)}";
         }
 
-        public HttpResponseMessage GetFrontPage()
+        public IActionResult GetFrontPage()
         {
             var responseData = new ApiFrontpageModel
             {
                 MessagesUri = ToAbsoluteUrl(GetMessagesUrl())
             };
 
-            return Request.CreateJabbrSuccessMessage(HttpStatusCode.OK, responseData);
+            return Ok(responseData);
         }
 
         private string GetMessagesUrl() {
