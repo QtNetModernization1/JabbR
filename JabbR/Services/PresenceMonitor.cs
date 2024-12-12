@@ -141,7 +141,7 @@ namespace JabbR.Services
                 {
                     foreach (var user in roomGroup.Users)
                     {
-                        await _hubContext.Clients.Group(roomGroup.Room.Name).leave(user, roomGroup.Room.Name);
+                        await _hubContext.Clients.Group(roomGroup.Room.Name).SendAsync("leave", user, roomGroup.Room.Name);
                     }
                 });
 
