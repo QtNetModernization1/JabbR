@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JabbR.Infrastructure;
@@ -14,10 +14,23 @@ namespace JabbR.Nancy
 {
     public class NotificationsModule : JabbRModule
     {
-        public NotificationsModule(IJabbrRepository repository, 
-                                   IChatService chatService, 
+        private readonly IJabbrRepository _repository;
+        private readonly IChatService _chatService;
+        private readonly IChatNotificationService _notificationService;
+
+        public NotificationsModule(IJabbrRepository repository,
+                                   IChatService chatService,
                                    IChatNotificationService notificationService)
             : base("/notifications")
+        {
+            _repository = repository;
+            _chatService = chatService;
+            _notificationService = notificationService;
+
+            ConfigureRoutes();
+        }
+
+        private void ConfigureRoutes()
         {
             Get["/"] = _ =>
             {
@@ -28,9 +41,9 @@ namespace JabbR.Nancy
 
                 var request = this.Bind<NotificationRequestModel>();
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
-                int unreadCount = repository.GetUnreadNotificationsCount(user);
-                IPagedList<NotificationViewModel> notifications = GetNotifications(repository, user, all: request.All, page: request.Page, roomName: request.Room);
+                ChatUser user = _repository.GetUserById(Principal.GetUserId());
+                int unreadCount = _repository.GetUnreadNotificationsCount(user);
+                IPagedList<NotificationViewModel> notifications = GetNotifications(_repository, user, all: request.All, page: request.Page, roomName: request.Room);
 
                 var viewModel = new NotificationsViewModel
                 {
@@ -51,14 +64,14 @@ namespace JabbR.Nancy
 
                 int notificationId = Request.Form.notificationId;
 
-                Notification notification = repository.GetNotificationById(notificationId);
+                Notification notification = _repository.GetNotificationById(notificationId);
 
                 if (notification == null)
                 {
                     return HttpStatusCode.NotFound;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = _repository.GetUserById(Principal.GetUserId());
 
                 if (notification.UserKey != user.Key)
                 {
@@ -66,9 +79,9 @@ namespace JabbR.Nancy
                 }
 
                 notification.Read = true;
-                repository.CommitChanges();
+                _repository.CommitChanges();
 
-                UpdateUnreadCountInChat(repository, notificationService, user);
+                UpdateUnreadCountInChat(_repository, _notificationService, user);
 
                 var response = Response.AsJson(new { success = true });
 
@@ -82,8 +95,8 @@ namespace JabbR.Nancy
                     return HttpStatusCode.Forbidden;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
-                IList<Notification> unReadNotifications = repository.GetNotificationsByUser(user).Unread().ToList();
+                ChatUser user = _repository.GetUserById(Principal.GetUserId());
+                IList<Notification> unReadNotifications = _repository.GetNotificationsByUser(user).Unread().ToList();
 
                 if (!unReadNotifications.Any())
                 {
@@ -95,9 +108,9 @@ namespace JabbR.Nancy
                     notification.Read = true;
                 }
 
-                repository.CommitChanges();
+                _repository.CommitChanges();
 
-                UpdateUnreadCountInChat(repository, notificationService, user);
+                UpdateUnreadCountInChat(_repository, _notificationService, user);
 
                 var response = Response.AsJson(new { success = true });
 
