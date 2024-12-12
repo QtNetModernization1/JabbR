@@ -340,7 +340,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
             }
 
-            CheckStatus();
+            await CheckStatus();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
