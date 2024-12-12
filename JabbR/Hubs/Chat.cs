@@ -282,7 +282,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             var unread = _repository.GetUnreadNotificationsCount(mentionedUser);
 
             Clients.User(mentionedUser.Id)
-                   .updateUnreadNotifications(unread);
+                   .SendAsync("UpdateUnreadNotifications", unread);
         }
 
         public UserViewModel GetUserInfo()
