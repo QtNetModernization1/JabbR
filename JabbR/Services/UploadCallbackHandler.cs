@@ -13,10 +13,10 @@ namespace JabbR.Services
     {
         private readonly UploadProcessor _processor;
         private readonly ContentProviderProcessor _resourceProcessor;
-private readonly IHubContext<Chat> _hubContext;
+        private readonly IHubContext<Chat> _hubContext;
         private readonly IChatService _service;
 
-public UploadCallbackHandler(UploadProcessor processor,
+        public UploadCallbackHandler(UploadProcessor processor,
                                      ContentProviderProcessor resourceProcessor,
                                      IHubContext<Chat> hubContext,
                                      IChatService service)
@@ -72,7 +72,7 @@ public UploadCallbackHandler(UploadProcessor processor,
             // Notify all clients for the uploaded url
             await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
 
-            await _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
+            _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext, roomName, message.Id);
         }
 
         private static string FormatBytes(long bytes)
