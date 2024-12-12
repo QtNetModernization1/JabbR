@@ -14,7 +14,6 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Security.Application;
 using Nancy;
-using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Nancy
 {
@@ -24,7 +23,7 @@ namespace JabbR.Nancy
 
         public HomeModule(ApplicationSettings settings,
                           IJabbrConfiguration configuration,
-                          IHubContext<Chat> hubContext,
+                          IConnectionManager connectionManager,
                           IJabbrRepository jabbrRepository)
         {
             Get["/"] = _ =>
@@ -84,8 +83,9 @@ namespace JabbR.Nancy
 
                 try
                 {
-                    await hubContext.Clients.Client("doesn't exist").SendAsync("noMethodCalledThis");
-
+                    var hubContext = connectionManager.GetHubContext<Chat>();
+                    await (Task)hubContext.Clients.Client("doesn't exist").noMethodCalledThis();
+                    
                     signalrStatus.SetOK();
                 }
                 catch (Exception ex)
