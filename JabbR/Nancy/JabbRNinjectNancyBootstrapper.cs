@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -8,6 +8,7 @@ using System.Threading;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
+using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
 
@@ -27,6 +28,12 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
+        }
+
+        protected override void RegisterNancyEnvironment(IKernel container, INancyEnvironment environment)
+        {
+            // Register the Nancy environment
+            container.Bind<INancyEnvironment>().ToConstant(environment).InSingletonScope();
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
