@@ -72,13 +72,16 @@ namespace JabbR
             }
         }
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             _logger.Log("OnConnected({0})", Context.ConnectionId);
 
             CheckStatus();
 
-            return base.OnConnectedAsync();
+            // Call HandleReconnection to handle both initial connections and reconnections
+            await HandleReconnection();
+
+            await base.OnConnectedAsync();
         }
 
         public void Join()
@@ -288,9 +291,11 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnected()
+        // OnReconnected is not available in SignalR Core.
+        // We'll handle reconnection logic in a separate method
+        private async Task HandleReconnection()
         {
-            _logger.Log("OnReconnected({0})", Context.ConnectionId);
+            _logger.Log("HandleReconnection({0})", Context.ConnectionId);
 
             var userId = Context.User.GetUserId();
 
@@ -299,7 +304,7 @@ namespace JabbR
             if (user == null)
             {
                 _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return Task.FromResult(0);
+                return;
             }
 
             // Make sure this client is being tracked
@@ -324,7 +329,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -333,8 +338,6 @@ namespace JabbR
             }
 
             CheckStatus();
-
-            return Task.FromResult(0);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
