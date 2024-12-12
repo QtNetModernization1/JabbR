@@ -85,12 +85,12 @@ namespace JabbR
             await base.OnConnectedAsync();
         }
 
-        public void Join()
+        public async Task Join()
         {
-            Join(reconnecting: false);
+            await Join(reconnecting: false);
         }
 
-        public void Join(bool reconnecting)
+        public async Task Join(bool reconnecting)
         {
             // Get the client state
             var userId = Context.User.GetUserId();
@@ -123,7 +123,7 @@ namespace JabbR
 
             ClientState clientState = GetClientState();
 
-            OnUserInitialize(clientState, user, reconnecting);
+            await OnUserInitialize(clientState, user, reconnecting);
         }
 
         private async Task CheckStatus()
