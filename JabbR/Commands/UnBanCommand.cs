@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using JabbR.Models;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Commands
 {
