@@ -1,22 +1,31 @@
 using System;
+using System.Threading.Tasks;
 using JabbR.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Hubs
 {
-    public class LoggingHubPipelineModule : HubPipelineModule
+    public class LoggingHubFilter : IHubFilter
     {
         private readonly ILogger _logger;
 
-        public LoggingHubPipelineModule(ILogger logger)
+        public LoggingHubFilter(ILogger logger)
         {
             _logger = logger;
         }
 
-        protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext context)
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
-            _logger.LogError("{0}: Failure while invoking '{1}'.", context.Hub.Context.Request.User.GetUserId(), context.MethodDescriptor.Name);
-            _logger.Log(exceptionContext.Error);
+            try
+            {
+                return await next(invocationContext);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("{0}: Failure while invoking '{1}'.", invocationContext.Context.User.Identity.Name, invocationContext.HubMethodName);
+                _logger.Log(ex);
+                throw;
+            }
         }
     }
 }
