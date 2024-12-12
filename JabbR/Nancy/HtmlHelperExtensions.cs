@@ -79,8 +79,8 @@ namespace JabbR
         public static IHtmlContent AlertMessages<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
             const string message = @"<div class=""alert alert-{0}"">{1}</div>";
-            var alertsDynamicValue = htmlHelper.RenderContext.Context.ViewBag.Alerts;
-            var alerts = (AlertMessageStore)(alertsDynamicValue.HasValue ? alertsDynamicValue.Value : null);
+            var alertsDynamicValue = htmlHelper.ViewContext.ViewData["Alerts"];
+            var alerts = alertsDynamicValue as AlertMessageStore;
 
             if (alerts == null || !alerts.Messages.Any())
             {
