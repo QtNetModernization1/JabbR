@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Linq;
 using Nancy.ViewEngines.Razor;
-using Nancy.ViewEngines.Razor.HtmlHelpers;
 
 namespace JabbR
 {
