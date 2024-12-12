@@ -136,7 +136,7 @@ namespace JabbR
 
         public static IHtmlContent DisplayNoneIf<TModel>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
         {
-            if (expression.Compile()(htmlHelper.Model))
+            if (expression.Compile()((TModel)htmlHelper.ViewData.Model))
             {
                 return new HtmlString(@" style=""display:none;"" ");
             }
