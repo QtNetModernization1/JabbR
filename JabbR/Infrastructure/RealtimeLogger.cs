@@ -27,10 +27,10 @@ public RealtimeLogger(IHubContext<Monitor> hubContext)
                     switch (type)
                     {
                         case LogType.Message:
-                            await _logContext.Clients.All.logMessage(formatted);
+                            await _logContext.Clients.All.SendAsync("logMessage", formatted);
                             break;
                         case LogType.Error:
-                            await _logContext.Clients.All.logError(formatted);
+                            await _logContext.Clients.All.SendAsync("logError", formatted);
                             break;
                     }
                 }
