@@ -9,7 +9,7 @@ using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
-using Nancy.Owin;
+using Microsoft.AspNetCore.Http;
 using Nancy.Security;
 
 using Ninject;
@@ -53,7 +53,7 @@ namespace JabbR.Nancy
 
         private Response FlowPrincipal(NancyContext context)
         {
-            var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
+            var env = Get<IDictionary<string, object>>(context.Items, "owin.Environment");
             if (env != null)
             {
                 var principal = Get<IPrincipal>(env, "server.User") as ClaimsPrincipal;
