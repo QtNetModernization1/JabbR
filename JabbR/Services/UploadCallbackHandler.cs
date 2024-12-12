@@ -63,16 +63,16 @@ public UploadCallbackHandler(UploadProcessor processor,
             catch (Exception ex)
             {
                 string messageContent = String.Format(LanguageResources.UploadFailedException, Path.GetFileName(file), ex.Message);
-                _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                 return;
             }
 
             var messageViewModel = new MessageViewModel(message);
 
             // Notify all clients for the uploaded url
-            _hubContext.Clients.Group(roomName).addMessage(messageViewModel, roomName);
+            await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
 
-            _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
+            await _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
         }
 
         private static string FormatBytes(long bytes)
