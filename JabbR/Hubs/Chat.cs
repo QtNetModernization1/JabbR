@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 namespace JabbR
 {
     [AuthorizeClaim(JabbRClaimTypes.Identifier)]
-    public class Chat : Hub, INotificationService
+public class Chat : Hub<IChatClient>, INotificationService
     {
         private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
 
@@ -287,9 +287,9 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnected()
+        public override Task OnConnectedAsync()
         {
-            _logger.Log("OnReconnected({0})", Context.ConnectionId);
+            _logger.Log("OnConnected({0})", Context.ConnectionId);
 
             var userId = Context.User.GetUserId();
 
@@ -336,13 +336,13 @@ namespace JabbR
             return Task.FromResult(0);
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnectedAsync(Exception exception)
         {
             _logger.Log("OnDisconnected({0})", Context.ConnectionId);
 
             DisconnectClient(Context.ConnectionId, useThreshold: true);
 
-            return base.OnDisconnected();
+            return base.OnDisconnectedAsync(exception);
         }
 
         public object GetCommands()
