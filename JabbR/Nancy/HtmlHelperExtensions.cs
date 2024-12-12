@@ -39,7 +39,7 @@ namespace JabbR
             checkBoxBuilder.Append(value.ToString().ToLowerInvariant());
             checkBoxBuilder.Append(@""" />");
 
-            return new NonEncodedHtmlString(checkBoxBuilder.ToString());
+            return new HtmlString(checkBoxBuilder.ToString());
         }
 
         public static IHtmlContent ValidationSummary<TModel>(this IHtmlHelper<TModel> htmlHelper)
@@ -47,7 +47,7 @@ namespace JabbR
             var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
             if (validationResult.IsValid)
             {
-                return new NonEncodedHtmlString(String.Empty);
+            return new HtmlString(String.Empty);
             }
 
             var summaryBuilder = new StringBuilder();
@@ -62,7 +62,7 @@ namespace JabbR
             }
             summaryBuilder.Append(@"</ul>");
 
-            return new NonEncodedHtmlString(summaryBuilder.ToString());
+            return new HtmlString(summaryBuilder.ToString());
         }
 
         public static IHtmlContent ValidationMessage<TModel>(this IHtmlHelper<TModel> htmlHelper, string propertyName)
@@ -71,10 +71,10 @@ namespace JabbR
 
             if (!errorsForField.Any())
             {
-                return new NonEncodedHtmlString(String.Empty);
+            return new HtmlString(String.Empty);
             }
 
-            return new NonEncodedHtmlString(errorsForField.First().GetMessage(propertyName));
+            return new HtmlString(errorsForField.First().GetMessage(propertyName));
         }
 
         public static IHtmlContent AlertMessages<TModel>(this IHtmlHelper<TModel> htmlHelper)
@@ -85,7 +85,7 @@ namespace JabbR
 
             if (alerts == null || !alerts.Messages.Any())
             {
-                return new NonEncodedHtmlString(String.Empty);
+            return new HtmlString(String.Empty);
             }
 
             var builder = new StringBuilder();
@@ -95,7 +95,7 @@ namespace JabbR
                 builder.AppendFormat(message, messageDetail.Key, messageDetail.Value);
             }
 
-            return new NonEncodedHtmlString(builder.ToString());
+            return new HtmlString(builder.ToString());
         }
 
         internal static IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError> GetErrorsForProperty<TModel>(this IHtmlHelper<TModel> htmlHelper,
@@ -132,17 +132,17 @@ namespace JabbR
             pagerBuilder.Append(@"</ul>");
             pagerBuilder.Append(@"</div>");
 
-            return new NonEncodedHtmlString(pagerBuilder.ToString());
+            return new HtmlString(pagerBuilder.ToString());
         }
 
         public static IHtmlContent DisplayNoneIf<TModel>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
         {
             if (expression.Compile()(htmlHelper.Model))
             {
-                return new NonEncodedHtmlString(@" style=""display:none;"" ");
+                return new HtmlString(@" style=""display:none;"" ");
             }
 
-            return NonEncodedHtmlString.Empty;
+            return HtmlString.Empty;
         }
 
         public static string RequestQuery<TModel>(this IHtmlHelper<TModel> htmlHelper)
