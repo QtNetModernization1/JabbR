@@ -1,6 +1,6 @@
+using System;
 using System.Security.Claims;
-using System.Security.Principal;
-using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JabbR.Infrastructure
@@ -13,11 +13,18 @@ namespace JabbR.Infrastructure
             _claimType = claimType;
         }
 
-        protected override bool UserAuthorized(IPrincipal user)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IAuthorizationRequirement requirement)
         {
-            var claimsPrincipal = user as ClaimsPrincipal;
+            if (context.User.HasClaim(claim => claim.Type == _claimType))
+            {
+                context.Succeed(requirement);
+            }
+            else
+            {
+                context.Fail();
+            }
 
-            return claimsPrincipal != null && claimsPrincipal.HasClaim(_claimType);
+            return Task.CompletedTask;
         }
     }
 }
