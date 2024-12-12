@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Claims;
-using Nancy.Security;
+using Microsoft.AspNetCore.Identity;
 
 namespace JabbR.Nancy
 {
@@ -24,5 +24,11 @@ namespace JabbR.Nancy
             get;
             set;
         }
+    }
+
+    public interface IUserIdentity
+    {
+        string UserName { get; }
+        IEnumerable<string> Claims { get; }
     }
 }
