@@ -4,28 +4,30 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class WindowsPrincipalHandler
     {
-        private readonly RequestDelegate _next;
-        private readonly Microsoft.AspNetCore.Authentication.IAuthenticationService _authenticationService;
+        private readonly AppFunc _next;
 
-        public WindowsPrincipalHandler(RequestDelegate next, Microsoft.AspNetCore.Authentication.IAuthenticationService authenticationService)
+        public WindowsPrincipalHandler(AppFunc next)
         {
             _next = next;
-            _authenticationService = authenticationService;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(IDictionary<string, object> env)
         {
-            var windowsPrincipal = context.User as WindowsPrincipal;
+            var context = new OwinContext(env);
+
+            var windowsPrincipal = context.Request.User as WindowsPrincipal;
             if (windowsPrincipal != null && windowsPrincipal.Identity.IsAuthenticated)
             {
-                await _next(context);
+                await _next(env);
 
                 if (context.Response.StatusCode == 401)
                 {
@@ -44,24 +46,21 @@ namespace JabbR.Middleware
                     // REVIEW: Do we want to preserve the other claims?
 
                     // Normalize the claims here
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, name),
-                        new Claim(ClaimTypes.Name, shortName),
-                        new Claim(ClaimTypes.AuthenticationMethod, "Windows")
-                    };
+                    var claims = new List<Claim>();
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, name));
+                    claims.Add(new Claim(ClaimTypes.Name, shortName));
+                    claims.Add(new Claim(ClaimTypes.AuthenticationMethod, "Windows"));
                     var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
-                    var principal = new ClaimsPrincipal(identity);
 
-                    await _authenticationService.SignInAsync(context, Constants.JabbRAuthType, principal);
+                    context.Authentication.SignIn(identity);
 
-                    context.Response.Redirect($"{context.Request.PathBase}{context.Request.Path}");
+                    context.Response.Redirect((context.Request.PathBase + context.Request.Path).Value);
                 }
 
                 return;
             }
 
-            await _next(context);
+            await _next(env);
         }
     }
 }
