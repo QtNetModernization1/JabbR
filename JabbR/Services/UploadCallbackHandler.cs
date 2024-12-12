@@ -72,7 +72,7 @@ public UploadCallbackHandler(UploadProcessor processor,
             // Notify all clients for the uploaded url
             await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
 
-            await _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext, roomName, message.Id);
+            await _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
         }
 
         private static string FormatBytes(long bytes)
