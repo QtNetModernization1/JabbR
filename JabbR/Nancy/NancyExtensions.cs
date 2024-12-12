@@ -7,24 +7,24 @@ using Nancy;
 using Nancy.Helpers;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Owin;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace JabbR.Nancy
 {
     public static class NancyExtensions
     {
-        public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims, IDictionary<string, object> environment)
+        public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims, IHttpContextAccessor httpContextAccessor)
         {
-            var owinContext = new OwinContext(environment);
-
             var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
-            owinContext.Authentication.SignIn(identity);
+            var principal = new ClaimsPrincipal(identity);
+
+            httpContextAccessor.HttpContext.SignInAsync(Constants.JabbRAuthType, principal);
 
             return module.AsRedirectQueryStringOrDefault("~/");
         }
 
-        public static Response SignIn(this NancyModule module, ChatUser user, IDictionary<string, object> environment)
+        public static Response SignIn(this NancyModule module, ChatUser user, IHttpContextAccessor httpContextAccessor)
         {
             var claims = new List<Claim>();
             claims.Add(new Claim(JabbRClaimTypes.Identifier, user.Id));
@@ -35,14 +35,12 @@ namespace JabbR.Nancy
                 claims.Add(new Claim(JabbRClaimTypes.Admin, "true"));
             }
 
-            return module.SignIn(claims, environment);
+            return module.SignIn(claims, httpContextAccessor);
         }
 
-        public static void SignOut(this NancyModule module, IDictionary<string, object> environment)
+        public static void SignOut(this NancyModule module, IHttpContextAccessor httpContextAccessor)
         {
-            var owinContext = new OwinContext(environment);
-
-            owinContext.Authentication.SignOut(Constants.JabbRAuthType);
+            httpContextAccessor.HttpContext.SignOutAsync(Constants.JabbRAuthType);
         }
 
         public static void AddValidationError(this NancyModule module, string propertyName, string errorMessage)
