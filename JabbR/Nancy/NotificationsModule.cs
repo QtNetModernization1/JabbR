@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JabbR.Infrastructure;
@@ -14,12 +14,12 @@ namespace JabbR.Nancy
 {
     public class NotificationsModule : JabbRModule
     {
-        public NotificationsModule(IJabbrRepository repository, 
-                                   IChatService chatService, 
+        public NotificationsModule(IJabbrRepository repository,
+                                   IChatService chatService,
                                    IChatNotificationService notificationService)
             : base("/notifications")
         {
-            Get["/"] = _ =>
+            Get("/", _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -40,9 +40,9 @@ namespace JabbR.Nancy
                 };
 
                 return View["index", viewModel];
-            };
+            });
 
-            Post["/markasread"] = _ =>
+            Post("/markasread", _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -73,9 +73,9 @@ namespace JabbR.Nancy
                 var response = Response.AsJson(new { success = true });
 
                 return response;
-            };
+            });
 
-            Post["/markallasread"] = _ =>
+            Post("/markallasread", _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -102,7 +102,7 @@ namespace JabbR.Nancy
                 var response = Response.AsJson(new { success = true });
 
                 return response;
-            };
+            });
         }
 
         private static void UpdateUnreadCountInChat(IJabbrRepository repository, IChatNotificationService notificationService,
