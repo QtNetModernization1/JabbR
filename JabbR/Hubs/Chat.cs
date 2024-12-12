@@ -48,9 +48,10 @@ namespace JabbR
         {
             get
             {
-                if (Context.Headers != null)
+                var httpContext = Context.GetHttpContext();
+                if (httpContext != null)
                 {
-                    return Context.Headers["User-Agent"];
+                    return httpContext.Request.Headers["User-Agent"];
                 }
                 return null;
             }
