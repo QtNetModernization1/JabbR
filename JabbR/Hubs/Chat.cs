@@ -126,11 +126,11 @@ namespace JabbR
             OnUserInitialize(clientState, user, reconnecting);
         }
 
-        private void CheckStatus()
+        private async Task CheckStatus()
         {
             if (OutOfSync)
             {
-                Clients.Caller.outOfSync();
+                await Clients.Caller.SendAsync("outOfSync");
             }
         }
 
