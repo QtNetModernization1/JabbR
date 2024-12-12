@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using JabbR.Infrastructure;
-using Nancy.Validation;
-using Nancy.ViewEngines.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
 using PagedList;
 using AntiXSS = Microsoft.Security.Application;
 
@@ -13,7 +13,7 @@ namespace JabbR
 {
     public static class HtmlHelperExtensions
     {
-        public static IHtmlString CheckBox<T>(this HtmlHelpers<T> helper, string Name, bool value)
+        public static IHtmlContent CheckBox<T>(this IHtmlHelper<T> helper, string Name, bool value)
         {
             string input = String.Empty;
             
@@ -42,7 +42,7 @@ namespace JabbR
             return new NonEncodedHtmlString(checkBoxBuilder.ToString());
         }
 
-        public static IHtmlString ValidationSummary<TModel>(this HtmlHelpers<TModel> htmlHelper)
+        public static IHtmlContent ValidationSummary<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
             var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
             if (validationResult.IsValid)
@@ -65,7 +65,7 @@ namespace JabbR
             return new NonEncodedHtmlString(summaryBuilder.ToString());
         }
 
-        public static IHtmlString ValidationMessage<TModel>(this HtmlHelpers<TModel> htmlHelper, string propertyName)
+        public static IHtmlContent ValidationMessage<TModel>(this IHtmlHelper<TModel> htmlHelper, string propertyName)
         {
             var errorsForField = htmlHelper.GetErrorsForProperty(propertyName).ToList();
 
@@ -77,7 +77,7 @@ namespace JabbR
             return new NonEncodedHtmlString(errorsForField.First().GetMessage(propertyName));
         }
 
-        public static IHtmlString AlertMessages<TModel>(this HtmlHelpers<TModel> htmlHelper)
+        public static IHtmlContent AlertMessages<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
             const string message = @"<div class=""alert alert-{0}"">{1}</div>";
             var alertsDynamicValue = htmlHelper.RenderContext.Context.ViewBag.Alerts;
@@ -98,7 +98,7 @@ namespace JabbR
             return new NonEncodedHtmlString(builder.ToString());
         }
 
-        internal static IEnumerable<ModelValidationError> GetErrorsForProperty<TModel>(this HtmlHelpers<TModel> htmlHelper,
+        internal static IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError> GetErrorsForProperty<TModel>(this IHtmlHelper<TModel> htmlHelper,
                                                                          string propertyName)
         {
             var validationResult = htmlHelper.RenderContext.Context.ModelValidationResult;
@@ -114,7 +114,7 @@ namespace JabbR
             return errorsForField;
         }
 
-        public static IHtmlString SimplePager<TModel>(this HtmlHelpers<TModel> htmlHelper, IPagedList pagedList, string baseUrl)
+        public static IHtmlContent SimplePager<TModel>(this IHtmlHelper<TModel> htmlHelper, IPagedList pagedList, string baseUrl)
         {
             var pagerBuilder = new StringBuilder();
 
@@ -135,7 +135,7 @@ namespace JabbR
             return new NonEncodedHtmlString(pagerBuilder.ToString());
         }
 
-        public static IHtmlString DisplayNoneIf<TModel>(this HtmlHelpers<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
+        public static IHtmlContent DisplayNoneIf<TModel>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, bool>> expression)
         {
             if (expression.Compile()(htmlHelper.Model))
             {
@@ -145,7 +145,7 @@ namespace JabbR
             return NonEncodedHtmlString.Empty;
         }
 
-        public static string RequestQuery<TModel>(this HtmlHelpers<TModel> htmlHelper)
+        public static string RequestQuery<TModel>(this IHtmlHelper<TModel> htmlHelper)
         {
             if (htmlHelper.RenderContext.Context.Request.Url != null && !String.IsNullOrEmpty(htmlHelper.RenderContext.Context.Request.Url.Query))
             {
