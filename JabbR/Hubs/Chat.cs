@@ -25,7 +25,6 @@ namespace JabbR
         private readonly IRecentMessageCache _recentMessageCache;
         private readonly ICache _cache;
         private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly IHubContext<Chat> _hubContext;
         private readonly ILogger _logger;
         private readonly ApplicationSettings _settings;
 
@@ -35,8 +34,7 @@ namespace JabbR
                     IJabbrRepository repository,
                     ICache cache,
                     ILogger logger,
-                    ApplicationSettings settings,
-                    IHubContext<Chat> hubContext)
+                    ApplicationSettings settings)
         {
             _resourceProcessor = resourceProcessor;
             _service = service;
@@ -45,7 +43,6 @@ namespace JabbR
             _cache = cache;
             _logger = logger;
             _settings = settings;
-            _hubContext = hubContext;
         }
 
         private string UserAgent
@@ -228,7 +225,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
             if (urls.Count > 0)
             {
-                _resourceProcessor.ProcessUrls(urls, _hubContext.Clients, room.Name, chatMessage.Id);
+                _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id);
             }
 
             return true;
