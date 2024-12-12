@@ -287,7 +287,7 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnectedAsync(CancellationToken cancellationToken)
+        public override Task OnReconnected()
         {
             _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
@@ -333,7 +333,7 @@ namespace JabbR
 
             CheckStatus();
 
-            return base.OnReconnectedAsync(cancellationToken);
+            return base.OnReconnected();
         }
 
         public override Task OnDisconnected()
