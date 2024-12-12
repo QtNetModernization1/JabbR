@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using JabbR.ContentProviders.Core;
@@ -17,16 +18,14 @@ namespace JabbR.ContentProviders
                                                        "    <div>{1}</div>" +
                                                        "</div>";
 
-        protected override Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
+        protected override async Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
         {
-            return ExtractFromResponse(request).Then(pageInfo =>
+            var pageInfo = await ExtractFromResponse(request);
+            return new ContentProviderResult
             {
-                return new ContentProviderResult
-                {
-                    Content = String.Format(ContentFormat, pageInfo.Title, pageInfo.WordDefinition, pageInfo.ImageURL),
-                    Title = pageInfo.Title
-                };
-            });
+                Content = String.Format(ContentFormat, pageInfo.Title, pageInfo.WordDefinition, pageInfo.ImageURL),
+                Title = pageInfo.Title
+            };
         }
 
         public override bool IsValidContent(Uri uri)
@@ -35,25 +34,24 @@ namespace JabbR.ContentProviders
                    uri.AbsoluteUri.StartsWith("http://dictionary.com", StringComparison.OrdinalIgnoreCase);
         }
 
-        private Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
+        private async Task<PageInfo> ExtractFromResponse(ContentProviderHttpRequest request)
         {
-            return Http.GetAsync(request.RequestUri).Then(response =>
+using var httpClient = new HttpClient();
+using var response = await httpClient.GetAsync(request.RequestUri);
+            var pageInfo = new PageInfo();
+using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
-                var pageInfo = new PageInfo();
-                using (var responseStream = response.GetResponseStream())
-                {
-                    var htmlDocument = new HtmlDocument();
-                    htmlDocument.Load(responseStream);
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.Load(responseStream);
 
-                    var title = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:title']");
-                    var imageURL = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:image']");
-                    pageInfo.Title = title != null ? title.Attributes["content"].Value : String.Empty;
-                    pageInfo.ImageURL = imageURL != null ? imageURL.Attributes["content"].Value : String.Empty;
-                    pageInfo.WordDefinition = GetWordDefinition(htmlDocument);
-                }
+                var title = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:title']");
+                var imageURL = htmlDocument.DocumentNode.SelectSingleNode("//meta[@property='og:image']");
+                pageInfo.Title = title != null ? title.Attributes["content"].Value : String.Empty;
+                pageInfo.ImageURL = imageURL != null ? imageURL.Attributes["content"].Value : String.Empty;
+                pageInfo.WordDefinition = GetWordDefinition(htmlDocument);
+            }
 
-                return pageInfo;
-            });
+            return pageInfo;
         }
 
         private string GetWordDefinition(HtmlDocument htmlDocument)
@@ -66,31 +64,36 @@ namespace JabbR.ContentProviders
 
             //remove stylesheet links
             var stylesheets = wordDefinition.SelectNodes("//link");
-            foreach (var stylesheet in stylesheets)
+            if (stylesheets != null)
             {
-                stylesheet.Remove();
+                foreach (var stylesheet in stylesheets)
+                {
+                    stylesheet.Remove();
+                }
             }
 
             // fix relative url
             var links = wordDefinition.SelectNodes("//a");
-
-            foreach (var link in links)
+            if (links != null)
             {
-                var href = link.Attributes["href"];
-                if (href != null && href.Value.StartsWith("/"))
+                foreach (var link in links)
                 {
-                    href.Value = String.Format("{0}{1}", _domain, href.Value);
-
-                    if (link.Attributes["style"] != null)
+                    var href = link.Attributes["href"];
+                    if (href != null && href.Value.StartsWith("/"))
                     {
-                        link.Attributes["style"].Value = String.Empty;
-                    }
+                        href.Value = String.Format("{0}{1}", _domain, href.Value);
 
-                    link.SetAttributeValue("target", "_blank");
-                }
-                else
-                {
-                    link.Remove();
+                        if (link.Attributes["style"] != null)
+                        {
+                            link.Attributes["style"].Value = String.Empty;
+                        }
+
+                        link.SetAttributeValue("target", "_blank");
+                    }
+                    else
+                    {
+                        link.Remove();
+                    }
                 }
             }
 
