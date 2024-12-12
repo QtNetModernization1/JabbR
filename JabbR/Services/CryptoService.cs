@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -20,23 +20,15 @@ namespace JabbR.Services
         public string CreateSalt()
         {
             var data = new byte[0x10];
-
-            using (var crypto = new RNGCryptoServiceProvider())
-            {
-                crypto.GetBytes(data);
-
-                return Convert.ToBase64String(data);
-            }
+            RandomNumberGenerator.Fill(data);
+            return Convert.ToBase64String(data);
         }
 
         public byte[] Protect(byte[] plainText)
         {
             var initializationVector = new byte[16];
-            using (var crypto = new RNGCryptoServiceProvider())
-            {
-                crypto.GetBytes(initializationVector);
-                return CryptoHelper.Protect(_keyProvider.EncryptionKey, _keyProvider.VerificationKey, initializationVector, plainText);
-            }
+            RandomNumberGenerator.Fill(initializationVector);
+            return CryptoHelper.Protect(_keyProvider.EncryptionKey, _keyProvider.VerificationKey, initializationVector, plainText);
         }
 
         public byte[] Unprotect(byte[] payload)
@@ -49,14 +41,11 @@ namespace JabbR.Services
             var token = new byte[TokenBytesLength];
             var userNameBytes = Encoding.Default.GetBytes(value);
 
-            using (var crypto = new RNGCryptoServiceProvider())
-            {
-                crypto.GetBytes(token);
-                var tokenBytes = token.Concat(userNameBytes)
-                                      .ToArray();
+            RandomNumberGenerator.Fill(token);
+            var tokenBytes = token.Concat(userNameBytes)
+                                  .ToArray();
 
-                return Convert.ToBase64String(tokenBytes);
-            }
+            return Convert.ToBase64String(tokenBytes);
         }
 
         public string GetValueFromToken(string token)
