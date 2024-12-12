@@ -8,12 +8,32 @@ using Nancy.Helpers;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
+using System.Linq;
 
 
 namespace JabbR.Nancy
 {
+    public class ValidationResult
+    {
+        public List<ValidationError> Errors { get; } = new List<ValidationError>();
+    }
+
+    public class ValidationError
+    {
+        public string PropertyName { get; set; }
+        public string ErrorMessage { get; set; }
+
+        public ValidationError(string propertyName, string errorMessage)
+        {
+            PropertyName = propertyName;
+            ErrorMessage = errorMessage;
+        }
+    }
+
     public static class NancyExtensions
     {
+        private static string ValidationResultKey = "ValidationResult";
+
         public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims, IHttpContextAccessor httpContextAccessor)
         {
             var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
@@ -45,7 +65,25 @@ namespace JabbR.Nancy
 
         public static void AddValidationError(this NancyModule module, string propertyName, string errorMessage)
         {
-            module.ModelValidationResult = module.ModelValidationResult.AddError(propertyName, errorMessage);
+            var validationResult = module.Context.Items.ContainsKey(ValidationResultKey)
+                ? (ValidationResult)module.Context.Items[ValidationResultKey]
+                : new ValidationResult();
+
+            validationResult.Errors.Add(new ValidationError(propertyName, errorMessage));
+            module.Context.Items[ValidationResultKey] = validationResult;
+        }
+
+        public static bool HasValidationErrors(this NancyModule module)
+        {
+            return module.Context.Items.ContainsKey(ValidationResultKey) &&
+                   ((ValidationResult)module.Context.Items[ValidationResultKey]).Errors.Any();
+        }
+
+        public static IEnumerable<ValidationError> GetValidationErrors(this NancyModule module)
+        {
+            return module.Context.Items.ContainsKey(ValidationResultKey)
+                ? ((ValidationResult)module.Context.Items[ValidationResultKey]).Errors
+                : Enumerable.Empty<ValidationError>();
         }
 
         public static AuthenticationResult GetAuthenticationResult(this NancyContext context)
