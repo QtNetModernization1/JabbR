@@ -288,7 +288,7 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnected()
+        public override async Task OnReconnected()
         {
             _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
@@ -299,7 +299,8 @@ namespace JabbR
             if (user == null)
             {
                 _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return Task.FromResult(0);
+                await Task.CompletedTask;
+                return;
             }
 
             // Make sure this client is being tracked
@@ -334,7 +335,7 @@ namespace JabbR
 
             CheckStatus();
 
-            return Task.FromResult(0);
+            await Task.CompletedTask;
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
