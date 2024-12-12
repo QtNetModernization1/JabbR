@@ -207,12 +207,12 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 // send it to everyone. The assumption is that the client has some ui
                 // that it wanted to update immediately showing the message and
                 // then when the actual message is roundtripped it would "solidify it".
-                Clients.Group(room.Name).SendAsync("AddMessage", messageViewModel, room.Name);
+                Clients.Group(room.Name).addMessage(messageViewModel, room.Name);
             }
             else
             {
                 // If the client did set an id then we need to give everyone the real id first
-                Clients.OthersInGroup(room.Name).SendAsync("AddMessage", messageViewModel, room.Name);
+                Clients.OthersInGroup(room.Name).addMessage(messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
                 Clients.Caller.replaceMessage(clientMessage.Id, messageViewModel, room.Name);
@@ -708,14 +708,14 @@ public async Task<bool> Send(ClientMessage clientMessage)
             Clients.Group(room.Name).updateActivity(userViewModel, room.Name);
         }
 
-        private async Task LeaveRoom(ChatUser user, ChatRoom room)
+        private void LeaveRoom(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
-            await Clients.Group(room.Name).SendAsync("Leave", userViewModel, room.Name);
+            Clients.Group(room.Name).leave(userViewModel, room.Name);
 
             foreach (var client in user.ConnectedClients)
             {
-                await Groups.RemoveFromGroupAsync(client.Id, room.Name);
+                Groups.Remove(client.Id, room.Name);
             }
 
             OnRoomChanged(room);
@@ -1019,9 +1019,9 @@ public async Task<bool> Send(ClientMessage clientMessage)
             Clients.Group(room.Name).nudge(user.Name, null, room.Name);
         }
 
-        async Task INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
+        void INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
         {
-            await LeaveRoom(user, room);
+            LeaveRoom(user, room);
         }
 
         void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
