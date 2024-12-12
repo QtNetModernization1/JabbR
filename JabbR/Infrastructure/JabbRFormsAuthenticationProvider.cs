@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using JabbR.Models;
 using JabbR.Services;
-using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.Cookies;
 using Newtonsoft.Json;
-using Microsoft.Owin;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Infrastructure
 {
