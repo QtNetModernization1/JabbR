@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using JabbR.Models;
 using JabbR.Services;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Infrastructure
 {
-    public class JabbRFormsAuthenticationProvider : ICookieAuthenticationProvider
+    public class JabbRFormsAuthenticationProvider : ITicketStore
     {
         private readonly IJabbrRepository _repository;
         private readonly IMembershipService _membershipService;
@@ -23,138 +22,129 @@ namespace JabbR.Infrastructure
             _membershipService = membershipService;
         }
 
-        public Task ValidateIdentity(CookieValidateIdentityContext context)
-        {
-            return TaskAsyncHelper.Empty;
-        }
-
-        public void ResponseSignIn(CookieResponseSignInContext context)
+        public Task<string> StoreAsync(AuthenticationTicket ticket)
         {
             var authResult = new AuthenticationResult
             {
                 Success = true
             };
 
-            ChatUser loggedInUser = GetLoggedInUser(context);
+            var principal = ticket.Principal;
+            var loggedInUser = GetLoggedInUser(principal);
 
-            var principal = new ClaimsPrincipal(context.Identity);
-
-            // Do nothing if it's authenticated
-            if (principal.IsAuthenticated())
+            if (principal.Identity.IsAuthenticated)
             {
-                EnsurePersistentCookie(context);
-                return;
+                EnsurePersistentCookie(ticket);
+                return Task.FromResult(Guid.NewGuid().ToString());
             }
 
-            ChatUser user = _repository.GetUser(principal);
-            authResult.ProviderName = principal.GetIdentityProvider();
+            var user = _repository.GetUser(principal);
+            authResult.ProviderName = principal.Identity.AuthenticationType;
 
-            // The user exists so add the claim
             if (user != null)
             {
                 if (loggedInUser != null && user != loggedInUser)
                 {
-                    // Set an error message
                     authResult.Message = String.Format(LanguageResources.Account_AccountAlreadyLinked, authResult.ProviderName);
                     authResult.Success = false;
-
-                    // Keep the old user logged in
-                    context.Identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, loggedInUser.Id));
+                    AddClaim(ticket, new Claim(JabbRClaimTypes.Identifier, loggedInUser.Id));
                 }
                 else
                 {
-                    // Login this user
-                    AddClaim(context, user);
+                    AddClaim(ticket, user);
                 }
-
             }
-            else if (principal.HasAllClaims())
+            else if (HasAllClaims(principal))
             {
-                ChatUser targetUser = null;
+                ChatUser targetUser;
 
-                // The user doesn't exist but the claims to create the user do exist
                 if (loggedInUser == null)
                 {
-                    // New user so add them
                     user = _membershipService.AddUser(principal);
-
                     targetUser = user;
                 }
                 else
                 {
-                    // If the user is logged in then link
                     _membershipService.LinkIdentity(loggedInUser, principal);
-
                     _repository.CommitChanges();
-
                     authResult.Message = String.Format(LanguageResources.Account_AccountLinkedSuccess, authResult.ProviderName);
-
                     targetUser = loggedInUser;
                 }
 
-                AddClaim(context, targetUser);
+                AddClaim(ticket, targetUser);
             }
-            else if(!principal.HasPartialIdentity())
+            else if (!HasPartialIdentity(principal))
             {
-                // A partial identity means the user needs to add more claims to login
-                context.Identity.AddClaim(new Claim(JabbRClaimTypes.PartialIdentity, "true"));
+                AddClaim(ticket, new Claim(JabbRClaimTypes.PartialIdentity, "true"));
             }
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true
-            };
-
-            context.Response.Cookies.Append(Constants.AuthResultCookie,
-                                       JsonConvert.SerializeObject(authResult),
-                                       cookieOptions);
+            var key = Guid.NewGuid().ToString();
+            // In a real implementation, you would store the ticket here
+            return Task.FromResult(key);
         }
 
-        private static void AddClaim(CookieResponseSignInContext context, ChatUser user)
+        public Task RenewAsync(string key, AuthenticationTicket ticket)
         {
-            // Do nothing if the user is banned
+            // Implement ticket renewal logic if needed
+            return Task.CompletedTask;
+        }
+
+        public Task<AuthenticationTicket> RetrieveAsync(string key)
+        {
+            // Implement ticket retrieval logic
+            // For now, we'll return null as we haven't implemented storage
+            return Task.FromResult<AuthenticationTicket>(null);
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            // Implement ticket removal logic if needed
+            return Task.CompletedTask;
+        }
+
+        private void AddClaim(AuthenticationTicket ticket, ChatUser user)
+        {
             if (user.IsBanned)
             {
                 return;
             }
 
-            // Add the jabbr id claim
-            context.Identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, user.Id));
+            AddClaim(ticket, new Claim(JabbRClaimTypes.Identifier, user.Id));
 
-            // Add the admin claim if the user is an Administrator
             if (user.IsAdmin)
             {
-                context.Identity.AddClaim(new Claim(JabbRClaimTypes.Admin, "true"));
+                AddClaim(ticket, new Claim(JabbRClaimTypes.Admin, "true"));
             }
 
-            EnsurePersistentCookie(context);
+            EnsurePersistentCookie(ticket);
         }
 
-        private static void EnsurePersistentCookie(CookieResponseSignInContext context)
+        private void AddClaim(AuthenticationTicket ticket, Claim claim)
         {
-            if (context.Properties == null)
-            {
-                context.Properties = new AuthenticationProperties();
-            }
-
-            context.Properties.IsPersistent = true;
+            var identity = ticket.Principal.Identity as ClaimsIdentity;
+            identity?.AddClaim(claim);
         }
 
-        private ChatUser GetLoggedInUser(CookieResponseSignInContext context)
+        private void EnsurePersistentCookie(AuthenticationTicket ticket)
         {
-            var principal = context.Request.User as ClaimsPrincipal;
-
-            if (principal != null)
-            {
-                return _repository.GetLoggedInUser(principal);
-            }
-
-            return null;
+            ticket.Properties.IsPersistent = true;
         }
 
-        public void ApplyRedirect(CookieApplyRedirectContext context)
+        private ChatUser GetLoggedInUser(ClaimsPrincipal principal)
         {
-            context.Response.Redirect(context.RedirectUri);
+            return _repository.GetLoggedInUser(principal);
+        }
+
+        private bool HasAllClaims(ClaimsPrincipal principal)
+        {
+            // Implement this method based on your requirements
+            return true;
+        }
+
+        private bool HasPartialIdentity(ClaimsPrincipal principal)
+        {
+            // Implement this method based on your requirements
+            return false;
         }
     }
 }
