@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using JabbR.Commands;
 using JabbR.ContentProviders.Core;
@@ -287,7 +288,7 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnected()
+        public override Task OnReconnectedAsync(CancellationToken cancellationToken)
         {
             _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
@@ -336,13 +337,13 @@ namespace JabbR
             return Task.FromResult(0);
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnectedAsync(Exception exception)
         {
             _logger.Log("OnDisconnected({0})", Context.ConnectionId);
 
             DisconnectClient(Context.ConnectionId, useThreshold: true);
 
-            return base.OnDisconnected();
+            return base.OnDisconnectedAsync(exception);
         }
 
         public object GetCommands()
