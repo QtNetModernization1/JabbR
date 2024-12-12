@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
+using Microsoft.AspNetCore.Mvc;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.Services;
@@ -11,7 +11,7 @@ using JabbR.WebApi.Model;
 
 namespace JabbR.WebApi
 {
-    public class MessagesController : ApiController
+    public class MessagesController : ControllerBase
     {
         const string FilenameDateFormat = "yyyy-MM-dd.HHmmsszz";
         private IJabbrRepository _repository;
