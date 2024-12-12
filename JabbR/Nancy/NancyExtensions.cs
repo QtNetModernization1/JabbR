@@ -5,8 +5,8 @@ using JabbR.Infrastructure;
 using JabbR.Models;
 using Nancy;
 using Nancy.Helpers;
-using Nancy.Owin;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Owin;
 
 
@@ -14,10 +14,9 @@ namespace JabbR.Nancy
 {
     public static class NancyExtensions
     {
-        public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims)
+        public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims, IDictionary<string, object> environment)
         {
-            var env = Get<IDictionary<string, object>>(module.Context.Items, NancyOwinHost.RequestEnvironmentKey);
-            var owinContext = new OwinContext(env);
+            var owinContext = new OwinContext(environment);
 
             var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
             owinContext.Authentication.SignIn(identity);
@@ -25,7 +24,7 @@ namespace JabbR.Nancy
             return module.AsRedirectQueryStringOrDefault("~/");
         }
 
-        public static Response SignIn(this NancyModule module, ChatUser user)
+        public static Response SignIn(this NancyModule module, ChatUser user, IDictionary<string, object> environment)
         {
             var claims = new List<Claim>();
             claims.Add(new Claim(JabbRClaimTypes.Identifier, user.Id));
@@ -36,13 +35,12 @@ namespace JabbR.Nancy
                 claims.Add(new Claim(JabbRClaimTypes.Admin, "true"));
             }
 
-            return module.SignIn(claims);
+            return module.SignIn(claims, environment);
         }
 
-        public static void SignOut(this NancyModule module)
+        public static void SignOut(this NancyModule module, IDictionary<string, object> environment)
         {
-            var env = Get<IDictionary<string, object>>(module.Context.Items, NancyOwinHost.RequestEnvironmentKey);
-            var owinContext = new OwinContext(env);
+            var owinContext = new OwinContext(environment);
 
             owinContext.Authentication.SignOut(Constants.JabbRAuthType);
         }
