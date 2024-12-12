@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using JabbR.Models;
 using JabbR.UploadHandlers;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
 namespace JabbR.Services
