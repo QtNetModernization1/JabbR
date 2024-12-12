@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 namespace JabbR
 {
     [AuthorizeClaim(JabbRClaimTypes.Identifier)]
-    public class Chat : Hub<IChatClient>, INotificationService
+    public class Chat : Hub, INotificationService
     {
         private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
 
@@ -72,13 +72,13 @@ namespace JabbR
             }
         }
 
-        public override async Task OnConnectedAsync()
+        public override Task OnConnectedAsync()
         {
             _logger.Log("OnConnected({0})", Context.ConnectionId);
 
             CheckStatus();
 
-            await base.OnConnectedAsync();
+            return base.OnConnectedAsync();
         }
 
         public void Join()
@@ -288,9 +288,54 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        // Note: OnReconnected is not available in SignalR Core.
-        // The reconnection logic should be handled in the client-side code.
-        // If you need server-side reconnection logic, you can implement it in OnConnectedAsync
+        public override Task OnReconnected()
+        {
+            _logger.Log("OnReconnected({0})", Context.ConnectionId);
+
+            var userId = Context.User.GetUserId();
+
+            ChatUser user = _repository.VerifyUserId(userId);
+
+            if (user == null)
+            {
+                _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
+                return Task.FromResult(0);
+            }
+
+            // Make sure this client is being tracked
+            _service.AddClient(user, Context.ConnectionId, UserAgent);
+
+            var currentStatus = (UserStatus)user.Status;
+
+            if (currentStatus == UserStatus.Offline)
+            {
+                _logger.Log("{0}:{1} reconnected after temporary network problem and marked offline.", user.Name, Context.ConnectionId);
+
+                // Mark the user as inactive
+                user.Status = (int)UserStatus.Inactive;
+                _repository.CommitChanges();
+
+                // If the user was offline that means they are not in the user list so we need to tell
+                // everyone the user is really in the room
+                var userViewModel = new UserViewModel(user);
+
+                foreach (var room in user.Rooms)
+                {
+                    var isOwner = user.OwnedRooms.Contains(room);
+
+                    // Tell the people in this room that you've joined
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                }
+            }
+            else
+            {
+                _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
+            }
+
+            CheckStatus();
+
+            return Task.FromResult(0);
+        }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
