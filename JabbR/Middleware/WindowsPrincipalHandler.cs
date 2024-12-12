@@ -4,25 +4,30 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class WindowsPrincipalHandler
     {
-        private readonly RequestDelegate _next;
+        private readonly AppFunc _next;
 
-        public WindowsPrincipalHandler(RequestDelegate next)
+        public WindowsPrincipalHandler(AppFunc next)
         {
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(IDictionary<string, object> env)
         {
-            var windowsPrincipal = context.User as WindowsPrincipal;
+            var context = new OwinContext(env);
+
+            var windowsPrincipal = context.Request.User as WindowsPrincipal;
             if (windowsPrincipal != null && windowsPrincipal.Identity.IsAuthenticated)
             {
-                await _next(context);
+                await _next(env);
 
                 if (context.Response.StatusCode == 401)
                 {
@@ -47,15 +52,15 @@ namespace JabbR.Middleware
                     claims.Add(new Claim(ClaimTypes.AuthenticationMethod, "Windows"));
                     var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
 
-                    await context.SignInAsync(Constants.JabbRAuthType, new ClaimsPrincipal(identity));
+                    context.Authentication.SignIn(identity);
 
-                    context.Response.Redirect($"{context.Request.PathBase}{context.Request.Path}");
+                    context.Response.Redirect((context.Request.PathBase + context.Request.Path).Value);
                 }
 
                 return;
             }
 
-            await _next(context);
+            await _next(env);
         }
     }
 }
