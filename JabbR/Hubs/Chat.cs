@@ -77,7 +77,7 @@ namespace JabbR
         {
             _logger.Log("OnConnected({0})", Context.ConnectionId);
 
-            CheckStatus();
+            await CheckStatus();
 
             // Call HandleReconnection to handle both initial connections and reconnections
             await HandleReconnection();
