@@ -489,7 +489,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             PostNotification(notification, executeContentProviders: true);
         }
 
-        public async Task PostNotification(ClientNotification notification, bool executeContentProviders)
+        public void PostNotification(ClientNotification notification, bool executeContentProviders)
         {
             string userId = Context.User.GetUserId();
 
@@ -520,14 +520,14 @@ public async Task<bool> Send(ClientMessage clientMessage)
             _repository.Add(chatMessage);
             _repository.CommitChanges();
 
-            await Clients.Group(room.Name).SendAsync("addMessage", new MessageViewModel(chatMessage), room.Name);
+            Clients.Group(room.Name).addMessage(new MessageViewModel(chatMessage), room.Name);
 
             if (executeContentProviders)
             {
                 var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
                 if (urls.Count > 0)
                 {
-                    await _resourceProcessor.ProcessUrlsAsync(urls, Clients, room.Name, chatMessage.Id);
+                    _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id);
                 }
             }
         }
