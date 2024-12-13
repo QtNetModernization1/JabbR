@@ -10,7 +10,7 @@ using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
-using IAuthService = JabbR.Infrastructure.IAuthenticationService;
+using JabbRAuthService = JabbR.Infrastructure.IAuthenticationService;
 
 namespace JabbR.Nancy
 {
@@ -22,7 +22,7 @@ namespace JabbR.Nancy
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
                              IJabbrRepository repository,
-                             IAuthService authService,
+                             JabbRAuthService authService,
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
                              IEmailService emailService,
@@ -576,7 +576,7 @@ namespace JabbR.Nancy
             }
         }
 
-        private dynamic GetProfileView(IAuthenticationService authService, ChatUser user)
+        private dynamic GetProfileView(JabbR.Infrastructure.IAuthenticationService authService, ChatUser user)
         {
             return View["index", new ProfilePageViewModel(user, authService.GetProviders())];
         }
