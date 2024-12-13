@@ -818,10 +818,10 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             ((INotificationService)this).KickUser(targetUser, targetRoom, callingUser, null);
 
             // Tell this client it's no longer allowed
-            Clients.User(targetUser.Id).unallowUser(targetRoom.Name);
+            Clients.User(targetUser.Id).SendAsync("unallowUser", targetRoom.Name);
 
             // Tell the calling client the granting permission into the room was successful
-            Clients.Caller.userUnallowed(targetUser.Name, targetRoom.Name);
+            Clients.Caller.SendAsync("userUnallowed", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.AddOwner(ChatUser targetUser, ChatRoom targetRoom)
