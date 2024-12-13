@@ -520,7 +520,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             _repository.Add(chatMessage);
             _repository.CommitChanges();
 
-            Clients.Group(room.Name).addMessage(new MessageViewModel(chatMessage), room.Name);
+            await Clients.Group(room.Name).SendAsync("addMessage", new MessageViewModel(chatMessage), room.Name);
 
             if (executeContentProviders)
             {
@@ -883,18 +883,18 @@ public async Task<bool> Send(ClientMessage clientMessage)
             Clients.User(toUser.Id).sendPrivateMessage(fromUser.Name, toUser.Name, messageText);
         }
 
-        void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
+        async Task INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
         {
-            Clients.User(user.Id).postNotification(message, room.Name);
+            await Clients.User(user.Id).SendAsync("postNotification", message, room.Name);
         }
 
-        void INotificationService.ListRooms(ChatUser user)
+        async Task INotificationService.ListRooms(ChatUser user)
         {
             string userId = Context.User.GetUserId();
 
             var userModel = new UserViewModel(user);
 
-            Clients.Caller.showUsersRoomList(userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
+            await Clients.Caller.SendAsync("showUsersRoomList", userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
         }
 
         void INotificationService.ListUsers()
