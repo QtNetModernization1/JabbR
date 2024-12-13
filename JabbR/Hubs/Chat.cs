@@ -10,7 +10,6 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 
@@ -25,22 +24,19 @@ namespace JabbR
         private readonly IChatService _service;
         private readonly IRecentMessageCache _recentMessageCache;
         private readonly ICache _cache;
-    private readonly ContentProviderProcessor _resourceProcessor;
-    private readonly IHubContext<Chat> _hubContext;
+        private readonly ContentProviderProcessor _resourceProcessor;
         private readonly ILogger _logger;
         private readonly ApplicationSettings _settings;
 
-    public Chat(ContentProviderProcessor resourceProcessor,
-                IChatService service,
-                IRecentMessageCache recentMessageCache,
-                IJabbrRepository repository,
-                ICache cache,
-                ILogger logger,
-                ApplicationSettings settings,
-                IHubContext<Chat> hubContext)
-    {
-        _resourceProcessor = resourceProcessor;
-        _hubContext = hubContext;
+        public Chat(ContentProviderProcessor resourceProcessor,
+                    IChatService service,
+                    IRecentMessageCache recentMessageCache,
+                    IJabbrRepository repository,
+                    ICache cache,
+                    ILogger logger,
+                    ApplicationSettings settings)
+        {
+            _resourceProcessor = resourceProcessor;
             _service = service;
             _recentMessageCache = recentMessageCache;
             _repository = repository;
@@ -532,7 +528,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 if (urls.Count > 0)
                 {
                     // Use Task.Run to run the synchronous method asynchronously
-                    await Task.Run(() => _resourceProcessor.ProcessUrls(urls, _hubContext.Clients, room.Name, chatMessage.Id));
+                    await Task.Run(() => _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id));
                 }
             }
         }
