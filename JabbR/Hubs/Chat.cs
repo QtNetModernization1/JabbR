@@ -962,7 +962,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             // notify all members of room that it is now re-opened
             foreach (var user in users)
             {
-                Clients.User(user.Id).roomUnClosed(room.Name);
+                Clients.User(user.Id).SendAsync("roomUnClosed", room.Name);
             }
 
             // notify everyone to update their lobby
