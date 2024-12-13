@@ -533,7 +533,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 if (urls.Count > 0)
                 {
                     // Use Task.Run to run the synchronous method asynchronously
-                    await Task.Run(() => _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id));
+                    await Task.Run(() => _resourceProcessor.ProcessUrls(urls, _hubContext, room.Name, chatMessage.Id));
                 }
             }
         }
