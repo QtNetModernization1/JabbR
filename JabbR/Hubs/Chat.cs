@@ -1275,7 +1275,7 @@ void INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, str
 
         void INotificationService.UnbanUser(ChatUser targetUser)
         {
-            Clients.Caller.unbanUser(new
+            Clients.Caller.SendAsync("unbanUser", new
             {
                 Name = targetUser.Name
             });
