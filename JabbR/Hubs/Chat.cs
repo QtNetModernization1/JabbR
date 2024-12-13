@@ -604,7 +604,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
                 // Add the caller to the group so they receive messages
-                Groups.Add(clientId, room.Name);
+                await Groups.AddToGroupAsync(clientId, room.Name);
 
                 if (!reconnecting)
                 {
