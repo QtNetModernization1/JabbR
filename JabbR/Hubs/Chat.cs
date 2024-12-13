@@ -527,7 +527,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
                 if (urls.Count > 0)
                 {
-                    // Use Task.Run to run the synchronous method asynchronously
+                    // Pass IHubCallerClients directly
                     await Task.Run(() => _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id));
                 }
             }
