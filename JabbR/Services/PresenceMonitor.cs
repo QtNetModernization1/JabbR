@@ -166,7 +166,7 @@ namespace JabbR.Services
             {
                 PerformRoomAction(inactiveUsers, async roomGroup =>
                 {
-                    await _hubContext.Clients.Group(roomGroup.Room.Name).markInactive(roomGroup.Users);
+                    await _hubContext.Clients.Group(roomGroup.Room.Name).SendAsync("markInactive", roomGroup.Users);
                 });
 
                 repo.CommitChanges();
