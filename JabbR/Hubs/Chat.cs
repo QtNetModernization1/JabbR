@@ -835,17 +835,17 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             // Tell everyone in the target room that a new owner was added
             if (_repository.IsUserInRoom(_cache, targetUser, targetRoom))
             {
-                Clients.Group(targetRoom.Name).addOwner(userViewModel, targetRoom.Name);
+                Clients.Group(targetRoom.Name).SendAsync("addOwner", userViewModel, targetRoom.Name);
             }
 
             // Tell the calling client the granting of ownership was successful
-            Clients.Caller.ownerMade(targetUser.Name, targetRoom.Name);
+            Clients.Caller.SendAsync("ownerMade", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.RemoveOwner(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Tell this client it's no longer an owner
-            Clients.User(targetUser.Id).demoteOwner(targetRoom.Name);
+            Clients.User(targetUser.Id).SendAsync("demoteOwner", targetRoom.Name);
 
             var userViewModel = new UserViewModel(targetUser);
 
@@ -853,19 +853,19 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             // Tell everyone in the target room that the owner was removed
             if (_repository.IsUserInRoom(_cache, targetUser, targetRoom))
             {
-                Clients.Group(targetRoom.Name).removeOwner(userViewModel, targetRoom.Name);
+                Clients.Group(targetRoom.Name).SendAsync("removeOwner", userViewModel, targetRoom.Name);
             }
 
             // Tell the calling client the removal of ownership was successful
-            Clients.Caller.ownerRemoved(targetUser.Name, targetRoom.Name);
+            Clients.Caller.SendAsync("ownerRemoved", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.ChangeGravatar(ChatUser user)
         {
-            Clients.Caller.hash = user.Hash;
+            Clients.Caller.SendAsync("setHash", user.Hash);
 
             // Update the calling client
-            Clients.User(user.Id).gravatarChanged(user.Hash);
+            Clients.User(user.Id).SendAsync("gravatarChanged", user.Hash);
 
             // Create the view model
             var userViewModel = new UserViewModel(user);
@@ -873,21 +873,21 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             // Tell all users in rooms to change the gravatar
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeGravatar(userViewModel, room.Name);
+                Clients.Group(room.Name).SendAsync("changeGravatar", userViewModel, room.Name);
             }
         }
 
         void INotificationService.OnSelfMessage(ChatRoom room, ChatUser user, string content)
         {
-            Clients.Group(room.Name).sendMeMessage(user.Name, content, room.Name);
+            Clients.Group(room.Name).SendAsync("sendMeMessage", user.Name, content, room.Name);
         }
 
         void INotificationService.SendPrivateMessage(ChatUser fromUser, ChatUser toUser, string messageText)
         {
             // Send a message to the sender and the sendee
-            Clients.User(fromUser.Id).sendPrivateMessage(fromUser.Name, toUser.Name, messageText);
+            Clients.User(fromUser.Id).SendAsync("sendPrivateMessage", fromUser.Name, toUser.Name, messageText);
 
-            Clients.User(toUser.Id).sendPrivateMessage(fromUser.Name, toUser.Name, messageText);
+            Clients.User(toUser.Id).SendAsync("sendPrivateMessage", fromUser.Name, toUser.Name, messageText);
         }
 
         void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
