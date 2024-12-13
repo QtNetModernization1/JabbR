@@ -14,11 +14,26 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Security.Application;
 using Nancy;
+using System.Dynamic;
 
 namespace JabbR.Nancy
 {
     public class HomeModule : JabbRModule
     {
+        private dynamic _get;
+
+        protected dynamic Get
+        {
+            get
+            {
+                if (_get == null)
+                {
+                    _get = new ExpandoObject();
+                    ((IDictionary<string, object>)_get).Add("Item", new Func<string, object, object>((key, value) => value));
+                }
+                return _get;
+            }
+        }
         private static readonly Regex clientSideResourceRegex = new Regex("^(Client_.*|Chat_.*|Content_.*|Create_.*|LoadingMessage|Room.*)$");
 
         public HomeModule(ApplicationSettings settings,
