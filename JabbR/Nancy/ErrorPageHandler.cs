@@ -1,21 +1,20 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
 using Nancy;
 using Nancy.ErrorHandling;
-using Nancy.Responses;
+using Nancy.ViewEngines;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : IStatusCodeHandler
+    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
-        private readonly IRenderContext _renderContext;
 
-        public ErrorPageHandler(IRenderContext renderContext, IJabbrRepository repository)
+        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
+            : base(factory)
         {
-            _renderContext = renderContext;
             _repository = repository;
         }
 
@@ -41,14 +40,16 @@ namespace JabbR.Nancy
                 }
             }
 
-            var model = new
-            {
-                Error = statusCode,
-                ErrorCode = (int)statusCode,
-                SuggestRoomName = suggestRoomName
-            };
+            var response = RenderView(
+                context, 
+                "errorPage", 
+                new 
+                { 
+                    Error = statusCode,
+                    ErrorCode = (int)statusCode,
+                    SuggestRoomName = suggestRoomName
+                });
 
-            var response = _renderContext.RenderView("errorPage", model);
             response.StatusCode = statusCode;
             context.Response = response;
         }
