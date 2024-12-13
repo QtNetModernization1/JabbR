@@ -1004,15 +1004,15 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             Clients.Caller.SendAsync("showCommands");
         }
 
-        void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom targetRoom)
-        {
+void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom targetRoom)
+{
 
-            // Send the invite message to the sendee
-            Clients.User(targetUser.Id).sendInvite(user.Name, targetUser.Name, targetRoom.Name);
+    // Send the invite message to the sendee
+    Clients.User(targetUser.Id).SendAsync("sendInvite", user.Name, targetUser.Name, targetRoom.Name);
 
-            // Send the invite notification to the sender
-            Clients.User(user.Id).sendInvite(user.Name, targetUser.Name, targetRoom.Name);
-        }
+    // Send the invite notification to the sender
+    Clients.User(user.Id).SendAsync("sendInvite", user.Name, targetUser.Name, targetRoom.Name);
+}
 
         void INotificationService.NudgeUser(ChatUser user, ChatUser targetUser)
         {
