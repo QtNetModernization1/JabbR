@@ -9,6 +9,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace JabbR.Services
 {
@@ -196,11 +197,20 @@ namespace JabbR.Services
 
         private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
         {
-            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
-
-            if (templateResults.Any(result => result.ParserErrors.Any()))
+            var templateResults = templates.Select(pair =>
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
+                var projectItem = new StringBasedRazorProjectItem(pair.Key, pair.Value);
+                var codeDocument = _razorEngine.Process(projectItem);
+                var cSharpDocument = codeDocument.GetCSharpDocument();
+                return new { GeneratedCode = cSharpDocument.GeneratedCode, Diagnostics = cSharpDocument.Diagnostics };
+            }).ToList();
+
+            if (templateResults.Any(result => result.Diagnostics.Any(d => d.Severity == RazorDiagnosticSeverity.Error)))
+            {
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
+                    templateResults.SelectMany(r => r.Diagnostics)
+                                   .Where(d => d.Severity == RazorDiagnosticSeverity.Error)
+                                   .Select(e => e.GetMessage()));
 
                 throw new InvalidOperationException(parseExceptionMessage);
             }
@@ -214,7 +224,7 @@ namespace JabbR.Services
                                                 CompilerOptions = "/optimize"
                                             };
 
-                var compilerResults = codeProvider.CompileAssemblyFromDom(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
+                var compilerResults = codeProvider.CompileAssemblyFromSource(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
 
                 if (compilerResults.Errors.HasErrors)
                 {
@@ -249,11 +259,15 @@ namespace JabbR.Services
 
         private static RazorProjectEngine CreateRazorEngine()
         {
-            var builder = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("."), b =>
+            return RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("."), builder =>
             {
-                b.SetBaseType(typeof(EmailTemplate).FullName);
-                b.SetNamespace(NamespaceName);
-                b.AddDefaultImports(new[]
+                builder.SetBaseType(typeof(EmailTemplate).FullName);
+                builder.SetNamespace(NamespaceName);
+                builder.ConfigureClass((document, classNode) =>
+                {
+                    classNode.ClassName = Path.GetFileNameWithoutExtension(document.Source.FilePath);
+                });
+                builder.AddDefaultImports(new[]
                 {
                     "System",
                     "System.Collections",
@@ -262,8 +276,27 @@ namespace JabbR.Services
                     "System.Linq"
                 });
             });
+        }
 
-            return builder;
+        private class StringBasedRazorProjectItem : RazorProjectItem
+        {
+            private readonly string _content;
+
+            public StringBasedRazorProjectItem(string filePath, string content)
+            {
+                FilePath = filePath;
+                _content = content;
+            }
+
+            public override string BasePath => "/";
+            public override string FilePath { get; }
+            public override bool Exists => true;
+            public override string PhysicalPath => null;
+
+            public override Stream Read()
+            {
+                return new MemoryStream(System.Text.Encoding.UTF8.GetBytes(_content));
+            }
         }
 
         private static IEnumerable<string> BuildReferenceList()
