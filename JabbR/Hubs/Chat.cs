@@ -704,10 +704,10 @@ public async Task<bool> Send(ClientMessage clientMessage)
             }
         }
 
-        private void OnUpdateActivity(ChatUser user, ChatRoom room)
+        private async Task OnUpdateActivity(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
-            Clients.Group(room.Name).updateActivity(userViewModel, room.Name);
+            await Clients.Group(room.Name).SendAsync("updateActivity", userViewModel, room.Name);
         }
 
         private async Task LeaveRoom(ChatUser user, ChatRoom room)
