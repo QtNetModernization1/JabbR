@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Language;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
 
@@ -21,7 +21,7 @@ namespace JabbR.Services
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
         private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
+        private static readonly RazorEngine _razorEngine = CreateRazorEngine();
         private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
@@ -196,11 +196,18 @@ namespace JabbR.Services
 
         private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
         {
-            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
-
-            if (templateResults.Any(result => result.ParserErrors.Any()))
+            var templateResults = templates.Select(pair =>
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
+                var sourceDocument = RazorSourceDocument.Create(pair.Value, pair.Key);
+                var codeDocument = _razorEngine.Process(sourceDocument);
+                return codeDocument.GetCSharpDocument();
+            }).ToList();
+
+            if (templateResults.Any(result => result.Diagnostics.Any()))
+            {
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine,
+                    templateResults.SelectMany(r => r.Diagnostics)
+                                   .Select(d => $"{d.Id}:{d.Span}:{Environment.NewLine}{d.GetMessage()}").ToArray());
 
                 throw new InvalidOperationException(parseExceptionMessage);
             }
@@ -247,21 +254,18 @@ namespace JabbR.Services
             return new DynamicModel(propertyMap);
         }
 
-        private static RazorTemplateEngine CreateRazorEngine()
+        private static RazorEngine CreateRazorEngine()
         {
-            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
-                           {
-                               DefaultBaseClass = typeof(EmailTemplate).FullName,
-                               DefaultNamespace = NamespaceName
-                           };
+            var builder = new RazorProjectEngineBuilder()
+                .SetNamespace(NamespaceName)
+                .SetBaseType(typeof(EmailTemplate).FullName);
 
-            host.NamespaceImports.Add("System");
-            host.NamespaceImports.Add("System.Collections");
-            host.NamespaceImports.Add("System.Collections.Generic");
-            host.NamespaceImports.Add("System.Dynamic");
-            host.NamespaceImports.Add("System.Linq");
+            builder.ConfigureClass((document, @class) =>
+            {
+                @class.ClassName = Path.GetFileNameWithoutExtension(document.Source.FilePath);
+            });
 
-            return new RazorTemplateEngine(host);
+            return builder.Build().Engine;
         }
 
         private static IEnumerable<string> BuildReferenceList()
