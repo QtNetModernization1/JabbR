@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using JabbR.Commands;
 using JabbR.ContentProviders.Core;
 using JabbR.Infrastructure;
@@ -1225,9 +1224,10 @@ void INotificationService.BroadcastMessage(ChatUser user, string messageText)
 
         private string GetCookieValue(string key)
         {
-            string cookieValue;
-            Context.Request.Cookies.TryGetValue(key, out cookieValue);
-            return cookieValue != null ? Uri.UnescapeDataString(cookieValue) : null;
+            Cookie cookie;
+            Context.RequestCookies.TryGetValue(key, out cookie);
+            string value = cookie != null ? cookie.Value : null;
+            return value != null ? Uri.UnescapeDataString(value) : null;
         }
 
         void INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, string reason)
