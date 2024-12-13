@@ -1123,35 +1123,35 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
         void INotificationService.AddAdmin(ChatUser targetUser)
         {
             // Tell this client it's an owner
-            Clients.User(targetUser.Id).makeAdmin();
+            Clients.User(targetUser.Id).SendAsync("makeAdmin");
 
             var userViewModel = new UserViewModel(targetUser);
 
             // Tell all users in rooms to change the admin status
             foreach (var room in targetUser.Rooms)
             {
-                Clients.Group(room.Name).addAdmin(userViewModel, room.Name);
+                Clients.Group(room.Name).SendAsync("addAdmin", userViewModel, room.Name);
             }
 
             // Tell the calling client the granting of admin status was successful
-            Clients.Caller.adminMade(targetUser.Name);
+            Clients.Caller.SendAsync("adminMade", targetUser.Name);
         }
 
         void INotificationService.RemoveAdmin(ChatUser targetUser)
         {
             // Tell this client it's no longer an owner
-            Clients.User(targetUser.Id).demoteAdmin();
+            Clients.User(targetUser.Id).SendAsync("demoteAdmin");
 
             var userViewModel = new UserViewModel(targetUser);
 
             // Tell all users in rooms to change the admin status
             foreach (var room in targetUser.Rooms)
             {
-                Clients.Group(room.Name).removeAdmin(userViewModel, room.Name);
+                Clients.Group(room.Name).SendAsync("removeAdmin", userViewModel, room.Name);
             }
 
             // Tell the calling client the removal of admin status was successful
-            Clients.Caller.adminRemoved(targetUser.Name);
+            Clients.Caller.SendAsync("adminRemoved", targetUser.Name);
         }
 
         void INotificationService.BroadcastMessage(ChatUser user, string messageText)
