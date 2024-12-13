@@ -49,7 +49,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             });
 
-            Post["/login"] = param =>
+            Post("/login", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -61,8 +61,8 @@ namespace JabbR.Nancy
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
 
-                string username = Request.Form.username;
-                string password = Request.Form.password;
+                string username = Request.Form["username"];
+                string password = Request.Form["password"];
 
                 if (String.IsNullOrEmpty(username))
                 {
@@ -87,13 +87,13 @@ namespace JabbR.Nancy
                 }
                 catch
                 {
-                    // Swallow the exception    
+                    // Swallow the exception
                 }
 
                 this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
             Post("/logout", parameters =>
             {
