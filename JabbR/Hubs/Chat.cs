@@ -801,11 +801,15 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
                 Count = _repository.GetOnlineUsers(targetRoom).Count()
             };
 
-            // Tell this client it's allowed.  Pass down a viewmodel so that we can add the room to the lobby.
-            Clients.User(targetUser.Id).allowUser(targetRoom.Name, roomViewModel);
+            // Use Task.Run to handle the asynchronous operations
+            Task.Run(async () =>
+            {
+                // Tell this client it's allowed.  Pass down a viewmodel so that we can add the room to the lobby.
+                await Clients.User(targetUser.Id).SendAsync("allowUser", targetRoom.Name, roomViewModel);
 
-            // Tell the calling client the granting permission into the room was successful
-            Clients.Caller.userAllowed(targetUser.Name, targetRoom.Name);
+                // Tell the calling client the granting permission into the room was successful
+                await Clients.Caller.SendAsync("userAllowed", targetUser.Name, targetRoom.Name);
+            }).Wait(); // Wait for the task to complete
         }
 
         void INotificationService.UnallowUser(ChatUser targetUser, ChatRoom targetRoom, ChatUser callingUser)
