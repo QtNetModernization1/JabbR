@@ -242,9 +242,7 @@ namespace JabbR.Nancy
                 return HttpStatusCode.BadRequest;
             };
 
-            Post["/newpassword"] = NewPassword;
-
-            Func<dynamic, dynamic> NewPassword = _ =>
+            Post["/newpassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
