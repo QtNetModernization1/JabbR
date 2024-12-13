@@ -1115,9 +1115,9 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
             Clients.User(user.Id).SendAsync("welcomeChanged", isWelcomeCleared, parsedWelcome).Wait();
         }
 
-        void INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
+        async Task INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
         {
-            Send(message, room.Name);
+            await Send(message, room.Name);
         }
 
         void INotificationService.AddAdmin(ChatUser targetUser)
