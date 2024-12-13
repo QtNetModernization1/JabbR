@@ -16,27 +16,27 @@ using System.Runtime.CompilerServices;
 namespace JabbR
 {
     [AuthorizeClaim(JabbRClaimTypes.Identifier)]
-    public class Chat : Hub, INotificationService
+public class Chat : Hub, INotificationService
+{
+    private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
+
+    private readonly IJabbrRepository _repository;
+    private readonly IChatService _service;
+    private readonly IRecentMessageCache _recentMessageCache;
+    private readonly ICache _cache;
+    private readonly Func<IHubCallerClients, ContentProviderProcessor> _resourceProcessorFactory;
+    private readonly ILogger _logger;
+    private readonly ApplicationSettings _settings;
+
+    public Chat(Func<IHubCallerClients, ContentProviderProcessor> resourceProcessorFactory,
+                IChatService service,
+                IRecentMessageCache recentMessageCache,
+                IJabbrRepository repository,
+                ICache cache,
+                ILogger logger,
+                ApplicationSettings settings)
     {
-        private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
-
-        private readonly IJabbrRepository _repository;
-        private readonly IChatService _service;
-        private readonly IRecentMessageCache _recentMessageCache;
-        private readonly ICache _cache;
-        private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly ILogger _logger;
-        private readonly ApplicationSettings _settings;
-
-        public Chat(ContentProviderProcessor resourceProcessor,
-                    IChatService service,
-                    IRecentMessageCache recentMessageCache,
-                    IJabbrRepository repository,
-                    ICache cache,
-                    ILogger logger,
-                    ApplicationSettings settings)
-        {
-            _resourceProcessor = resourceProcessor;
+        _resourceProcessorFactory = resourceProcessorFactory;
             _service = service;
             _recentMessageCache = recentMessageCache;
             _repository = repository;
@@ -527,8 +527,10 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
                 if (urls.Count > 0)
                 {
+                    // Create a new ContentProviderProcessor instance with the current Clients
+                    var resourceProcessor = _resourceProcessorFactory(Clients);
                     // Use Task.Run to run the synchronous method asynchronously
-                    await Task.Run(() => _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id));
+                    await Task.Run(() => resourceProcessor.ProcessUrls(urls, room.Name, chatMessage.Id));
                 }
             }
         }
