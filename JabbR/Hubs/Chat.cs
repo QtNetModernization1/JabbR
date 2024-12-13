@@ -601,7 +601,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 var isOwner = ownedRooms.Contains(room.Key);
 
                 // Tell the people in this room that you've joined
-                Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
                 // Add the caller to the group so they receive messages
                 Groups.Add(clientId, room.Name);
