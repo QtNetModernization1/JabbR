@@ -484,9 +484,9 @@ public async Task<bool> Send(ClientMessage clientMessage)
             };
         }
 
-        public void PostNotification(ClientNotification notification)
+        public async Task PostNotification(ClientNotification notification)
         {
-            PostNotification(notification, executeContentProviders: true);
+            await PostNotification(notification, executeContentProviders: true);
         }
 
         public async Task PostNotification(ClientNotification notification, bool executeContentProviders)
