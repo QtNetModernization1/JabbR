@@ -634,7 +634,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 }
 
                 // Initialize the chat with the rooms the user is in
-                Clients.Caller.logOn(rooms, privateRooms, user.Preferences);
+                await Clients.Caller.SendAsync("logOn", rooms, privateRooms, user.Preferences);
             }
         }
 
