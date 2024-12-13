@@ -101,5 +101,12 @@ namespace JabbR.Nancy
             }
             return default(T);
         }
+
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return new DefaultNancyEnvironmentConfigurator(
+                GetApplicationContainer().Get<INancyEnvironmentFactory>(),
+                GetApplicationContainer().GetAll<INancyDefaultConfigurationProvider>());
+        }
     }
 }
