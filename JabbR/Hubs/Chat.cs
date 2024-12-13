@@ -974,7 +974,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             foreach (var client in user.ConnectedClients)
             {
                 DisconnectClient(client.Id);
-                Clients.Client(client.Id).logOut();
+                Task.Run(async () => await Clients.Client(client.Id).SendAsync("logOut")).Wait();
             }
         }
 
