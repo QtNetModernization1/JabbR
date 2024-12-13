@@ -81,7 +81,7 @@ namespace JabbR.Nancy
                         IList<Claim> claims;
                         if (authenticator.TryAuthenticateUser(username, password, out claims))
                         {
-                            return this.SignIn(claims);
+                            return this.SignIn(claims.AsEnumerable());
                         }
                     }
                 }
