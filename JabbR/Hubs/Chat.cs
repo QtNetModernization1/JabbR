@@ -12,7 +12,6 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace JabbR
 {
