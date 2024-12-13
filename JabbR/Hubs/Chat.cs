@@ -768,30 +768,33 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
 
         void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
         {
-            var userViewModel = new UserViewModel(user);
-            var roomViewModel = new RoomViewModel
+            Task.Run(async () =>
             {
-                Name = room.Name,
-                Private = room.Private,
-                Welcome = room.Welcome ?? String.Empty,
-                Closed = room.Closed
-            };
+                var userViewModel = new UserViewModel(user);
+                var roomViewModel = new RoomViewModel
+                {
+                    Name = room.Name,
+                    Private = room.Private,
+                    Welcome = room.Welcome ?? String.Empty,
+                    Closed = room.Closed
+                };
 
-            var isOwner = user.OwnedRooms.Contains(room);
+                var isOwner = user.OwnedRooms.Contains(room);
 
-            // Tell all clients to join this room
-            Clients.User(user.Id).SendAsync("joinRoom", roomViewModel).Wait();
+                // Tell all clients to join this room
+                await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
-            // Tell the people in this room that you've joined
-            Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner).Wait();
+                // Tell the people in this room that you've joined
+                await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
-            // Notify users of the room count change
-            OnRoomChanged(room);
+                // Notify users of the room count change
+                await OnRoomChanged(room);
 
-            foreach (var client in user.ConnectedClients)
-            {
-                Groups.AddToGroupAsync(client.Id, room.Name).Wait();
-            }
+                foreach (var client in user.ConnectedClients)
+                {
+                    await Groups.AddToGroupAsync(client.Id, room.Name);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
