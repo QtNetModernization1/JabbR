@@ -917,17 +917,17 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
 
         void INotificationService.ListUsers(ChatRoom room, IEnumerable<string> names)
         {
-            Clients.Caller.showUsersInRoom(room.Name, names);
+            Clients.Caller.SendAsync("showUsersInRoom", room.Name, names);
         }
 
         void INotificationService.ListAllowedUsers(ChatRoom room)
         {
-            Clients.Caller.listAllowedUsers(room.Name, room.Private, room.AllowedUsers.Select(s => s.Name));
+            Clients.Caller.SendAsync("listAllowedUsers", room.Name, room.Private, room.AllowedUsers.Select(s => s.Name));
         }
 
         void INotificationService.ListOwners(ChatRoom room)
         {
-            Clients.Caller.listOwners(room.Name, room.Owners.Select(s => s.Name), room.Creator != null ? room.Creator.Name : null);
+            Clients.Caller.SendAsync("listOwners", room.Name, room.Owners.Select(s => s.Name), room.Creator != null ? room.Creator.Name : null);
         }
 
         void INotificationService.LockRoom(ChatUser targetUser, ChatRoom room)
