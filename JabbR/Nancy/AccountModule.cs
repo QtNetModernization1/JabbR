@@ -379,7 +379,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             };
 
-            Get["/requestresetpassword"] = _ =>
+            Get("/requestresetpassword", _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -394,9 +394,9 @@ namespace JabbR.Nancy
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
-            Post["/requestresetpassword"] = _ =>
+            Post("/requestresetpassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -415,7 +415,7 @@ namespace JabbR.Nancy
                     return HttpStatusCode.NotFound;
                 }
 
-                string username = Request.Form.username;
+                string username = Request.Form["username"];
 
                 if (String.IsNullOrEmpty(username))
                 {
@@ -453,9 +453,9 @@ namespace JabbR.Nancy
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
-            Get["/resetpassword/{id}"] = parameters =>
+            Get("/resetpassword/{id}", parameters =>
             {
                 if (!applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
@@ -485,9 +485,9 @@ namespace JabbR.Nancy
                         return View["resetpassword", user.RequestPasswordResetId];
                     }
                 }
-            };
+            });
 
-            Post["/resetpassword/{id}"] = parameters =>
+            Post("/resetpassword/{id}", parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -501,8 +501,8 @@ namespace JabbR.Nancy
                 }
 
                 string resetPasswordToken = parameters.id;
-                string newPassword = Request.Form.password;
-                string confirmNewPassword = Request.Form.confirmPassword;
+                string newPassword = Request.Form["password"];
+                string confirmNewPassword = Request.Form["confirmPassword"];
 
                 ValidatePassword(newPassword, confirmNewPassword);
 
@@ -533,7 +533,7 @@ namespace JabbR.Nancy
                 }
 
                 return View["resetpassword", resetPasswordToken];
-            };
+            });
         }
 
         private void ValidatePassword(string password, string confirmPassword)
