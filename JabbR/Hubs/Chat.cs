@@ -1117,7 +1117,7 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
 
         void INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
         {
-            Send(message, room.Name);
+            Send(message, room.Name).GetAwaiter().GetResult();
         }
 
         void INotificationService.AddAdmin(ChatUser targetUser)
