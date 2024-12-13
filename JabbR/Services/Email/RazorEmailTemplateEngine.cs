@@ -200,7 +200,7 @@ namespace JabbR.Services
 
             if (templateResults.Any(result => result.ParserErrors.Any()))
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors.Cast<object>()).Select(e => e.GetType().GetProperty("Location").GetValue(e) + ":" + Environment.NewLine + e.GetType().GetProperty("Message").GetValue(e)).ToArray());
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
 
                 throw new InvalidOperationException(parseExceptionMessage);
             }
