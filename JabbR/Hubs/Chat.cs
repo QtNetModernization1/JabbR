@@ -1168,7 +1168,7 @@ void INotificationService.BroadcastMessage(ChatUser user, string messageText)
             Clients.All.SendAsync("forceUpdate");
         }
 
-        private void OnRoomChanged(ChatRoom room)
+        private async Task OnRoomChanged(ChatRoom room)
         {
             var roomViewModel = new RoomViewModel
             {
@@ -1182,11 +1182,11 @@ void INotificationService.BroadcastMessage(ChatUser user, string messageText)
             // notify all clients who can see the room
             if (!room.Private)
             {
-                Clients.All.updateRoom(roomViewModel);
+                await Clients.All.SendAsync("updateRoom", roomViewModel);
             }
             else
             {
-                Clients.Clients(_repository.GetAllowedClientIds(room)).updateRoom(roomViewModel);
+                await Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("updateRoom", roomViewModel);
             }
         }
 
