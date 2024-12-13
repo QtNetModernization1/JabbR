@@ -1108,11 +1108,11 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
             OnRoomChanged(room);
         }
 
-        async Task INotificationService.ChangeWelcome(ChatUser user, ChatRoom room)
+        void INotificationService.ChangeWelcome(ChatUser user, ChatRoom room)
         {
             bool isWelcomeCleared = String.IsNullOrWhiteSpace(room.Welcome);
             var parsedWelcome = room.Welcome ?? String.Empty;
-            await Clients.User(user.Id).SendAsync("welcomeChanged", isWelcomeCleared, parsedWelcome);
+            Clients.User(user.Id).welcomeChanged(isWelcomeCleared, parsedWelcome);
         }
 
         void INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
