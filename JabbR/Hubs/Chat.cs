@@ -1102,7 +1102,7 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
 
         void INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
         {
-            Clients.Group(room.Name).topicChanged(room.Name, room.Topic ?? String.Empty, user.Name);
+            Clients.Group(room.Name).SendAsync("topicChanged", room.Name, room.Topic ?? String.Empty, user.Name);
 
             // trigger a lobby update
             OnRoomChanged(room);
