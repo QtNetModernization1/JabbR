@@ -9,12 +9,14 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
 namespace JabbR.Nancy
 {
     public class AccountModule : JabbRModule
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAuthenticationService _authenticationService;
 
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
@@ -23,10 +25,12 @@ namespace JabbR.Nancy
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
                              IEmailService emailService,
-                             IHttpContextAccessor httpContextAccessor)
+                             IHttpContextAccessor httpContextAccessor,
+                             IAuthenticationService authenticationService)
             : base("/account")
         {
             _httpContextAccessor = httpContextAccessor;
+            _authenticationService = authenticationService;
             Get("/", _ =>
             {
                 if (!IsAuthenticated)
@@ -81,7 +85,16 @@ namespace JabbR.Nancy
                         IList<Claim> claims;
                         if (authenticator.TryAuthenticateUser(username, password, out claims))
                         {
-                            return this.SignIn(claims);
+                            var claimsIdentity = new ClaimsIdentity(claims, "Password");
+                            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                            await _authenticationService.SignInAsync(_httpContextAccessor.HttpContext, "Cookies", claimsPrincipal, new AuthenticationProperties
+                            {
+                                IsPersistent = true,
+                                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                            });
+
+                            return this.AsRedirectQueryStringOrDefault("~/");
                         }
                     }
                 }
