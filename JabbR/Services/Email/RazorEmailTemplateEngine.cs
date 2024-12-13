@@ -9,7 +9,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
-using Microsoft.AspNetCore.Razor.CodeGenerators;
 
 namespace JabbR.Services
 {
@@ -201,7 +200,7 @@ namespace JabbR.Services
 
             if (templateResults.Any(result => result.ParserErrors.Any()))
             {
-                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany<GeneratorResults, GeneratorError>(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
 
                 throw new InvalidOperationException(parseExceptionMessage);
             }
