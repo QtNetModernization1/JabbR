@@ -1034,59 +1034,70 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
 
         void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
         {
-            // Create the view model
-            var userViewModel = new UserViewModel(user);
-
-
-            // Tell the user's connected clients that the name changed
-            Clients.User(user.Id).userNameChanged(userViewModel);
-
-            // Notify all users in the rooms
-            foreach (var room in user.Rooms)
+            Task.Run(async () =>
             {
-                Clients.Group(room.Name).changeUserName(oldUserName, userViewModel, room.Name);
-            }
+                // Create the view model
+                var userViewModel = new UserViewModel(user);
+
+                // Tell the user's connected clients that the name changed
+                await Clients.User(user.Id).SendAsync("userNameChanged", userViewModel);
+
+                // Notify all users in the rooms
+                foreach (var room in user.Rooms)
+                {
+                    await Clients.Group(room.Name).SendAsync("changeUserName", oldUserName, userViewModel, room.Name);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         void INotificationService.ChangeAfk(ChatUser user)
         {
-            // Create the view model
-            var userViewModel = new UserViewModel(user);
-
-            // Tell all users in rooms to change the note
-            foreach (var room in user.Rooms)
+            Task.Run(async () =>
             {
-                Clients.Group(room.Name).changeAfk(userViewModel, room.Name);
-            }
+                // Create the view model
+                var userViewModel = new UserViewModel(user);
+
+                // Tell all users in rooms to change the note
+                foreach (var room in user.Rooms)
+                {
+                    await Clients.Group(room.Name).SendAsync("changeAfk", userViewModel, room.Name);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         void INotificationService.ChangeNote(ChatUser user)
         {
-            // Create the view model
-            var userViewModel = new UserViewModel(user);
-
-            // Tell all users in rooms to change the note
-            foreach (var room in user.Rooms)
+            Task.Run(async () =>
             {
-                Clients.Group(room.Name).changeNote(userViewModel, room.Name);
-            }
+                // Create the view model
+                var userViewModel = new UserViewModel(user);
+
+                // Tell all users in rooms to change the note
+                foreach (var room in user.Rooms)
+                {
+                    await Clients.Group(room.Name).SendAsync("changeNote", userViewModel, room.Name);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         void INotificationService.ChangeFlag(ChatUser user)
         {
-            bool isFlagCleared = String.IsNullOrWhiteSpace(user.Flag);
-
-            // Create the view model
-            var userViewModel = new UserViewModel(user);
-
-            // Update the calling client
-            Clients.User(user.Id).flagChanged(isFlagCleared, userViewModel.Country);
-
-            // Tell all users in rooms to change the flag
-            foreach (var room in user.Rooms)
+            Task.Run(async () =>
             {
-                Clients.Group(room.Name).changeFlag(userViewModel, room.Name);
-            }
+                bool isFlagCleared = String.IsNullOrWhiteSpace(user.Flag);
+
+                // Create the view model
+                var userViewModel = new UserViewModel(user);
+
+                // Update the calling client
+                await Clients.User(user.Id).SendAsync("flagChanged", isFlagCleared, userViewModel.Country);
+
+                // Tell all users in rooms to change the flag
+                foreach (var room in user.Rooms)
+                {
+                    await Clients.Group(room.Name).SendAsync("changeFlag", userViewModel, room.Name);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         void INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
