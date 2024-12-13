@@ -789,7 +789,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             }
         }
 
-        async Task INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
+        void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Build a viewmodel for the room
             var roomViewModel = new RoomViewModel
@@ -802,10 +802,10 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             };
 
             // Tell this client it's allowed.  Pass down a viewmodel so that we can add the room to the lobby.
-            await Clients.User(targetUser.Id).SendAsync("allowUser", targetRoom.Name, roomViewModel);
+            Clients.User(targetUser.Id).allowUser(targetRoom.Name, roomViewModel);
 
             // Tell the calling client the granting permission into the room was successful
-            await Clients.Caller.SendAsync("userAllowed", targetUser.Name, targetRoom.Name);
+            Clients.Caller.userAllowed(targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.UnallowUser(ChatUser targetUser, ChatRoom targetRoom, ChatUser callingUser)
