@@ -730,25 +730,25 @@ public async Task<bool> Send(ClientMessage clientMessage)
             LogOn(user, clientId, reconnecting: true).GetAwaiter().GetResult();
         }
 
-        void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
-        {
-            var targetUserViewModel = new UserViewModel(targetUser);
-            var callingUserViewModel = new UserViewModel(callingUser);
+void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
+{
+    var targetUserViewModel = new UserViewModel(targetUser);
+    var callingUserViewModel = new UserViewModel(callingUser);
 
-            if (String.IsNullOrWhiteSpace(reason))
-            {
-                reason = null;
-            }
+    if (String.IsNullOrWhiteSpace(reason))
+    {
+        reason = null;
+    }
 
-            Clients.Group(room.Name).kick(targetUserViewModel, room.Name, callingUserViewModel, reason);
+    Clients.Group(room.Name).SendAsync("kick", targetUserViewModel, room.Name, callingUserViewModel, reason).Wait();
 
-            foreach (var client in targetUser.ConnectedClients)
-            {
-                Groups.Remove(client.Id, room.Name);
-            }
+    foreach (var client in targetUser.ConnectedClients)
+    {
+        Groups.RemoveFromGroupAsync(client.Id, room.Name).Wait();
+    }
 
-            OnRoomChanged(room);
-        }
+    OnRoomChanged(room);
+}
 
         void INotificationService.OnUserCreated(ChatUser user)
         {
