@@ -907,12 +907,12 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
         void INotificationService.ListUsers()
         {
             var users = _repository.Users.Online().Select(s => s.Name).OrderBy(s => s);
-            Clients.Caller.listUsers(users);
+            Clients.Caller.SendAsync("ListUsers", users);
         }
 
         void INotificationService.ListUsers(IEnumerable<ChatUser> users)
         {
-            Clients.Caller.listUsers(users.Select(s => s.Name));
+            Clients.Caller.SendAsync("ListUsers", users.Select(s => s.Name));
         }
 
         void INotificationService.ListUsers(ChatRoom room, IEnumerable<string> names)
