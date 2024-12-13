@@ -9,14 +9,13 @@ using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : IStatusCodeHandler
+    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
-        private readonly IRenderContext _renderContext;
 
-        public ErrorPageHandler(IRenderContext renderContext, IJabbrRepository repository)
+        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
+            : base(factory)
         {
-            _renderContext = renderContext;
             _repository = repository;
         }
 
@@ -49,7 +48,7 @@ namespace JabbR.Nancy
                 SuggestRoomName = suggestRoomName
             };
 
-            var response = _renderContext.RenderView("errorPage", model) as Response;
+            var response = base.RenderView(context, "errorPage", model) as Response;
             if (response != null)
             {
                 response.StatusCode = statusCode;
