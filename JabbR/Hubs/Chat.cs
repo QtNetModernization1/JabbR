@@ -958,11 +958,11 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
             // notify all members of room that it is now closed
             foreach (var user in users)
             {
-                Clients.User(user.Id).SendAsync("RoomClosed", room.Name);
+                Clients.User(user.Id).SendAsync("RoomClosed", room.Name).Wait();
             }
 
             // notify everyone to update their lobby
-            OnRoomChanged(room);
+            OnRoomChanged(room).Wait();
         }
 
         void INotificationService.UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
