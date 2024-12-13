@@ -740,11 +740,11 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 reason = null;
             }
 
-            await Clients.Group(room.Name).SendAsync("kick", targetUserViewModel, room.Name, callingUserViewModel, reason);
+            Clients.Group(room.Name).kick(targetUserViewModel, room.Name, callingUserViewModel, reason);
 
             foreach (var client in targetUser.ConnectedClients)
             {
-                await Groups.RemoveFromGroupAsync(client.Id, room.Name);
+                Groups.Remove(client.Id, room.Name);
             }
 
             OnRoomChanged(room);
