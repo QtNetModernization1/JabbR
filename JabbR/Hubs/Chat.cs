@@ -1154,14 +1154,14 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
             Clients.Caller.SendAsync("adminRemoved", targetUser.Name);
         }
 
-        void INotificationService.BroadcastMessage(ChatUser user, string messageText)
-        {
-            // Tell all users in all rooms about this message
-            foreach (var room in _repository.Rooms)
-            {
-                Clients.Group(room.Name).broadcastMessage(messageText, room.Name);
-            }
-        }
+void INotificationService.BroadcastMessage(ChatUser user, string messageText)
+{
+    // Tell all users in all rooms about this message
+    foreach (var room in _repository.Rooms)
+    {
+        Clients.Group(room.Name).SendAsync("broadcastMessage", messageText, room.Name);
+    }
+}
 
         void INotificationService.ForceUpdate()
         {
