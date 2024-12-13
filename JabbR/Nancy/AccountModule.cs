@@ -226,7 +226,16 @@ namespace JabbR.Nancy
                                 identity.AddClaim(new Claim(ClaimTypes.Email, email));
                             }
 
-                            return this.SignIn(Principal.Claims);
+                            var claimsIdentity = new ClaimsIdentity(Principal.Claims, "Password");
+                            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                            await _aspNetAuthService.SignInAsync(_httpContextAccessor.HttpContext, "Cookies", claimsPrincipal, new AuthenticationProperties
+                            {
+                                IsPersistent = true,
+                                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                            });
+
+                            return Response.AsRedirect("~/");
                         }
                     }
                 }
