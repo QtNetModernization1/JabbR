@@ -565,7 +565,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             CheckStatus();
         }
 
-        public void TabOrderChanged(string[] tabOrdering)
+        public async Task TabOrderChanged(string[] tabOrdering)
         {
             string userId = Context.User.GetUserId();
 
@@ -577,7 +577,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
             _repository.CommitChanges();
 
-            Clients.User(user.Id).updateTabOrder(tabOrdering);
+            await Clients.User(user.Id).SendAsync("updateTabOrder", tabOrdering);
         }
 
         private async Task LogOn(ChatUser user, string clientId, bool reconnecting)
