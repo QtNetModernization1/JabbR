@@ -965,16 +965,16 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
             OnRoomChanged(room).Wait();
         }
 
-        void INotificationService.UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
+        async Task INotificationService.UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
         {
             // notify all members of room that it is now re-opened
             foreach (var user in users)
             {
-                Clients.User(user.Id).SendAsync("roomUnClosed", room.Name);
+                await Clients.User(user.Id).SendAsync("roomUnClosed", room.Name);
             }
 
             // notify everyone to update their lobby
-            OnRoomChanged(room);
+            await OnRoomChanged(room);
         }
 
         void INotificationService.LogOut(ChatUser user, string clientId)
