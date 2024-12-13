@@ -938,19 +938,19 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
             Clients.Caller.SendAsync("listOwners", room.Name, room.Owners.Select(s => s.Name), room.Creator != null ? room.Creator.Name : null);
         }
 
-        async Task INotificationService.LockRoom(ChatUser targetUser, ChatRoom room)
+        void INotificationService.LockRoom(ChatUser targetUser, ChatRoom room)
         {
             var userViewModel = new UserViewModel(targetUser);
 
             // Tell everyone that the room's locked
-            await Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("lockRoom", userViewModel, room.Name, true);
-            await Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).SendAsync("lockRoom", userViewModel, room.Name, false);
+            Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("lockRoom", userViewModel, room.Name, true);
+            Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).SendAsync("lockRoom", userViewModel, room.Name, false);
 
             // Tell the caller the room was successfully locked
-            await Clients.Caller.SendAsync("roomLocked", room.Name);
+            Clients.Caller.SendAsync("roomLocked", room.Name);
 
             // Notify people of the change
-            await OnRoomChanged(room);
+            OnRoomChanged(room);
         }
 
         void INotificationService.CloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
