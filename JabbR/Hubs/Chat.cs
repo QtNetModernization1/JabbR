@@ -12,6 +12,7 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace JabbR
 {
@@ -761,7 +762,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             await Clients.Caller.SendAsync("userCreated");
         }
 
-        void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
+        async Task INotificationService.JoinRoom(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
             var roomViewModel = new RoomViewModel
@@ -775,17 +776,17 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             var isOwner = user.OwnedRooms.Contains(room);
 
             // Tell all clients to join this room
-            Clients.User(user.Id).joinRoom(roomViewModel);
+            await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
             // Tell the people in this room that you've joined
-            Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+            await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
             // Notify users of the room count change
             OnRoomChanged(room);
 
             foreach (var client in user.ConnectedClients)
             {
-                Groups.Add(client.Id, room.Name);
+                await Groups.AddToGroupAsync(client.Id, room.Name);
             }
         }
 
