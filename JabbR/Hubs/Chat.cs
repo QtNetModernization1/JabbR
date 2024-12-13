@@ -727,7 +727,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
         void INotificationService.LogOn(ChatUser user, string clientId)
         {
-            LogOn(user, clientId, reconnecting: true);
+            LogOn(user, clientId, reconnecting: true).GetAwaiter().GetResult();
         }
 
         void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
