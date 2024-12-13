@@ -9,24 +9,29 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using IAuthService = JabbR.Infrastructure.IAuthenticationService;
 
 namespace JabbR.Nancy
 {
     public class AccountModule : JabbRModule
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly Microsoft.AspNetCore.Authentication.IAuthenticationService _aspNetAuthService;
 
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
                              IJabbrRepository repository,
-                             IAuthenticationService authService,
+                             IAuthService authService,
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
                              IEmailService emailService,
-                             IHttpContextAccessor httpContextAccessor)
+                             IHttpContextAccessor httpContextAccessor,
+                             Microsoft.AspNetCore.Authentication.IAuthenticationService aspNetAuthService)
             : base("/account")
         {
             _httpContextAccessor = httpContextAccessor;
+            _aspNetAuthService = aspNetAuthService;
             Get("/", _ =>
             {
                 if (!IsAuthenticated)
@@ -49,7 +54,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             });
 
-            Post("/login", _ =>
+            Post("/login", async _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -81,7 +86,16 @@ namespace JabbR.Nancy
                         IList<Claim> claims;
                         if (authenticator.TryAuthenticateUser(username, password, out claims))
                         {
-                            return this.SignIn(claims);
+                            var claimsIdentity = new ClaimsIdentity(claims, "Password");
+                            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                            await _aspNetAuthService.SignInAsync(_httpContextAccessor.HttpContext, "Cookies", claimsPrincipal, new AuthenticationProperties
+                            {
+                                IsPersistent = true,
+                                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                            });
+
+                            return this.AsRedirectQueryStringOrDefault("~/");
                         }
                     }
                 }
