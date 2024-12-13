@@ -551,7 +551,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             await Clients.Group(room.Name).SendAsync("setTyping", userViewModel, room.Name);
         }
 
-        public async Task UpdateActivity()
+        public void UpdateActivity()
         {
             string userId = Context.User.GetUserId();
 
@@ -559,10 +559,10 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
             foreach (var room in user.Rooms)
             {
-                await UpdateActivity(user, room);
+                UpdateActivity(user, room);
             }
 
-            await CheckStatus();
+            CheckStatus();
         }
 
         public async Task TabOrderChanged(string[] tabOrdering)
@@ -645,13 +645,11 @@ public async Task<bool> Send(ClientMessage clientMessage)
             await OnUpdateActivity(user, room);
         }
 
-        private Task UpdateActivity(ChatUser user)
+        private void UpdateActivity(ChatUser user)
         {
             _service.UpdateActivity(user, Context.ConnectionId, UserAgent);
 
             _repository.CommitChanges();
-
-            return Task.CompletedTask;
         }
 
         private bool TryHandleCommand(string command, string room)
