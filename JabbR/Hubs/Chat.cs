@@ -418,7 +418,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                     {
                         // If invoking roomLoaded fails don't get the roomInfo again
                         roomInfo = roomInfo ?? await GetRoomInfoCore(room);
-                        Clients.Caller.roomLoaded(roomInfo);
+                        await Clients.Caller.SendAsync("roomLoaded", roomInfo);
                         break;
                     }
                     catch (Exception ex)
