@@ -827,7 +827,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
         void INotificationService.AddOwner(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Tell this client it's an owner
-            Clients.User(targetUser.Id).makeOwner(targetRoom.Name);
+            Clients.User(targetUser.Id).SendAsync("makeOwner", targetRoom.Name);
 
             var userViewModel = new UserViewModel(targetUser);
 
