@@ -699,7 +699,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 {
                     var userViewModel = new UserViewModel(user);
 
-                    Clients.OthersInGroup(room.Name).leave(userViewModel, room.Name);
+                    Clients.OthersInGroup(room.Name).SendAsync("leave", userViewModel, room.Name);
                 }
             }
         }
