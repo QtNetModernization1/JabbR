@@ -533,7 +533,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             }
         }
 
-        public void Typing(string roomName)
+        public async Task Typing(string roomName)
         {
             string userId = Context.User.GetUserId();
 
@@ -545,10 +545,10 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 return;
             }
 
-            UpdateActivity(user, room);
+            await UpdateActivity(user, room);
 
             var userViewModel = new UserViewModel(user);
-            Clients.Group(room.Name).SendAsync("setTyping", userViewModel, room.Name);
+            await Clients.Group(room.Name).SendAsync("setTyping", userViewModel, room.Name);
         }
 
         public void UpdateActivity()
