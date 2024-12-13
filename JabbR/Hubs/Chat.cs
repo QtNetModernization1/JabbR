@@ -722,7 +722,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
                 await Groups.RemoveFromGroupAsync(client.Id, room.Name);
             }
 
-            OnRoomChanged(room);
+            await OnRoomChanged(room);
         }
 
         void INotificationService.LogOn(ChatUser user, string clientId)
