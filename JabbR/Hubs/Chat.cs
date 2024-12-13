@@ -982,7 +982,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
         {
             string userId = Context.User.GetUserId();
 
-            Clients.Caller.showUserInfo(new
+            Clients.Caller.SendAsync("showUserInfo", new
             {
                 Name = user.Name,
                 OwnedRooms = user.OwnedRooms
