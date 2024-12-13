@@ -520,7 +520,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             _repository.Add(chatMessage);
             _repository.CommitChanges();
 
-            Clients.Group(room.Name).addMessage(new MessageViewModel(chatMessage), room.Name);
+            await Clients.Group(room.Name).SendAsync("AddMessage", new MessageViewModel(chatMessage), room.Name);
 
             if (executeContentProviders)
             {
