@@ -766,7 +766,7 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
             await Clients.Caller.SendAsync("userCreated");
         }
 
-        void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
+        async Task INotificationService.JoinRoom(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
             var roomViewModel = new RoomViewModel
@@ -780,17 +780,17 @@ private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser ca
             var isOwner = user.OwnedRooms.Contains(room);
 
             // Tell all clients to join this room
-            Clients.User(user.Id).SendAsync("joinRoom", roomViewModel).Wait();
+            await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
             // Tell the people in this room that you've joined
-            Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner).Wait();
+            await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
             // Notify users of the room count change
-            OnRoomChanged(room);
+            await OnRoomChanged(room);
 
             foreach (var client in user.ConnectedClients)
             {
-                Groups.AddToGroupAsync(client.Id, room.Name).Wait();
+                await Groups.AddToGroupAsync(client.Id, room.Name);
             }
         }
 
