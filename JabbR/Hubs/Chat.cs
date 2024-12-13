@@ -935,11 +935,11 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             var userViewModel = new UserViewModel(targetUser);
 
             // Tell everyone that the room's locked
-            Clients.Clients(_repository.GetAllowedClientIds(room)).lockRoom(userViewModel, room.Name, true);
-            Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).lockRoom(userViewModel, room.Name, false);
+            Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("lockRoom", userViewModel, room.Name, true);
+            Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).SendAsync("lockRoom", userViewModel, room.Name, false);
 
             // Tell the caller the room was successfully locked
-            Clients.Caller.roomLocked(room.Name);
+            Clients.Caller.SendAsync("roomLocked", room.Name);
 
             // Notify people of the change
             OnRoomChanged(room);
