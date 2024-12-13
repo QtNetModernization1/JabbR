@@ -1288,12 +1288,12 @@ void INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, str
                                          .Select(u => u.Name)
                                          .OrderBy(u => u);
 
-            Clients.Caller.listUsers(users);
+            Clients.Caller.SendAsync("listUsers", users);
         }
 
         void INotificationService.CheckBanned(ChatUser user)
         {
-            Clients.Caller.checkBanned(new
+            Clients.Caller.SendAsync("checkBanned", new
             {
                 Name = user.Name,
                 IsBanned = user.IsBanned
