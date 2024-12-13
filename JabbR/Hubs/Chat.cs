@@ -1001,7 +1001,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
 
         void INotificationService.ShowHelp()
         {
-            Clients.Caller.showCommands();
+            Clients.Caller.SendAsync("showCommands");
         }
 
         void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom targetRoom)
