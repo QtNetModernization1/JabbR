@@ -11,7 +11,7 @@ using Nancy.Bootstrappers.Ninject;
 using Nancy.Configuration;
 using Microsoft.AspNetCore.Http;
 using Nancy.Security;
-
+using Nancy.Bootstrapper;
 using Ninject;
 
 namespace JabbR.Nancy
@@ -23,6 +23,11 @@ namespace JabbR.Nancy
         public JabbRNinjectNancyBootstrapper(IKernel kernel)
         {
             _kernel = kernel;
+        }
+
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return new DefaultNancyEnvironmentConfigurator();
         }
 
         protected override IKernel GetApplicationContainer()
