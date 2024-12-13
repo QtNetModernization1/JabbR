@@ -53,7 +53,7 @@ namespace JabbR.Services
         void ShowUserInfo(ChatUser user);
         void ShowHelp();
 
-        void LockRoom(ChatUser targetUser, ChatRoom room);
+Task LockRoom(ChatUser targetUser, ChatRoom room);
         void CloseRoom(IEnumerable<ChatUser> users, ChatRoom room);
         void UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room);
 
