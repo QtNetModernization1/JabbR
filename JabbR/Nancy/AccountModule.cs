@@ -90,7 +90,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            Post["/logout"] = _ =>
+            Post("/logout", parameters =>
             {
                 if (!IsAuthenticated)
                 {
@@ -102,7 +102,7 @@ namespace JabbR.Nancy
                 this.SignOut();
 
                 return response;
-            };
+            });
 
             Get["/register"] = _ =>
             {
