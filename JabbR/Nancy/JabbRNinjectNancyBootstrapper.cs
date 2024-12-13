@@ -30,6 +30,11 @@ namespace JabbR.Nancy
             return _kernel;
         }
 
+        public override INancyEnvironment GetEnvironment()
+        {
+            return new DefaultNancyEnvironment();
+        }
+
         protected override void ConfigureApplicationContainer(IKernel existingContainer)
         {
             // Configure your container here if needed
