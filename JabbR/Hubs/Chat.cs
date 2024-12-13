@@ -732,6 +732,11 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
 void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
 {
+    KickUserAsync(targetUser, room, callingUser, reason).GetAwaiter().GetResult();
+}
+
+private async Task KickUserAsync(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
+{
     var targetUserViewModel = new UserViewModel(targetUser);
     var callingUserViewModel = new UserViewModel(callingUser);
 
@@ -740,14 +745,14 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
         reason = null;
     }
 
-    Clients.Group(room.Name).SendAsync("kick", targetUserViewModel, room.Name, callingUserViewModel, reason).Wait();
+    await Clients.Group(room.Name).SendAsync("kick", targetUserViewModel, room.Name, callingUserViewModel, reason);
 
     foreach (var client in targetUser.ConnectedClients)
     {
-        Groups.RemoveFromGroupAsync(client.Id, room.Name).Wait();
+        await Groups.RemoveFromGroupAsync(client.Id, room.Name);
     }
 
-    OnRoomChanged(room);
+    await OnRoomChanged(room);
 }
 
         async void INotificationService.OnUserCreated(ChatUser user)
