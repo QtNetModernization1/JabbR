@@ -148,7 +148,7 @@ private Task CheckStatus()
             await LogOn(user, Context.ConnectionId, reconnecting);
         }
 
-public Task<bool> Send(string content, string roomName)
+public async Task<bool> Send(string content, string roomName)
 {
     var message = new ClientMessage
     {
@@ -156,7 +156,7 @@ public Task<bool> Send(string content, string roomName)
         Room = roomName
     };
 
-    return Send(message);
+    return await Send(message);
 }
 
 public async Task<bool> Send(ClientMessage clientMessage)
@@ -1115,9 +1115,9 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
             Clients.User(user.Id).SendAsync("welcomeChanged", isWelcomeCleared, parsedWelcome).Wait();
         }
 
-        Task INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
+        void INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
         {
-            return Send(message, room.Name);
+            Send(message, room.Name);
         }
 
         void INotificationService.AddAdmin(ChatUser targetUser)
