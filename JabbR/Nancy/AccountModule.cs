@@ -8,20 +8,25 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Nancy
 {
     public class AccountModule : JabbRModule
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
                              IJabbrRepository repository,
                              IAuthenticationService authService,
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
-                             IEmailService emailService)
+                             IEmailService emailService,
+                             IHttpContextAccessor httpContextAccessor)
             : base("/account")
         {
+            _httpContextAccessor = httpContextAccessor;
             Get("/", _ =>
             {
                 if (!IsAuthenticated)
@@ -99,7 +104,7 @@ namespace JabbR.Nancy
 
                 var response = Response.AsJson(new { success = true });
 
-                this.SignOut();
+                this.SignOut(_httpContextAccessor);
 
                 return response;
             });
