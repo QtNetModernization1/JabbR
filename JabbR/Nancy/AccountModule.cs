@@ -39,7 +39,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             });
 
-            Get["/login"] = _ =>
+            Get("/login", parameters =>
             {
                 if (IsAuthenticated)
                 {
@@ -47,7 +47,7 @@ namespace JabbR.Nancy
                 }
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
             Post["/login"] = param =>
             {
