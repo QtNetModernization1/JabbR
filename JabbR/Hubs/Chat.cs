@@ -1165,7 +1165,7 @@ void INotificationService.BroadcastMessage(ChatUser user, string messageText)
 
         void INotificationService.ForceUpdate()
         {
-            Clients.All.forceUpdate();
+            Clients.All.SendAsync("forceUpdate");
         }
 
         private void OnRoomChanged(ChatRoom room)
