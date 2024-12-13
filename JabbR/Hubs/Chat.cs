@@ -1108,12 +1108,12 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
             }).GetAwaiter().GetResult();
         }
 
-        void INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
+        async Task INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
         {
-            Clients.Group(room.Name).SendAsync("topicChanged", room.Name, room.Topic ?? String.Empty, user.Name);
+            await Clients.Group(room.Name).SendAsync("topicChanged", room.Name, room.Topic ?? String.Empty, user.Name);
 
             // trigger a lobby update
-            OnRoomChanged(room);
+            await OnRoomChanged(room);
         }
 
         void INotificationService.ChangeWelcome(ChatUser user, ChatRoom room)
