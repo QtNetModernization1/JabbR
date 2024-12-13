@@ -1024,7 +1024,7 @@ void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom ta
 
         void INotificationService.NudgeRoom(ChatRoom room, ChatUser user)
         {
-            Clients.Group(room.Name).nudge(user.Name, null, room.Name);
+            Clients.Group(room.Name).SendAsync("nudge", user.Name, null, room.Name);
         }
 
         async Task INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
