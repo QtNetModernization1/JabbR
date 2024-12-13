@@ -583,7 +583,7 @@ namespace JabbR.Nancy
 
         private LoginViewModel GetLoginViewModel(ApplicationSettings applicationSettings,
                                                  IJabbrRepository repository,
-                                                 IAuthenticationService authService)
+                                                 JabbRAuthService authService)
         {
             ChatUser user = null;
 
