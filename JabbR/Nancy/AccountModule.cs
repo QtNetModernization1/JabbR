@@ -44,7 +44,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            Post["/login"] = param =>
+            Post["/login"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
