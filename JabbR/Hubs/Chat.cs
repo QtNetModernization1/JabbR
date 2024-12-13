@@ -750,15 +750,15 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
     OnRoomChanged(room);
 }
 
-        void INotificationService.OnUserCreated(ChatUser user)
+        async void INotificationService.OnUserCreated(ChatUser user)
         {
             // Set some client state
-            Clients.Caller.name = user.Name;
-            Clients.Caller.id = user.Id;
-            Clients.Caller.hash = user.Hash;
+            await Clients.Caller.SendAsync("setName", user.Name);
+            await Clients.Caller.SendAsync("setId", user.Id);
+            await Clients.Caller.SendAsync("setHash", user.Hash);
 
             // Tell the client a user was created
-            Clients.Caller.userCreated();
+            await Clients.Caller.SendAsync("userCreated");
         }
 
         void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
