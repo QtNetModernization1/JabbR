@@ -1,24 +1,21 @@
-using System.Text.RegularExpressions;
-using System.IO;
+﻿using System.Text.RegularExpressions;
+
 using JabbR.Services;
+
 using Nancy;
 using Nancy.ErrorHandling;
-using Nancy.Responses;
 using Nancy.ViewEngines;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : IStatusCodeHandler
+    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
-        private readonly IRootPathProvider _rootPathProvider;
-        private readonly IViewRenderer _viewRenderer;
 
-        public ErrorPageHandler(IJabbrRepository repository, IRootPathProvider rootPathProvider, IViewRenderer viewRenderer)
+        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
+            : base(factory)
         {
             _repository = repository;
-            _rootPathProvider = rootPathProvider;
-            _viewRenderer = viewRenderer;
         }
 
         public bool HandlesStatusCode(HttpStatusCode statusCode, NancyContext context)
@@ -43,25 +40,18 @@ namespace JabbR.Nancy
                 }
             }
 
-            var model = new
-            {
-                Error = statusCode,
-                ErrorCode = (int)statusCode,
-                SuggestRoomName = suggestRoomName
-            };
+            var response = RenderView(
+                context, 
+                "errorPage", 
+                new 
+                { 
+                    Error = statusCode,
+                    ErrorCode = (int)statusCode,
+                    SuggestRoomName = suggestRoomName
+                });
 
-            var viewLocation = Path.Combine(_rootPathProvider.GetRootPath(), "Views", "errorPage.cshtml");
-            var response = _viewRenderer.RenderView(viewLocation, model, context) as Response;
-
-            if (response != null)
-            {
-                response.StatusCode = statusCode;
-                context.Response = response;
-            }
-            else
-            {
-                context.Response = new TextResponse(statusCode, "An error occurred. Status code: " + (int)statusCode);
-            }
+            response.StatusCode = statusCode;
+            context.Response = response;
         }
     }
 }
