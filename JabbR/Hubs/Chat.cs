@@ -950,7 +950,7 @@ void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser 
             // notify all members of room that it is now closed
             foreach (var user in users)
             {
-                Clients.User(user.Id).roomClosed(room.Name);
+                Clients.User(user.Id).SendAsync("RoomClosed", room.Name);
             }
 
             // notify everyone to update their lobby
