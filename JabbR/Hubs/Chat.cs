@@ -885,7 +885,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
         void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
         {
-            Clients.User(user.Id).postNotification(message, room.Name);
+            Clients.User(user.Id).SendAsync("postNotification", message, room.Name).Wait();
         }
 
         void INotificationService.ListRooms(ChatUser user)
@@ -894,7 +894,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
 
             var userModel = new UserViewModel(user);
 
-            Clients.Caller.showUsersRoomList(userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
+            Clients.Caller.SendAsync("showUsersRoomList", userModel, user.Rooms.Allowed(userId).Select(r => r.Name)).Wait();
         }
 
         void INotificationService.ListUsers()
