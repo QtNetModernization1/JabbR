@@ -143,7 +143,7 @@ namespace JabbR.Nancy
                 return View["register"];
             });
 
-            Post("/create", _ =>
+            Post("/create", async _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -193,7 +193,23 @@ namespace JabbR.Nancy
                         {
                             ChatUser user = membershipService.AddUser(username, email, password);
 
-                            return this.SignIn(user);
+                            var claims = new List<Claim>
+                            {
+                                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                                new Claim(ClaimTypes.Name, user.Name),
+                                new Claim(ClaimTypes.Email, user.Email)
+                            };
+
+                            var claimsIdentity = new ClaimsIdentity(claims, "Password");
+                            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                            await _aspNetAuthService.SignInAsync(_httpContextAccessor.HttpContext, "Cookies", claimsPrincipal, new AuthenticationProperties
+                            {
+                                IsPersistent = true,
+                                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                            });
+
+                            return Response.AsRedirect("~/");
                         }
                         else
                         {
