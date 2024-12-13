@@ -9,7 +9,6 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
 
 namespace JabbR.Nancy
 {
@@ -50,7 +49,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             });
 
-            Post("/login", async _ =>
+            Post("/login", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -82,8 +81,7 @@ namespace JabbR.Nancy
                         IList<Claim> claims;
                         if (authenticator.TryAuthenticateUser(username, password, out claims))
                         {
-                            await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies")));
-                            return this.AsRedirectQueryStringOrDefault("~/");
+                            return this.SignIn(claims);
                         }
                     }
                 }
