@@ -18,34 +18,37 @@ using System.Runtime.CompilerServices;
 namespace JabbR
 {
     [AuthorizeClaim(JabbRClaimTypes.Identifier)]
-    public class Chat : Hub, INotificationService
+public class Chat : Hub, INotificationService
+{
+    private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
+
+    private readonly IJabbrRepository _repository;
+    private readonly IChatService _service;
+    private readonly IRecentMessageCache _recentMessageCache;
+    private readonly ICache _cache;
+    private readonly ContentProviderProcessor _resourceProcessor;
+    private readonly ILogger _logger;
+    private readonly ApplicationSettings _settings;
+    private readonly IHubContext<Chat> _hubContext;
+
+    public Chat(ContentProviderProcessor resourceProcessor,
+                IChatService service,
+                IRecentMessageCache recentMessageCache,
+                IJabbrRepository repository,
+                ICache cache,
+                ILogger logger,
+                ApplicationSettings settings,
+                IHubContext<Chat> hubContext)
     {
-        private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
-
-        private readonly IJabbrRepository _repository;
-        private readonly IChatService _service;
-        private readonly IRecentMessageCache _recentMessageCache;
-        private readonly ICache _cache;
-        private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly ILogger _logger;
-        private readonly ApplicationSettings _settings;
-
-        public Chat(ContentProviderProcessor resourceProcessor,
-                    IChatService service,
-                    IRecentMessageCache recentMessageCache,
-                    IJabbrRepository repository,
-                    ICache cache,
-                    ILogger logger,
-                    ApplicationSettings settings)
-        {
-            _resourceProcessor = resourceProcessor;
-            _service = service;
-            _recentMessageCache = recentMessageCache;
-            _repository = repository;
-            _cache = cache;
-            _logger = logger;
-            _settings = settings;
-        }
+        _resourceProcessor = resourceProcessor;
+        _service = service;
+        _recentMessageCache = recentMessageCache;
+        _repository = repository;
+        _cache = cache;
+        _logger = logger;
+        _settings = settings;
+        _hubContext = hubContext;
+    }
 
         private string UserAgent
         {
@@ -227,7 +230,7 @@ public async Task<bool> Send(ClientMessage clientMessage)
             var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
             if (urls.Count > 0)
             {
-                _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id);
+                _resourceProcessor.ProcessUrls(urls, _hubContext, room.Name, chatMessage.Id);
             }
 
             return true;
