@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Nancy.Security;
 
 using Ninject;
+using Nancy.Configuration;
 
 namespace JabbR.Nancy
 {
@@ -28,6 +29,11 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
+        }
+
+        protected override INancyEnvironment GetEnvironment()
+        {
+            return new DefaultNancyEnvironment();
         }
 
         protected override void ConfigureApplicationContainer(IKernel existingContainer)
