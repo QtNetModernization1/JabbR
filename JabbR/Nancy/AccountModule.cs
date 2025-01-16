@@ -27,87 +27,88 @@ public class AccountModule : NancyModule
         : base("/account")
     {
         _httpContextAccessor = httpContextAccessor;
-            Get("/", _ =>
+
+        Get("/", _ =>
+        {
+            if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                {
-                    return HttpStatusCode.Forbidden;
-                }
+                return HttpStatusCode.Forbidden;
+            }
 
-                ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-                return GetProfileView(authService, user);
-            });
+            return GetProfileView(authService, user);
+        });
 
-            Get("/login", _ =>
+        Get("/login", _ =>
+        {
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                {
-                    return this.AsRedirectQueryStringOrDefault("~/");
-                }
+                return this.AsRedirectQueryStringOrDefault("~/");
+            }
 
-                return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            });
+            return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
+        });
 
-            Post["/login"] = param =>
+        Post("/login", param =>
+        {
+            if (!HasValidCsrfTokenOrSecHeader)
             {
-                if (!HasValidCsrfTokenOrSecHeader)
-                {
-                    return HttpStatusCode.Forbidden;
-                }
+                return HttpStatusCode.Forbidden;
+            }
 
-                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                {
-                    return this.AsRedirectQueryStringOrDefault("~/");
-                }
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                return this.AsRedirectQueryStringOrDefault("~/");
+            }
 
-                string username = Request.Form.username;
-                string password = Request.Form.password;
+            string username = Request.Form.username;
+            string password = Request.Form.password;
 
-                if (String.IsNullOrEmpty(username))
-                {
-                    this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
-                }
+            if (String.IsNullOrEmpty(username))
+            {
+                this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
+            }
 
-                if (String.IsNullOrEmpty(password))
-                {
-                    this.AddValidationError("password", LanguageResources.Authentication_PassRequired);
-                }
+            if (String.IsNullOrEmpty(password))
+            {
+                this.AddValidationError("password", LanguageResources.Authentication_PassRequired);
+            }
 
-                try
+            try
+            {
+                if (ModelValidationResult.IsValid)
                 {
-                    if (ModelValidationResult.IsValid)
+                    IList<Claim> claims;
+                    if (authenticator.TryAuthenticateUser(username, password, out claims))
                     {
-                        IList<Claim> claims;
-                        if (authenticator.TryAuthenticateUser(username, password, out claims))
-                        {
-                            return this.SignIn(claims);
-                        }
+                        return this.SignIn(claims);
                     }
                 }
-                catch
-                {
-                    // Swallow the exception    
-                }
-
-                this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
-
-                return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
-
-            Post["/logout"] = _ =>
+            }
+            catch
             {
-                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                {
-                    return HttpStatusCode.Forbidden;
-                }
+                // Swallow the exception
+            }
 
-                var response = Response.AsJson(new { success = true });
+            this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
 
-                this.SignOut();
+            return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
+        });
 
-                return response;
-            };
+        Post("/logout", _ =>
+        {
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            var response = Response.AsJson(new { success = true });
+
+            this.SignOut();
+
+            return response;
+        });
 
             Get["/register"] = _ =>
             {
