@@ -124,13 +124,12 @@ namespace JabbR
             OnUserInitialize(clientState, user, reconnecting);
         }
 
-        private Task CheckStatus()
+        private async Task CheckStatus()
         {
             if (OutOfSync)
             {
-                return Clients.Caller.SendAsync("outOfSync");
+                await Clients.Caller.SendAsync("outOfSync");
             }
-            return Task.CompletedTask;
         }
 
         private void OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
@@ -546,7 +545,7 @@ namespace JabbR
             await Clients.Group(room.Name).SendAsync("setTyping", userViewModel, room.Name);
         }
 
-        public void UpdateActivity()
+        public async Task UpdateActivity()
         {
             string userId = Context.User.GetUserId();
 
@@ -554,10 +553,10 @@ namespace JabbR
 
             foreach (var room in user.Rooms)
             {
-                UpdateActivity(user, room);
+                await UpdateActivity(user, room);
             }
 
-            CheckStatus();
+            await CheckStatus();
         }
 
         public void TabOrderChanged(string[] tabOrdering)
