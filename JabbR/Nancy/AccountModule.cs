@@ -86,9 +86,9 @@ public class AccountModule : NancyModule
                         if (authenticator.TryAuthenticateUser(username, password, out claims))
                         {
                             return this.SignIn(claims);
-        }
-    }
-}
+                        }
+                    }
+                }
                 catch
                 {
                     // Swallow the exception
@@ -201,9 +201,9 @@ public class AccountModule : NancyModule
                             }
 
                             return this.SignIn(Principal.Claims);
-        }
-    }
-}
+                        }
+                    }
+                }
                 catch (Exception ex)
                 {
                     this.AddValidationError("_FORM", ex.Message);
@@ -448,9 +448,9 @@ public class AccountModule : NancyModule
                             emailService.SendRequestResetPassword(user, this.Request.Url.SiteBase + "/account/resetpassword/");
 
                             return View["requestresetpasswordsuccess", username];
-        }
-    }
-}
+                        }
+                    }
+                }
                 catch (Exception ex)
                 {
                     this.AddValidationError("_FORM", ex.Message);
@@ -528,9 +528,9 @@ public class AccountModule : NancyModule
                             repository.CommitChanges();
 
                             return View["resetpasswordsuccess"];
-        }
-    }
-}
+                        }
+                    }
+                }
                 catch (Exception ex)
                 {
                     this.AddValidationError("_FORM", ex.Message);
