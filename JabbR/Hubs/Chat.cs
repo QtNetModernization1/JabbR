@@ -804,16 +804,16 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Caller.SendAsync("userAllowed", targetUser.Name, targetRoom.Name);
         }
 
-        void INotificationService.UnallowUser(ChatUser targetUser, ChatRoom targetRoom, ChatUser callingUser)
+        async void INotificationService.UnallowUser(ChatUser targetUser, ChatRoom targetRoom, ChatUser callingUser)
         {
             // Kick the user from the room when they are unallowed
             ((INotificationService)this).KickUser(targetUser, targetRoom, callingUser, null);
 
             // Tell this client it's no longer allowed
-            Clients.User(targetUser.Id).unallowUser(targetRoom.Name);
+            await Clients.User(targetUser.Id).SendAsync("unallowUser", targetRoom.Name);
 
             // Tell the calling client the granting permission into the room was successful
-            Clients.Caller.userUnallowed(targetUser.Name, targetRoom.Name);
+            await Clients.Caller.SendAsync("userUnallowed", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.AddOwner(ChatUser targetUser, ChatRoom targetRoom)
