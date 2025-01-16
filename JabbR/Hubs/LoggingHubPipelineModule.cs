@@ -6,22 +6,24 @@ using Microsoft.Extensions.Logging;
 
 namespace JabbR.Hubs
 {
-    public class LoggingHubPipelineModule : HubPipelineModule
+    public static class LoggingHubExtensions
     {
-        private readonly ILogger<LoggingHubPipelineModule> _logger;
-
-        public LoggingHubPipelineModule(ILogger<LoggingHubPipelineModule> logger)
+        public static IHubPipelineBuilder UseLogging(this IHubPipelineBuilder builder, ILogger logger)
         {
-            _logger = logger;
-        }
-
-        public override Task OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext context)
-        {
-            _logger.LogError(exceptionContext.Error, "{UserId}: Failure while invoking '{MethodName}'.",
-                context.Hub.Context.User?.Identity?.Name ?? "Unknown",
-                context.MethodDescriptor.Name);
-
-            return base.OnIncomingError(exceptionContext, context);
+            return builder.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "{UserId}: Failure while invoking '{MethodName}'.",
+                        context.Context.User?.Identity?.Name ?? "Unknown",
+                        context.HubMethodName);
+                    throw;
+                }
+            });
         }
     }
 }
