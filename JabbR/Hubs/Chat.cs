@@ -543,7 +543,7 @@ namespace JabbR
             UpdateActivity(user, room);
 
             var userViewModel = new UserViewModel(user);
-            Clients.Group(room.Name).setTyping(userViewModel, room.Name);
+            Clients.Group(room.Name).SendAsync("setTyping", userViewModel, room.Name);
         }
 
         public void UpdateActivity()
