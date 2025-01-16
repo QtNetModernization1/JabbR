@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
+using System.Linq;
 
 using Nancy;
 using Nancy.Bootstrapper;
@@ -90,5 +91,19 @@ namespace JabbR.Nancy
         }
 
         // Remove the Get<T> method as it's no longer needed
+    }
+
+    public class ClaimsPrincipalUserIdentity : IUserIdentity
+    {
+        private readonly ClaimsPrincipal _principal;
+
+        public ClaimsPrincipalUserIdentity(ClaimsPrincipal principal)
+        {
+            _principal = principal;
+        }
+
+        public string UserName => _principal.Identity?.Name;
+
+        public IEnumerable<string> Claims => _principal.Claims.Select(c => c.Value);
     }
 }
