@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,12 +8,13 @@ using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
 using PagedList;
 using AntiXSS = Microsoft.Security.Application;
+using Nancy.ViewEngines;
 
 namespace JabbR
 {
     public static class HtmlHelperExtensions
     {
-        public static IHtmlString CheckBox<T>(this HtmlHelpers<T> helper, string Name, bool value)
+        public static IHtmlString CheckBox<T>(this HtmlHelpers helper, string Name, bool value)
         {
             string input = String.Empty;
             
