@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
-using Nancy.Security;
+using Microsoft.AspNetCore.Identity;
 
 namespace JabbR.Nancy
 {
@@ -15,14 +16,16 @@ namespace JabbR.Nancy
 
         public IEnumerable<string> Claims
         {
-            get;
-            set;
+            get => ClaimsPrincipal.Claims.Select(c => c.Value);
         }
 
         public string UserName
         {
-            get;
-            set;
+            get => ClaimsPrincipal.Identity?.Name;
         }
+
+        public string AuthenticationType => ClaimsPrincipal.Identity?.AuthenticationType;
+
+        public bool IsAuthenticated => ClaimsPrincipal.Identity?.IsAuthenticated ?? false;
     }
 }
