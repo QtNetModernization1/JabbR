@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Identity;
 
 namespace JabbR.Nancy
 {
-    public class ClaimsPrincipalUserIdentity : IUserIdentity
+    public class ClaimsPrincipalUserIdentity : IIdentity
     {
         public ClaimsPrincipalUserIdentity(ClaimsPrincipal claimsPrincipal)
         {
@@ -19,7 +20,7 @@ namespace JabbR.Nancy
             get => ClaimsPrincipal.Claims.Select(c => c.Value);
         }
 
-        public string UserName
+        public string Name
         {
             get => ClaimsPrincipal.Identity?.Name;
         }
