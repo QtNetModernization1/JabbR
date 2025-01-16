@@ -359,7 +359,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             });
 
-            Post["/changeusername"] = _ =>
+            Post("/changeusername", parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -402,7 +402,7 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
             Get["/requestresetpassword"] = _ =>
             {
