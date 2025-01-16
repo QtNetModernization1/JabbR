@@ -221,7 +221,7 @@ namespace JabbR
             var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
             if (urls.Count > 0)
             {
-                _resourceProcessor.ProcessUrls(urls, Clients, room.Name, chatMessage.Id);
+                _resourceProcessor.ProcessUrls(urls, room.Name, chatMessage.Id);
             }
 
             return true;
