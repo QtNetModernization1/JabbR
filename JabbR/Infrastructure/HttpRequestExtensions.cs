@@ -106,10 +106,13 @@ namespace JabbR.Infrastructure
             }
             else
             {
-                return request.CreateResponse(
-                    HttpStatusCode.BadRequest, 
-                    new ErrorModel { Message = "Value for download was specified but cannot be converted to true or false." }, 
-                    new MediaTypeHeaderValue("application/json"));
+                var errorModel = new ErrorModel { Message = "Value for download was specified but cannot be converted to true or false." };
+                var json = JsonSerializer.Serialize(errorModel);
+                var errorResponse = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+                return errorResponse;
             }
 
             return responseMessage;
