@@ -7,6 +7,7 @@ using System.Threading;
 
 using Nancy;
 using Nancy.Bootstrapper;
+using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
 using Nancy.Bootstrappers.Ninject;
@@ -16,7 +17,7 @@ using Ninject.Extensions.ChildKernel;
 
 namespace JabbR.Nancy
 {
-    public class JabbRNinjectNancyBootstrapper : NinjectNancyBootstrapper
+    public class JabbRNinjectNancyBootstrapper : NinjectNancyBootstrapper, INancyEnvironmentConfigurator
     {
         private readonly IKernel _kernel;
 
@@ -28,6 +29,16 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
+        }
+
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return this;
+        }
+
+        public void ConfigureEnvironment(ConfigurationBuilder configuration)
+        {
+            // Add any necessary configuration here
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
