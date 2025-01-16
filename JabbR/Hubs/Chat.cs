@@ -327,7 +327,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -576,7 +576,7 @@ namespace JabbR
             Clients.User(user.Id).updateTabOrder(tabOrdering);
         }
 
-        private async Task LogOn(ChatUser user, string clientId, bool reconnecting)
+        private void LogOn(ChatUser user, string clientId, bool reconnecting)
         {
             if (!reconnecting)
             {
