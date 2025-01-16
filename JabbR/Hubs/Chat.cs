@@ -516,7 +516,7 @@ namespace JabbR
             _repository.Add(chatMessage);
             _repository.CommitChanges();
 
-            Clients.Group(room.Name).addMessage(new MessageViewModel(chatMessage), room.Name);
+            Clients.Group(room.Name).SendAsync("addMessage", new MessageViewModel(chatMessage), room.Name);
 
             if (executeContentProviders)
             {
