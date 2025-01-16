@@ -144,7 +144,7 @@ namespace JabbR
             LogOn(user, Context.ConnectionId, reconnecting);
         }
 
-        public bool Send(string content, string roomName)
+        public Task<bool> Send(string content, string roomName)
         {
             var message = new ClientMessage
             {
@@ -155,9 +155,9 @@ namespace JabbR
             return Send(message);
         }
 
-        public bool Send(ClientMessage clientMessage)
+        public async Task<bool> Send(ClientMessage clientMessage)
         {
-            CheckStatus();
+            await CheckStatus();
 
             // reject it if it's too long
             if (_settings.MaxMessageLength > 0 && clientMessage.Content.Length > _settings.MaxMessageLength)
