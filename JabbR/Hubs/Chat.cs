@@ -632,11 +632,11 @@ namespace JabbR
             }
         }
 
-        private void UpdateActivity(ChatUser user, ChatRoom room)
+        private async Task UpdateActivity(ChatUser user, ChatRoom room)
         {
             UpdateActivity(user);
 
-            OnUpdateActivity(user, room);
+            await OnUpdateActivity(user, room);
         }
 
         private void UpdateActivity(ChatUser user)
