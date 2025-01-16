@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
 using Newtonsoft.Json;
 using Ninject;
 
@@ -25,16 +26,16 @@ namespace JabbR.Services
 
         private readonly IKernel _kernel;
         private readonly IHubContext _hubContext;
-private readonly IHubConnectionStore _connectionStore;
+        private readonly ITransportHeartbeat _heartbeat;
 
-public PresenceMonitor(IKernel kernel,
-                               IHubContext<Chat> hubContext,
-                               IHubConnectionStore connectionStore)
-{
-    _kernel = kernel;
-    _hubContext = hubContext;
-    _connectionStore = connectionStore;
-}
+        public PresenceMonitor(IKernel kernel,
+                               IConnectionManager connectionManager,
+                               ITransportHeartbeat heartbeat)
+        {
+            _kernel = kernel;
+            _hubContext = connectionManager.GetHubContext<Chat>();
+            _heartbeat = heartbeat;
+        }
 
         public void Start()
         {
@@ -96,7 +97,7 @@ public PresenceMonitor(IKernel kernel,
         private void UpdatePresence(ILogger logger, IJabbrRepository repo)
         {
             // Get all connections on this node and update the activity
-foreach (var connection in _connectionStore.Connections)
+            foreach (var connection in _heartbeat.GetConnections())
             {
                 if (!connection.IsAlive)
                 {
@@ -121,13 +122,21 @@ foreach (var connection in _connectionStore.Connections)
         // This is an uber hack to make sure the db is in sync with SignalR
         private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, ITrackingConnection connection)
         {
-var httpContext = connection.GetHttpContext();
-if (httpContext == null)
-{
-    return;
-}
+            var contextField = connection.GetType().GetField("_context",
+                                          BindingFlags.NonPublic | BindingFlags.Instance);
+            if (contextField == null)
+            {
+                return;
+            }
 
-string connectionData = httpContext.Request.Query["connectionData"];
+            var context = contextField.GetValue(connection) as HostContext;
+
+            if (context == null)
+            {
+                return;
+            }
+
+            string connectionData = context.Request.QueryString["connectionData"];
 
             if (String.IsNullOrEmpty(connectionData))
             {
@@ -149,7 +158,7 @@ string connectionData = httpContext.Request.Query["connectionData"];
 
             logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
 
-string userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string userId = context.Request.User.GetUserId();
 
             ChatUser user = repo.GetUserById(userId);
             if (user == null)
@@ -162,7 +171,7 @@ string userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             {
                 Id = connection.ConnectionId,
                 User = user,
-UserAgent = httpContext.Request.Headers["User-Agent"],
+                UserAgent = context.Request.Headers["User-Agent"],
                 LastActivity = DateTimeOffset.UtcNow,
                 LastClientActivity = user.LastActivity
             };
