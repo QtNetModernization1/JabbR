@@ -405,81 +405,81 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             });
 
-            Get("/requestresetpassword", _ =>
+            Get["/requestresetpassword"] = _ =>
             {
                 if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
-                    return Redirect("~/account/#changePassword");
+                    return Response.AsRedirect("~/account/#changePassword");
                 }
 
                 if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
-                    return StatusCode(404);
+                    return HttpStatusCode.NotFound;
                 }
 
-                return View("requestresetpassword");
-            });
+                return View["requestresetpassword"];
+            };
 
-            Post("/requestresetpassword", _ =>
+            Post["/requestresetpassword"] = _ =>
             {
-                if (!ValidateAntiForgeryToken())
+                if (!HasValidCsrfTokenOrSecHeader)
                 {
-                    return StatusCode(403);
+                    return HttpStatusCode.Forbidden;
                 }
 
                 if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
-                    return Redirect("~/account/#changePassword");
+                    return Response.AsRedirect("~/account/#changePassword");
                 }
 
                 if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
-                    return StatusCode(404);
+                    return HttpStatusCode.NotFound;
                 }
 
-                string username = Request.Form["username"];
+                string username = Request.Form.username;
 
                 if (String.IsNullOrEmpty(username))
                 {
-                    ModelState.AddModelError("username", LanguageResources.Authentication_NameRequired);
+                    this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
                 }
 
                 try
                 {
-                    if (ModelState.IsValid)
+                    if (ModelValidationResult.IsValid)
                     {
                         ChatUser user = repository.GetUserByName(username);
 
                         if (user == null)
                         {
-                            ModelState.AddModelError("username", String.Format(LanguageResources.Account_NoMatchingUser, username));
+                            this.AddValidationError("username", String.Format(LanguageResources.Account_NoMatchingUser, username));
                         }
                         else if (String.IsNullOrWhiteSpace(user.Email))
                         {
-                            ModelState.AddModelError("username", String.Format(LanguageResources.Account_NoEmailForUser, username));
+                            this.AddValidationError("username", String.Format(LanguageResources.Account_NoEmailForUser, username));
                         }
                         else
                         {
                             membershipService.RequestResetPassword(user, applicationSettings.RequestResetPasswordValidThroughInHours);
                             repository.CommitChanges();
 
-                            emailService.SendRequestResetPassword(user, $"{Request.Scheme}://{Request.Host}/account/resetpassword/");
+                            emailService.SendRequestResetPassword(user, this.Request.Url.SiteBase + "/account/resetpassword/");
 
-                            return View("requestresetpasswordsuccess", username);
+                            return View["requestresetpasswordsuccess", username];
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", ex.Message);
+                    this.AddValidationError("_FORM", ex.Message);
                 }
 
-                return View("requestresetpassword");
-            });
+                return View["requestresetpassword"];
+            };
 
             Get("/resetpassword/{id}", parameters =>
             {
