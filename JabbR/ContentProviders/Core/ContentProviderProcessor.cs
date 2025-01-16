@@ -9,17 +9,26 @@ using Ninject;
 
 namespace JabbR.ContentProviders.Core
 {
+    public class JabbRHub : Hub
+    {
+        public async Task AddMessageContent(string messageId, string content, string roomName)
+        {
+            await Clients.Group(roomName).SendAsync("addMessageContent", messageId, content, roomName);
+        }
+    }
+
     public class ContentProviderProcessor
     {
         private readonly IKernel _kernel;
+        private readonly IHubContext<JabbRHub> _hubContext;
 
-        public ContentProviderProcessor(IKernel kernel)
+        public ContentProviderProcessor(IKernel kernel, IHubContext<JabbRHub> hubContext)
         {
             _kernel = kernel;
+            _hubContext = hubContext;
         }
 
         public void ProcessUrls(IEnumerable<string> links,
-                                IHubConnectionContext<dynamic> clients,
                                 string roomName,
                                 string messageId)
         {
@@ -57,7 +66,7 @@ namespace JabbR.ContentProviders.Core
                     }
 
                     // Notify the room
-                    clients.Group(roomName).addMessageContent(messageId, task.Result.Content, roomName);
+                    _hubContext.Clients.Group(roomName).SendAsync("addMessageContent", messageId, task.Result.Content, roomName);
                 }
             });
         }
