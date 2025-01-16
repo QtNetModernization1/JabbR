@@ -937,12 +937,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             OnRoomChanged(room);
         }
 
-        void INotificationService.CloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
+        async void INotificationService.CloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
         {
             // notify all members of room that it is now closed
             foreach (var user in users)
             {
-                Clients.User(user.Id).roomClosed(room.Name);
+                await Clients.User(user.Id).SendAsync("roomClosed", room.Name);
             }
 
             // notify everyone to update their lobby
