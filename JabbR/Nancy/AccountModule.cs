@@ -49,7 +49,7 @@ public class AccountModule : NancyModule
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             });
 
-            Post["/login"] = param =>
+            Post("/login", param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -87,15 +87,15 @@ public class AccountModule : NancyModule
                 }
                 catch
                 {
-                    // Swallow the exception    
+                    // Swallow the exception
                 }
 
                 this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
-            Post["/logout"] = _ =>
+            Post("/logout", _ =>
             {
                 if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
@@ -107,7 +107,7 @@ public class AccountModule : NancyModule
                 this.SignOut();
 
                 return response;
-            };
+            });
 
             Get["/register"] = _ =>
             {
