@@ -59,16 +59,16 @@ namespace JabbR.Nancy
 
         private Response FlowPrincipal(NancyContext context)
         {
-            var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
+            var env = context.Request.Env;
             if (env != null)
             {
-                var principal = Get<IPrincipal>(env, "server.User") as ClaimsPrincipal;
+                var principal = env["owin.RequestUser"] as ClaimsPrincipal;
                 if (principal != null)
                 {
                     context.CurrentUser = new ClaimsPrincipalUserIdentity(principal);
                 }
 
-                var appMode = Get<string>(env, "host.AppMode");
+                var appMode = env["host.AppMode"] as string;
 
                 if (!String.IsNullOrEmpty(appMode) &&
                     appMode.Equals("development", StringComparison.OrdinalIgnoreCase))
