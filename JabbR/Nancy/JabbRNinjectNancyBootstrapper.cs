@@ -15,9 +15,6 @@ using Nancy.Bootstrappers.Ninject;
 using Ninject;
 using Ninject.Extensions.ChildKernel;
 
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Owin;
-
 namespace JabbR.Nancy
 {
     public class JabbRNinjectNancyBootstrapper : NinjectNancyBootstrapper
@@ -62,17 +59,21 @@ namespace JabbR.Nancy
 
         private Response FlowPrincipal(NancyContext context)
         {
-            if (context.Items.TryGetValue("OWIN_REQUEST_ENVIRONMENT", out var envObj) && envObj is IDictionary<string, object> env)
+            var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
+            if (env != null)
             {
-                if (env.TryGetValue("server.User", out var userObj) && userObj is ClaimsPrincipal principal)
+                var principal = Get<IPrincipal>(env, "server.User") as ClaimsPrincipal;
+                if (principal != null)
                 {
                     context.CurrentUser = new ClaimsPrincipalUserIdentity(principal);
                 }
 
-                if (env.TryGetValue("host.AppMode", out var appModeObj) && appModeObj is string appMode)
+                var appMode = Get<string>(env, "host.AppMode");
+
+                if (!String.IsNullOrEmpty(appMode) &&
+                    appMode.Equals("development", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Items["_debugMode"] = !string.IsNullOrEmpty(appMode) &&
-                        appMode.Equals("development", StringComparison.OrdinalIgnoreCase);
+                    context.Items["_debugMode"] = true;
                 }
                 else
                 {
@@ -90,6 +91,14 @@ namespace JabbR.Nancy
             return null;
         }
 
-        // Remove the Get<T> method as it's no longer needed
+        private static T Get<T>(IDictionary<string, object> env, string key)
+        {
+            object value;
+            if (env.TryGetValue(key, out value))
+            {
+                return (T)value;
+            }
+            return default(T);
+        }
     }
 }
