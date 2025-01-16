@@ -9,12 +9,14 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace JabbR.Nancy
 {
 public class AccountModule : NancyModule
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IAntiforgery _antiforgery;
 
     public AccountModule(ApplicationSettings applicationSettings,
                          IMembershipService membershipService,
@@ -23,10 +25,12 @@ public class AccountModule : NancyModule
                          IChatNotificationService notificationService,
                          IUserAuthenticator authenticator,
                          IEmailService emailService,
-                         IHttpContextAccessor httpContextAccessor)
+                         IHttpContextAccessor httpContextAccessor,
+                         IAntiforgery antiforgery)
         : base("/account")
     {
         _httpContextAccessor = httpContextAccessor;
+        _antiforgery = antiforgery;
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -51,7 +55,7 @@ public class AccountModule : NancyModule
 
             Post("/login", param =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!_antiforgery.IsTokenValid(_httpContextAccessor.HttpContext))
                 {
                     return HttpStatusCode.Forbidden;
                 }
