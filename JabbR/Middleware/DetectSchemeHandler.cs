@@ -1,35 +1,29 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Middleware
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-
     public class DetectSchemeHandler
     {
-        private readonly AppFunc _next;
+        private readonly RequestDelegate _next;
 
-        public DetectSchemeHandler(AppFunc next)
+        public DetectSchemeHandler(RequestDelegate next)
         {
             _next = next;
         }
 
-        public Task Invoke(IDictionary<string, object> env)
+        public async Task Invoke(HttpContext context)
         {
-            var request = new OwinRequest(env);
-
             // This header is set on app harbor since ssl is terminated at the load balancer
-            var scheme = request.Headers.Get("X-Forwarded-Proto");
+            var scheme = context.Request.Headers["X-Forwarded-Proto"].ToString();
 
             if (!String.IsNullOrEmpty(scheme))
             {
-                request.Scheme = scheme;
+                context.Request.Scheme = scheme;
             }
 
-            return _next(env);
+            await _next(context);
         }
     }
 }
