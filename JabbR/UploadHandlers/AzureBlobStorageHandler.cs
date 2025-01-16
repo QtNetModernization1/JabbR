@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using JabbR.Services;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Ninject;
 
 namespace JabbR.UploadHandlers
@@ -29,29 +29,37 @@ namespace JabbR.UploadHandlers
         public bool IsValid(string fileName, string contentType)
         {
             // Blob storage can handle any content
-            return !string.IsNullOrEmpty(_settingsFunc().AzureblobStorageConnectionString);
+            return !String.IsNullOrEmpty(_settingsFunc().AzureblobStorageConnectionString);
         }
 
         public async Task<UploadResult> UploadFile(string fileName, string contentType, Stream stream)
         {
-            var blobServiceClient = new BlobServiceClient(_settingsFunc().AzureblobStorageConnectionString);
-            var containerClient = blobServiceClient.GetBlobContainerClient(JabbRUploadContainer);
-
-            await containerClient.CreateIfNotExistsAsync();
-            await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
+            var account = CloudStorageAccount.Parse(_settingsFunc().AzureblobStorageConnectionString);
+            var client = account.CreateCloudBlobClient();
+            var container = client.GetContainerReference(JabbRUploadContainer);
 
             // Randomize the filename everytime so we don't overwrite files
             string randomFile = Path.GetFileNameWithoutExtension(fileName) +
                                 "_" +
                                 Guid.NewGuid().ToString().Substring(0, 4) + Path.GetExtension(fileName);
 
-            var blobClient = containerClient.GetBlobClient(randomFile);
+            if (container.CreateIfNotExists())
+            {
+                // We need this to make files servable from blob storage
+                container.SetPermissions(new BlobContainerPermissions
+                {
+                    PublicAccess = BlobContainerPublicAccessType.Blob
+                });
+            }
 
-            await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType });
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(randomFile);
+            blockBlob.Properties.ContentType = contentType;
+
+            await Task.Factory.FromAsync((cb, state) => blockBlob.BeginUploadFromStream(stream, cb, state), ar => blockBlob.EndUploadFromStream(ar), null);
 
             var result = new UploadResult
             {
-                Url = blobClient.Uri.ToString(),
+                Url = blockBlob.Uri.ToString(),
                 Identifier = randomFile
             };
 
