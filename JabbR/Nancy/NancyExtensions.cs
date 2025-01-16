@@ -5,9 +5,9 @@ using JabbR.Infrastructure;
 using JabbR.Models;
 using Nancy;
 using Nancy.Helpers;
-using Nancy.Owin;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Owin;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace JabbR.Nancy
@@ -16,11 +16,11 @@ namespace JabbR.Nancy
     {
         public static Response SignIn(this NancyModule module, IEnumerable<Claim> claims)
         {
-            var env = Get<IDictionary<string, object>>(module.Context.Items, "owin.RequestEnvironment");
-            var owinContext = new OwinContext(env);
+            var httpContext = module.Context.GetHttpContext();
 
             var identity = new ClaimsIdentity(claims, Constants.JabbRAuthType);
-            owinContext.Authentication.SignIn(identity);
+            var principal = new ClaimsPrincipal(identity);
+            httpContext.SignInAsync(Constants.JabbRAuthType, principal);
 
             return module.AsRedirectQueryStringOrDefault("~/");
         }
@@ -41,10 +41,8 @@ namespace JabbR.Nancy
 
         public static void SignOut(this NancyModule module)
         {
-            var env = Get<IDictionary<string, object>>(module.Context.Items, "owin.RequestEnvironment");
-            var owinContext = new OwinContext(env);
-
-            owinContext.Authentication.SignOut(Constants.JabbRAuthType);
+            var httpContext = module.Context.GetHttpContext();
+            httpContext.SignOutAsync(Constants.JabbRAuthType);
         }
 
         public static void AddValidationError(this NancyModule module, string propertyName, string errorMessage)
@@ -106,14 +104,9 @@ namespace JabbR.Nancy
             return module.Response.AsRedirect(returnUrl);
         }
 
-        private static T Get<T>(IDictionary<string, object> env, string key)
+        private static HttpContext GetHttpContext(this NancyContext context)
         {
-            object value;
-            if (env.TryGetValue(key, out value))
-            {
-                return (T)value;
-            }
-            return default(T);
+            return context.Items["HttpContext"] as HttpContext;
         }
     }
 }
