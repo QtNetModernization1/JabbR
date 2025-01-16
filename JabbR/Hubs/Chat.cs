@@ -752,33 +752,33 @@ namespace JabbR
             await Clients.Caller.SendAsync("userCreated");
         }
 
-        void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
-        {
-            var userViewModel = new UserViewModel(user);
-            var roomViewModel = new RoomViewModel
-            {
-                Name = room.Name,
-                Private = room.Private,
-                Welcome = room.Welcome ?? String.Empty,
-                Closed = room.Closed
-            };
+async Task INotificationService.JoinRoom(ChatUser user, ChatRoom room)
+{
+    var userViewModel = new UserViewModel(user);
+    var roomViewModel = new RoomViewModel
+    {
+        Name = room.Name,
+        Private = room.Private,
+        Welcome = room.Welcome ?? String.Empty,
+        Closed = room.Closed
+    };
 
-            var isOwner = user.OwnedRooms.Contains(room);
+    var isOwner = user.OwnedRooms.Contains(room);
 
-            // Tell all clients to join this room
-            Clients.User(user.Id).joinRoom(roomViewModel);
+    // Tell all clients to join this room
+    await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
-            // Tell the people in this room that you've joined
-            Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+    // Tell the people in this room that you've joined
+    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
-            // Notify users of the room count change
-            OnRoomChanged(room);
+    // Notify users of the room count change
+    await OnRoomChangedAsync(room);
 
-            foreach (var client in user.ConnectedClients)
-            {
-                Groups.Add(client.Id, room.Name);
-            }
-        }
+    foreach (var client in user.ConnectedClients)
+    {
+        await Groups.AddToGroupAsync(client.Id, room.Name);
+    }
+}
 
         void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
         {
