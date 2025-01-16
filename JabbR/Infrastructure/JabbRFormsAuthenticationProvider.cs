@@ -5,18 +5,14 @@ using System.Threading.Tasks;
 using JabbR.Models;
 using JabbR.Services;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
+using Microsoft.AspNetCore.Owin;
+
 
 namespace JabbR.Infrastructure
 {
-    public interface IJabbRCookieAuthenticationProvider
-    {
-        Task ValidateIdentity(CookieValidateIdentityContext context);
-        Task ResponseSignIn(HttpContext context, AuthenticationScheme scheme, ClaimsPrincipal principal, AuthenticationProperties properties);
-    }
-
-    public class JabbRFormsAuthenticationProvider : IJabbRCookieAuthenticationProvider
+    public class JabbRFormsAuthenticationProvider : ICookieAuthenticationProvider
     {
         private readonly IJabbrRepository _repository;
         private readonly IMembershipService _membershipService;
@@ -29,10 +25,10 @@ namespace JabbR.Infrastructure
 
         public Task ValidateIdentity(CookieValidateIdentityContext context)
         {
-            return Task.CompletedTask;
+            return TaskAsyncHelper.Empty;
         }
 
-        public async Task ResponseSignIn(HttpContext context, AuthenticationScheme scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        public void ResponseSignIn(CookieResponseSignInContext context)
         {
             var authResult = new AuthenticationResult
             {
@@ -114,7 +110,7 @@ namespace JabbR.Infrastructure
                                        cookieOptions);
         }
 
-        private static void AddClaim(ClaimsIdentity identity, ChatUser user)
+        private static void AddClaim(CookieResponseSignInContext context, ChatUser user)
         {
             // Do nothing if the user is banned
             if (user.IsBanned)
@@ -123,28 +119,30 @@ namespace JabbR.Infrastructure
             }
 
             // Add the jabbr id claim
-            identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, user.Id));
+            context.Identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, user.Id));
 
             // Add the admin claim if the user is an Administrator
             if (user.IsAdmin)
             {
-                identity.AddClaim(new Claim(JabbRClaimTypes.Admin, "true"));
+                context.Identity.AddClaim(new Claim(JabbRClaimTypes.Admin, "true"));
             }
+
+            EnsurePersistentCookie(context);
         }
 
-        private static void EnsurePersistentCookie(AuthenticationProperties properties)
+        private static void EnsurePersistentCookie(CookieResponseSignInContext context)
         {
-            if (properties == null)
+            if (context.Properties == null)
             {
-                properties = new AuthenticationProperties();
+                context.Properties = new AuthenticationProperties();
             }
 
-            properties.IsPersistent = true;
+            context.Properties.IsPersistent = true;
         }
 
-        private ChatUser GetLoggedInUser(HttpContext context)
+        private ChatUser GetLoggedInUser(CookieResponseSignInContext context)
         {
-            var principal = context.User as ClaimsPrincipal;
+            var principal = context.Request.User as ClaimsPrincipal;
 
             if (principal != null)
             {
@@ -154,10 +152,9 @@ namespace JabbR.Infrastructure
             return null;
         }
 
-        public Task ApplyRedirect(RedirectContext<CookieAuthenticationOptions> context)
+        public void ApplyRedirect(CookieApplyRedirectContext context)
         {
             context.Response.Redirect(context.RedirectUri);
-            return Task.CompletedTask;
         }
     }
 }
