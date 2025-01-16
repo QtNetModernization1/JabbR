@@ -970,11 +970,11 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             }
         }
 
-        void INotificationService.ShowUserInfo(ChatUser user)
+        async void INotificationService.ShowUserInfo(ChatUser user)
         {
             string userId = Context.User.GetUserId();
 
-            Clients.Caller.showUserInfo(new
+            await Clients.Caller.SendAsync("showUserInfo", new
             {
                 Name = user.Name,
                 OwnedRooms = user.OwnedRooms
