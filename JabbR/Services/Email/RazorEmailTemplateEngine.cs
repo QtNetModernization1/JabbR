@@ -1,14 +1,11 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
-using Microsoft.CSharp;
+using RazorEngineCore;
 
 namespace JabbR.Services
 {
@@ -20,9 +17,7 @@ namespace JabbR.Services
 
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
-        private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
-        private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, IDictionary<string, IRazorEngineCompiledTemplate>> _templateCache = new Dictionary<string, IDictionary<string, IRazorEngineCompiledTemplate>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
         private readonly IEmailTemplateContentReader _contentReader;
