@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 using Ninject;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace JabbR.Services
 {
@@ -26,13 +28,16 @@ namespace JabbR.Services
         private readonly IKernel _kernel;
         private readonly IHubContext<Chat> _hubContext;
         private readonly IHubClients _clients;
+        private readonly ILogger<PresenceMonitor> _logger;
 
         public PresenceMonitor(IKernel kernel,
-                               IHubContext<Chat> hubContext)
+                               IHubContext<Chat> hubContext,
+                               ILogger<PresenceMonitor> logger)
         {
             _kernel = kernel;
             _hubContext = hubContext;
             _clients = hubContext.Clients;
+            _logger = logger;
         }
 
         public void Start()
@@ -56,35 +61,28 @@ namespace JabbR.Services
 
             _running = true;
 
-            ILogger logger = null;
-
             try
             {
-                logger = _kernel.Get<ILogger>();
+                _logger.LogInformation("Checking user presence");
 
-                logger.Log("Checking user presence");
-
-                using (var repo = _kernel.Get<IJabbrRepository>())
+using (var repo = _kernel.Get<IJabbrRepository>())
                 {
                     // Update the connection presence
-                    UpdatePresence(logger, repo);
+                    UpdatePresence(repo);
 
                     // Remove zombie connections
-                    RemoveZombies(logger, repo);
+                    RemoveZombies(repo);
 
                     // Remove users with no connections
-                    RemoveOfflineUsers(logger, repo);
+                    RemoveOfflineUsers(repo);
 
                     // Check the user status
-                    CheckUserStatus(logger, repo);
+                    CheckUserStatus(repo);
                 }
             }
             catch (Exception ex)
             {
-                if (logger != null)
-                {
-                    logger.Log(ex);
-                }
+                _logger.LogError(ex, "Error during presence check");
             }
             finally
             {
@@ -92,99 +90,70 @@ namespace JabbR.Services
             }
         }
 
-        private void UpdatePresence(ILogger logger, IJabbrRepository repo)
+        private void UpdatePresence(IJabbrRepository repo)
         {
-            // Get all connections on this node and update the activity
-            foreach (var connection in _heartbeat.GetConnections())
+            // Update the last activity for all clients
+            foreach (var client in repo.Clients)
             {
-                if (!connection.IsAlive)
-                {
-                    continue;
-                }
-
-                ChatClient client = repo.GetClientById(connection.ConnectionId);
-
-                if (client != null)
-                {
-                    client.LastActivity = DateTimeOffset.UtcNow;
-                }
-                else
-                {
-                    EnsureClientConnected(logger, repo, connection);
-                }
+                client.LastActivity = DateTimeOffset.UtcNow;
             }
 
             repo.CommitChanges();
         }
 
-        // This is an uber hack to make sure the db is in sync with SignalR
-        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, HubCallerContext context)
+        private void EnsureClientConnected(IJabbrRepository repo, string connectionId, ClaimsPrincipal user)
         {
-            if (context == null)
+            if (string.IsNullOrEmpty(connectionId) || user == null)
             {
                 return;
             }
 
-            string connectionData = context.GetHttpContext().Request.Query["connectionData"];
+            _logger.LogInformation("Connection {ConnectionId} exists but isn't tracked.", connectionId);
 
-            if (String.IsNullOrEmpty(connectionData))
+            string userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
             {
+                _logger.LogWarning("Unable to find user id for connection {ConnectionId}", connectionId);
                 return;
             }
 
-            var hubs = JsonConvert.DeserializeObject<HubConnectionData[]>(connectionData);
-
-            if (hubs.Length != 1)
+            ChatUser chatUser = repo.GetUserById(userId);
+            if (chatUser == null)
             {
-                return;
-            }
-
-            // We only care about the chat hub
-            if (!hubs[0].Name.Equals("chat", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
-
-            string userId = context.User.GetUserId();
-
-            ChatUser user = repo.GetUserById(userId);
-            if (user == null)
-            {
-                logger.Log("Unable to find user with id {0}", userId);
+                _logger.LogWarning("Unable to find user with id {UserId}", userId);
                 return;
             }
 
             var client = new ChatClient
             {
-                Id = context.ConnectionId,
-                User = user,
-                UserAgent = context.GetHttpContext().Request.Headers["User-Agent"],
+                Id = connectionId,
+                User = chatUser,
+                UserAgent = "Unknown", // We can't access HttpContext here, so we set a default value
                 LastActivity = DateTimeOffset.UtcNow,
-                LastClientActivity = user.LastActivity
+                LastClientActivity = chatUser.LastActivity
             };
 
             repo.Add(client);
             repo.CommitChanges();
         }
 
-        private static void RemoveZombies(ILogger logger, IJabbrRepository repo)
+        private void RemoveZombies(IJabbrRepository repo)
         {
-            // Remove all zombie clients 
+            // Remove all zombie clients
             var zombies = repo.Clients.Where(c =>
                 SqlFunctions.DateDiff("mi", c.LastActivity, DateTimeOffset.UtcNow) > 3);
 
             // We're doing to list since there's no MARS support on azure
             foreach (var client in zombies.ToList())
             {
-                logger.Log("Removed zombie connection {0}", client.Id);
+                _logger.LogInformation("Removed zombie connection {ConnectionId}", client.Id);
 
                 repo.Remove(client);
             }
         }
 
-        private void RemoveOfflineUsers(ILogger logger, IJabbrRepository repo)
+        private void RemoveOfflineUsers(IJabbrRepository repo)
         {
             var offlineUsers = new List<ChatUser>();
             IQueryable<ChatUser> users = repo.GetOnlineUsers();
@@ -193,7 +162,7 @@ namespace JabbR.Services
             {
                 if (user.ConnectedClients.Count == 0)
                 {
-                    logger.Log("{0} has no clients. Marking as offline", user.Name);
+                    _logger.LogInformation("{UserName} has no clients. Marking as offline", user.Name);
 
                     // Fix users that are marked as inactive but have no clients
                     user.Status = (int)UserStatus.Offline;
@@ -207,7 +176,7 @@ namespace JabbR.Services
                 {
                     foreach (var user in roomGroup.Users)
                     {
-                        await _hubContext.Clients.Group(roomGroup.Room.Name).leave(user, roomGroup.Room.Name);
+                        await _hubContext.Clients.Group(roomGroup.Room.Name).SendAsync("leave", user, roomGroup.Room.Name);
                     }
                 });
 
@@ -215,7 +184,7 @@ namespace JabbR.Services
             }
         }
 
-        private void CheckUserStatus(ILogger logger, IJabbrRepository repo)
+        private void CheckUserStatus(IJabbrRepository repo)
         {
             var inactiveUsers = new List<ChatUser>();
 
@@ -232,14 +201,14 @@ namespace JabbR.Services
             {
                 PerformRoomAction(inactiveUsers, async roomGroup =>
                 {
-                    await _hubContext.Clients.Group(roomGroup.Room.Name).markInactive(roomGroup.Users);
+                    await _hubContext.Clients.Group(roomGroup.Room.Name).SendAsync("markInactive", roomGroup.Users);
                 });
 
                 repo.CommitChanges();
             }
         }
 
-        private static async void PerformRoomAction(List<ChatUser> users, Func<RoomGroup, Task> callback)
+        private async void PerformRoomAction(List<ChatUser> users, Func<RoomGroup, Task> callback)
         {
             var roomGroups = from u in users
                              from r in u.Rooms
@@ -259,7 +228,7 @@ namespace JabbR.Services
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceError("Error occurred: " + ex);
+                    _logger.LogError(ex, "Error occurred during room action");
                 }
             }
         }
@@ -268,11 +237,6 @@ namespace JabbR.Services
         {
             public ChatRoom Room { get; set; }
             public IEnumerable<UserViewModel> Users { get; set; }
-        }
-
-        private class HubConnectionData
-        {
-            public string Name { get; set; }
         }
     }
 }
