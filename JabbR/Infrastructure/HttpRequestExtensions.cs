@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Web.Http.Hosting;
+using Microsoft.AspNetCore.Http;
 using JabbR.WebApi.Model;
 
 namespace JabbR.Infrastructure
@@ -111,14 +111,10 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static bool IsLocal(this HttpRequestMessage requestMessage)
         {
-            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
-            var isLocal = requestMessage.Properties[HttpPropertyKeys.IsLocalKey] as Lazy<bool>;
-            if (isLocal != null)
-            {
-                return isLocal.Value;
-            }
-
-            return false;
+            //ASP.NET Core doesn't have a direct equivalent to IsLocal
+            //You might need to implement your own logic here
+            //For example, you could check if the remote IP is loopback
+            return requestMessage.RequestUri.IsLoopback;
         }
 
 
@@ -130,8 +126,10 @@ namespace JabbR.Infrastructure
         /// <param name="value">New value of isLocal</param>
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
-            //Web API sets IsLocal as a Lazy<bool> in the Properties dictionary
-            requestMessage.Properties[HttpPropertyKeys.IsLocalKey] = new Lazy<bool>(()=>value);
+            //ASP.NET Core doesn't have a direct equivalent to setting IsLocal
+            //You might need to implement your own logic here
+            //For example, you could store it in the Properties dictionary
+            requestMessage.Properties["IsLocal"] = value;
         }
 
         /// <summary>
