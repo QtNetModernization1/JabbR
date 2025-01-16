@@ -1,11 +1,10 @@
 using Microsoft.Ajax.Utilities;
-using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
-    public class AjaxMinMinifier : IJavaScriptMinifier
+    public class AjaxMinMinifier
     {
-        public string Minify(string source)
+        public string MinifyJavaScript(string source)
         {
             return new Minifier().MinifyJavaScript(source);
         }
