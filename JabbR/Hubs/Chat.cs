@@ -74,13 +74,13 @@ namespace JabbR
             }
         }
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             _logger.Log("OnConnected({0})", Context.ConnectionId);
 
-            CheckStatus();
+            await CheckStatus();
 
-            return base.OnConnectedAsync();
+            await base.OnConnectedAsync();
         }
 
         public void Join()
