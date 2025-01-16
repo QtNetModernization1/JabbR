@@ -287,7 +287,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             };
 
-            Post["/changepassword"] = _ =>
+            Post("/changepassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -304,9 +304,9 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                string oldPassword = Request.Form.oldPassword;
-                string password = Request.Form.password;
-                string confirmPassword = Request.Form.confirmPassword;
+                string oldPassword = Request.Form["oldPassword"];
+                string password = Request.Form["password"];
+                string confirmPassword = Request.Form["confirmPassword"];
 
                 if (String.IsNullOrEmpty(oldPassword))
                 {
@@ -337,7 +337,7 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
             Post["/changeusername"] = _ =>
             {
