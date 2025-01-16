@@ -909,7 +909,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
 
         void INotificationService.ListUsers(ChatRoom room, IEnumerable<string> names)
         {
-            Clients.Caller.showUsersInRoom(room.Name, names);
+            Clients.Caller.SendAsync("showUsersInRoom", room.Name, names).Wait();
         }
 
         async void INotificationService.ListAllowedUsers(ChatRoom room)
