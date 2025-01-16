@@ -599,7 +599,7 @@ public class AccountModule : NancyModule
             }
         }
 
-        private dynamic GetProfileView(IAuthenticationService authService, ChatUser user)
+        private dynamic GetProfileView(JabbR.Infrastructure.IAuthenticationService authService, ChatUser user)
         {
             return View["index", new ProfilePageViewModel(user, authService.GetProviders())];
         }
