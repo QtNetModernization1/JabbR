@@ -50,6 +50,13 @@ namespace JabbR.Nancy
             environment.Tracing(enabled: false, displayErrorTraces: true);
         }
 
+        public override INancyEnvironment GetEnvironment()
+        {
+            var environment = new DefaultNancyEnvironment();
+            RegisterNancyEnvironment(GetApplicationContainer(), environment);
+            return environment;
+        }
+
         private Response FlowPrincipal(NancyContext context)
         {
             var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
