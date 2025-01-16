@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using JabbR.Models;
 
 namespace JabbR.Services
@@ -6,7 +6,7 @@ namespace JabbR.Services
     public interface INotificationService
     {
         void ChangeGravatar(ChatUser user);
-Task JoinRoom(ChatUser user, ChatRoom room);
+        void JoinRoom(ChatUser user, ChatRoom room);
 
         // Client actions
         void LogOn(ChatUser user, string clientId);
