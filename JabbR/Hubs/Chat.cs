@@ -1019,9 +1019,9 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Group(room.Name).SendAsync("nudge", user.Name, null, room.Name);
         }
 
-        void INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
+        async void INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
         {
-            LeaveRoom(user, room);
+            await LeaveRoom(user, room);
         }
 
         void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
