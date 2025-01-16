@@ -11,6 +11,7 @@ using JabbR.ViewModels;
 using Nancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Antiforgery;
+using IAuthenticationService = JabbR.Infrastructure.IAuthenticationService;
 
 namespace JabbR.Nancy
 {
