@@ -47,6 +47,164 @@ public class AccountModule : NancyModule
                 return false;
             }
         }
+
+        Get("/requestresetpassword", _ =>
+        {
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Response.AsRedirect("~/account/#changePassword");
+            }
+
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
+                !applicationSettings.AllowUserResetPassword ||
+                string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            return View["requestresetpassword"];
+        });
+
+        Post("/requestresetpassword", _ =>
+        {
+            if (!HasValidCsrfTokenOrSecHeader)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Response.AsRedirect("~/account/#changePassword");
+            }
+
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
+                !applicationSettings.AllowUserResetPassword ||
+                string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            string username = Request.Form["username"];
+
+            if (String.IsNullOrEmpty(username))
+            {
+                this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
+            }
+
+            try
+            {
+                if (ModelValidationResult.IsValid)
+                {
+                    ChatUser user = repository.GetUserByName(username);
+
+                    if (user == null)
+                    {
+                        this.AddValidationError("username", String.Format(LanguageResources.Account_NoMatchingUser, username));
+                    }
+                    else if (String.IsNullOrWhiteSpace(user.Email))
+                    {
+                        this.AddValidationError("username", String.Format(LanguageResources.Account_NoEmailForUser, username));
+                    }
+                    else
+                    {
+                        membershipService.RequestResetPassword(user, applicationSettings.RequestResetPasswordValidThroughInHours);
+                        repository.CommitChanges();
+
+                        emailService.SendRequestResetPassword(user, this.Request.Url.SiteBase + "/account/resetpassword/");
+
+                        return View["requestresetpasswordsuccess", username];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.AddValidationError("_FORM", ex.Message);
+            }
+
+            return View["requestresetpassword"];
+        });
+
+        Get("/resetpassword/{id}", parameters =>
+        {
+            if (!applicationSettings.AllowUserResetPassword ||
+                string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            string resetPasswordToken = parameters.id;
+            string userName = membershipService.GetUserNameFromToken(resetPasswordToken);
+
+            // Is the token not valid, maybe some character change?
+            if (userName == null)
+            {
+                return View["resetpassworderror", LanguageResources.Account_ResetInvalidToken];
+            }
+            else
+            {
+                ChatUser user = repository.GetUserByRequestResetPasswordId(userName, resetPasswordToken);
+
+                // Is the token expired?
+                if (user == null)
+                {
+                    return View["resetpassworderror", LanguageResources.Account_ResetExpiredToken];
+                }
+                else
+                {
+                    return View["resetpassword", user.RequestPasswordResetId];
+                }
+            }
+        });
+
+        Post("/resetpassword/{id}", parameters =>
+        {
+            if (!HasValidCsrfTokenOrSecHeader)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            if (!applicationSettings.AllowUserResetPassword ||
+                string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            string resetPasswordToken = parameters.id;
+            string newPassword = Request.Form["password"];
+            string confirmNewPassword = Request.Form["confirmPassword"];
+
+            ValidatePassword(newPassword, confirmNewPassword);
+
+            try
+            {
+                if (ModelValidationResult.IsValid)
+                {
+                    string userName = membershipService.GetUserNameFromToken(resetPasswordToken);
+                    ChatUser user = repository.GetUserByRequestResetPasswordId(userName, resetPasswordToken);
+
+                    // Is the token expired?
+                    if (user == null)
+                    {
+                        return View["resetpassworderror", LanguageResources.Account_ResetExpiredToken];
+                    }
+                    else
+                    {
+                        membershipService.ResetUserPassword(user, newPassword);
+                        repository.CommitChanges();
+
+                        return View["resetpasswordsuccess"];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.AddValidationError("_FORM", ex.Message);
+            }
+
+            return View["resetpassword", resetPasswordToken];
+        });
+
+        // Other route definitions should be updated similarly
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
