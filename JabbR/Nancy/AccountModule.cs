@@ -22,7 +22,7 @@ namespace JabbR.Nancy
                              IEmailService emailService)
             : base("/account")
         {
-            Get["/"] = _ =>
+            Get("/", _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -32,9 +32,9 @@ namespace JabbR.Nancy
                 ChatUser user = repository.GetUserById(Principal.GetUserId());
 
                 return GetProfileView(authService, user);
-            };
+            });
 
-            Get["/login"] = _ =>
+            Get("/login", _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -42,7 +42,7 @@ namespace JabbR.Nancy
                 }
 
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-            };
+            });
 
             Post["/login"] = param =>
             {
