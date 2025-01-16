@@ -480,7 +480,7 @@ public class AccountModule : NancyModule
                 return View["requestresetpassword"];
             };
 
-            Get["/resetpassword/{id}"] = parameters =>
+            Get("/resetpassword/{id}", parameters =>
             {
                 if (!applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
@@ -510,9 +510,9 @@ public class AccountModule : NancyModule
                         return View["resetpassword", user.RequestPasswordResetId];
                     }
                 }
-            };
+            });
 
-            Post["/resetpassword/{id}"] = parameters =>
+            Post("/resetpassword/{id}", parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -526,8 +526,8 @@ public class AccountModule : NancyModule
                 }
 
                 string resetPasswordToken = parameters.id;
-                string newPassword = Request.Form.password;
-                string confirmNewPassword = Request.Form.confirmPassword;
+                string newPassword = Request.Form["password"];
+                string confirmNewPassword = Request.Form["confirmPassword"];
 
                 ValidatePassword(newPassword, confirmNewPassword);
 
@@ -558,7 +558,7 @@ public class AccountModule : NancyModule
                 }
 
                 return View["resetpassword", resetPasswordToken];
-            };
+            });
         }
 
         private bool ValidateAntiForgeryToken()
