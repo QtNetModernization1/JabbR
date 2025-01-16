@@ -144,9 +144,8 @@ namespace JabbR.Infrastructure
         public static void SetIsLocal(this HttpRequestMessage requestMessage, bool value)
         {
             //ASP.NET Core doesn't have a direct equivalent to setting IsLocal
-            //You might need to implement your own logic here
-            //For example, you could store it in the Properties dictionary
-            requestMessage.Properties["IsLocal"] = value;
+//We're using the new Options property to store custom data
+            requestMessage.Options.Set(new HttpRequestOptionsKey<bool>("IsLocal"), value);
         }
 
         /// <summary>
