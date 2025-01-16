@@ -1076,12 +1076,12 @@ namespace JabbR
             }
         }
 
-        void INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
+        async Task INotificationService.ChangeTopic(ChatUser user, ChatRoom room)
         {
-            Clients.Group(room.Name).topicChanged(room.Name, room.Topic ?? String.Empty, user.Name);
+            await Clients.Group(room.Name).SendAsync("topicChanged", room.Name, room.Topic ?? String.Empty, user.Name);
 
             // trigger a lobby update
-            OnRoomChanged(room);
+            await OnRoomChanged(room);
         }
 
         void INotificationService.ChangeWelcome(ChatUser user, ChatRoom room)
@@ -1144,7 +1144,7 @@ namespace JabbR
             Clients.All.forceUpdate();
         }
 
-        private void OnRoomChanged(ChatRoom room)
+        private async Task OnRoomChanged(ChatRoom room)
         {
             var roomViewModel = new RoomViewModel
             {
@@ -1158,11 +1158,11 @@ namespace JabbR
             // notify all clients who can see the room
             if (!room.Private)
             {
-                Clients.All.updateRoom(roomViewModel);
+                await Clients.All.SendAsync("updateRoom", roomViewModel);
             }
             else
             {
-                Clients.Clients(_repository.GetAllowedClientIds(room)).updateRoom(roomViewModel);
+                await Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("updateRoom", roomViewModel);
             }
         }
 
