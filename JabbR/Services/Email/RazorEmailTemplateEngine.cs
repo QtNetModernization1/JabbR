@@ -1,14 +1,14 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
-using RazorEngine;
-using RazorEngine.Templating;
 
 namespace JabbR.Services
 {
@@ -21,7 +21,7 @@ namespace JabbR.Services
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
         private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
-        private static readonly IRazorEngineService _razorEngine = CreateRazorEngine();
+        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
         private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
@@ -159,14 +159,11 @@ namespace JabbR.Services
                                              .Where(x => !String.IsNullOrWhiteSpace(x.Content))
                                              .ToList();
 
-            var result = new Dictionary<string, Type>();
-            foreach (var template in templates)
-            {
-                _razorEngine.AddTemplate(template.TemplateName, template.Content);
-                result[template.ContentType] = typeof(EmailTemplate);
-            }
+            var compilableTemplates = templates.Select(x => new KeyValuePair<string, string>(x.TemplateName, x.Content)).ToArray();
+            var assembly = GenerateAssembly(compilableTemplates);
 
-            return result;
+            return templates.Select(x => new { ContentType = x.ContentType, Type = assembly.GetType(NamespaceName + "." + x.TemplateName, true, false) })
+                            .ToDictionary(k => k.ContentType, e => e.Type);
         }
 
         private static void SetProperties(IEmailTemplate template, Email mail, Action<string> updateBody)
@@ -197,7 +194,38 @@ namespace JabbR.Services
             }
         }
 
-        // Remove the GenerateAssembly method as it's no longer needed with RazorEngine.NetCore
+        private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
+        {
+            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
+
+            if (templateResults.Any(result => result.ParserErrors.Any()))
+            {
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
+
+                throw new InvalidOperationException(parseExceptionMessage);
+            }
+
+            using (var codeProvider = new CSharpCodeProvider())
+            {
+                var compilerParameter = new CompilerParameters(_referencedAssemblies)
+                                            {
+                                                IncludeDebugInformation = false,
+                                                GenerateInMemory = true,
+                                                CompilerOptions = "/optimize"
+                                            };
+
+                var compilerResults = codeProvider.CompileAssemblyFromDom(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
+
+                if (compilerResults.Errors.HasErrors)
+                {
+                    var compileExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, compilerResults.Errors.OfType<CompilerError>().Where(ce => !ce.IsWarning).Select(e => e.FileName + ":" + Environment.NewLine + e.ErrorText).ToArray());
+
+                    throw new InvalidOperationException(compileExceptionMessage);
+                }
+
+                return compilerResults.CompiledAssembly;
+            }
+        }
 
         private static dynamic CreateModel(object model)
         {
@@ -219,13 +247,21 @@ namespace JabbR.Services
             return new DynamicModel(propertyMap);
         }
 
-        private static IRazorEngineService CreateRazorEngine()
+        private static RazorTemplateEngine CreateRazorEngine()
         {
-            return RazorEngineService.Create(new EngineConfig
-            {
-                BaseTemplateType = typeof(EmailTemplate),
-                DefaultNamespace = NamespaceName
-            });
+            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
+                           {
+                               DefaultBaseClass = typeof(EmailTemplate).FullName,
+                               DefaultNamespace = NamespaceName
+                           };
+
+            host.NamespaceImports.Add("System");
+            host.NamespaceImports.Add("System.Collections");
+            host.NamespaceImports.Add("System.Collections.Generic");
+            host.NamespaceImports.Add("System.Dynamic");
+            host.NamespaceImports.Add("System.Linq");
+
+            return new RazorTemplateEngine(host);
         }
 
         private static IEnumerable<string> BuildReferenceList()
