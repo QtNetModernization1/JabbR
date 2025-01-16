@@ -7,7 +7,6 @@ using System.Threading;
 
 using Nancy;
 using Nancy.Bootstrapper;
-using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
 using Nancy.Bootstrappers.Ninject;
@@ -39,12 +38,6 @@ namespace JabbR.Nancy
 
             pipelines.BeforeRequest.AddItemToStartOfPipeline(FlowPrincipal);
             pipelines.BeforeRequest.AddItemToStartOfPipeline(SetCulture);
-        }
-
-        protected override void RegisterNancyEnvironment(IKernel container, INancyEnvironment environment)
-        {
-            base.RegisterNancyEnvironment(container, environment);
-            // Add any custom environment configuration here if needed
         }
 
         private Response FlowPrincipal(NancyContext context)
