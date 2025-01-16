@@ -1,5 +1,5 @@
-﻿using Microsoft.Ajax.Utilities;
-using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Ajax.Utilities;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
