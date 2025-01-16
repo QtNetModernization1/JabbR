@@ -816,10 +816,10 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Caller.SendAsync("userUnallowed", targetUser.Name, targetRoom.Name);
         }
 
-        void INotificationService.AddOwner(ChatUser targetUser, ChatRoom targetRoom)
+        async void INotificationService.AddOwner(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Tell this client it's an owner
-            Clients.User(targetUser.Id).makeOwner(targetRoom.Name);
+            await Clients.User(targetUser.Id).SendAsync("makeOwner", targetRoom.Name);
 
             var userViewModel = new UserViewModel(targetUser);
 
@@ -827,17 +827,17 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // Tell everyone in the target room that a new owner was added
             if (_repository.IsUserInRoom(_cache, targetUser, targetRoom))
             {
-                Clients.Group(targetRoom.Name).addOwner(userViewModel, targetRoom.Name);
+                await Clients.Group(targetRoom.Name).SendAsync("addOwner", userViewModel, targetRoom.Name);
             }
 
             // Tell the calling client the granting of ownership was successful
-            Clients.Caller.ownerMade(targetUser.Name, targetRoom.Name);
+            await Clients.Caller.SendAsync("ownerMade", targetUser.Name, targetRoom.Name);
         }
 
-        void INotificationService.RemoveOwner(ChatUser targetUser, ChatRoom targetRoom)
+        async void INotificationService.RemoveOwner(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Tell this client it's no longer an owner
-            Clients.User(targetUser.Id).demoteOwner(targetRoom.Name);
+            await Clients.User(targetUser.Id).SendAsync("demoteOwner", targetRoom.Name);
 
             var userViewModel = new UserViewModel(targetUser);
 
@@ -845,11 +845,11 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // Tell everyone in the target room that the owner was removed
             if (_repository.IsUserInRoom(_cache, targetUser, targetRoom))
             {
-                Clients.Group(targetRoom.Name).removeOwner(userViewModel, targetRoom.Name);
+                await Clients.Group(targetRoom.Name).SendAsync("removeOwner", userViewModel, targetRoom.Name);
             }
 
             // Tell the calling client the removal of ownership was successful
-            Clients.Caller.ownerRemoved(targetUser.Name, targetRoom.Name);
+            await Clients.Caller.SendAsync("ownerRemoved", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.ChangeGravatar(ChatUser user)
