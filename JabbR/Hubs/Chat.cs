@@ -896,15 +896,15 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Caller.SendAsync("showUsersRoomList", userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
         }
 
-        void INotificationService.ListUsers()
+        async void INotificationService.ListUsers()
         {
             var users = _repository.Users.Online().Select(s => s.Name).OrderBy(s => s);
-            Clients.Caller.listUsers(users);
+            await Clients.Caller.SendAsync("listUsers", users);
         }
 
-        void INotificationService.ListUsers(IEnumerable<ChatUser> users)
+        async void INotificationService.ListUsers(IEnumerable<ChatUser> users)
         {
-            Clients.Caller.listUsers(users.Select(s => s.Name));
+            await Clients.Caller.SendAsync("listUsers", users.Select(s => s.Name));
         }
 
         void INotificationService.ListUsers(ChatRoom room, IEnumerable<string> names)
@@ -912,26 +912,26 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             Clients.Caller.showUsersInRoom(room.Name, names);
         }
 
-        void INotificationService.ListAllowedUsers(ChatRoom room)
+        async void INotificationService.ListAllowedUsers(ChatRoom room)
         {
-            Clients.Caller.listAllowedUsers(room.Name, room.Private, room.AllowedUsers.Select(s => s.Name));
+            await Clients.Caller.SendAsync("listAllowedUsers", room.Name, room.Private, room.AllowedUsers.Select(s => s.Name));
         }
 
-        void INotificationService.ListOwners(ChatRoom room)
+        async void INotificationService.ListOwners(ChatRoom room)
         {
-            Clients.Caller.listOwners(room.Name, room.Owners.Select(s => s.Name), room.Creator != null ? room.Creator.Name : null);
+            await Clients.Caller.SendAsync("listOwners", room.Name, room.Owners.Select(s => s.Name), room.Creator != null ? room.Creator.Name : null);
         }
 
-        void INotificationService.LockRoom(ChatUser targetUser, ChatRoom room)
+        async void INotificationService.LockRoom(ChatUser targetUser, ChatRoom room)
         {
             var userViewModel = new UserViewModel(targetUser);
 
             // Tell everyone that the room's locked
-            Clients.Clients(_repository.GetAllowedClientIds(room)).lockRoom(userViewModel, room.Name, true);
-            Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).lockRoom(userViewModel, room.Name, false);
+            await Clients.Clients(_repository.GetAllowedClientIds(room)).SendAsync("lockRoom", userViewModel, room.Name, true);
+            await Clients.AllExcept(_repository.GetAllowedClientIds(room).ToArray()).SendAsync("lockRoom", userViewModel, room.Name, false);
 
             // Tell the caller the room was successfully locked
-            Clients.Caller.roomLocked(room.Name);
+            await Clients.Caller.SendAsync("roomLocked", room.Name);
 
             // Notify people of the change
             OnRoomChanged(room);
