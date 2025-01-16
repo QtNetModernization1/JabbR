@@ -752,33 +752,38 @@ namespace JabbR
             await Clients.Caller.SendAsync("userCreated");
         }
 
-        void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
-        {
-            var userViewModel = new UserViewModel(user);
-            var roomViewModel = new RoomViewModel
-            {
-                Name = room.Name,
-                Private = room.Private,
-                Welcome = room.Welcome ?? String.Empty,
-                Closed = room.Closed
-            };
+void INotificationService.JoinRoom(ChatUser user, ChatRoom room)
+{
+    JoinRoomAsync(user, room).GetAwaiter().GetResult();
+}
 
-            var isOwner = user.OwnedRooms.Contains(room);
+private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
+{
+    var userViewModel = new UserViewModel(user);
+    var roomViewModel = new RoomViewModel
+    {
+        Name = room.Name,
+        Private = room.Private,
+        Welcome = room.Welcome ?? String.Empty,
+        Closed = room.Closed
+    };
 
-            // Tell all clients to join this room
-            Clients.User(user.Id).joinRoom(roomViewModel);
+    var isOwner = user.OwnedRooms.Contains(room);
 
-            // Tell the people in this room that you've joined
-            Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+    // Tell all clients to join this room
+    await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
-            // Notify users of the room count change
-            OnRoomChanged(room);
+    // Tell the people in this room that you've joined
+    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
-            foreach (var client in user.ConnectedClients)
-            {
-                Groups.Add(client.Id, room.Name);
-            }
-        }
+    // Notify users of the room count change
+    await OnRoomChangedAsync(room);
+
+    foreach (var client in user.ConnectedClients)
+    {
+        await Groups.AddToGroupAsync(client.Id, room.Name);
+    }
+}
 
         void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
         {
