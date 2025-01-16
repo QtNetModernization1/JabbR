@@ -11,6 +11,7 @@ using JabbR.Models;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 using Ninject;
 
@@ -117,23 +118,14 @@ namespace JabbR.Services
         }
 
         // This is an uber hack to make sure the db is in sync with SignalR
-        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, ITrackingConnection connection)
+        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, HubCallerContext context)
         {
-            var contextField = connection.GetType().GetField("_context",
-                                          BindingFlags.NonPublic | BindingFlags.Instance);
-            if (contextField == null)
-            {
-                return;
-            }
-
-            var context = contextField.GetValue(connection) as HostContext;
-
             if (context == null)
             {
                 return;
             }
 
-            string connectionData = context.Request.QueryString["connectionData"];
+            string connectionData = context.GetHttpContext().Request.Query["connectionData"];
 
             if (String.IsNullOrEmpty(connectionData))
             {
@@ -155,7 +147,7 @@ namespace JabbR.Services
 
             logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
 
-            string userId = context.Request.User.GetUserId();
+            string userId = context.User.GetUserId();
 
             ChatUser user = repo.GetUserById(userId);
             if (user == null)
@@ -166,9 +158,9 @@ namespace JabbR.Services
 
             var client = new ChatClient
             {
-                Id = connection.ConnectionId,
+                Id = context.ConnectionId,
                 User = user,
-                UserAgent = context.Request.Headers["User-Agent"],
+                UserAgent = context.GetHttpContext().Request.Headers["User-Agent"],
                 LastActivity = DateTimeOffset.UtcNow,
                 LastClientActivity = user.LastActivity
             };
