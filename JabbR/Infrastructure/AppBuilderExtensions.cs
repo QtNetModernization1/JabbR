@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Owin;
+using Microsoft.AspNetCore.Builder;
 
 namespace JabbR.Infrastructure
 {
@@ -8,7 +8,7 @@ namespace JabbR.Infrastructure
     {
         private static readonly string SystemWebHostName = "System.Web 4.5, Microsoft.Owin.Host.SystemWeb 1.0.0.0";
 
-        public static bool IsRunningUnderSystemWeb(this IAppBuilder app)
+        public static bool IsRunningUnderSystemWeb(this IApplicationBuilder app)
         {
             var capabilities = (IDictionary<string, object>)app.Properties["server.Capabilities"];
 
