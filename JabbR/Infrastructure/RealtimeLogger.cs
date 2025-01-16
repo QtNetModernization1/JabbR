@@ -6,17 +6,11 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
-    public interface IMonitorClient
-    {
-        Task LogMessage(string message);
-        Task LogError(string message);
-    }
-
     public class RealtimeLogger : ILogger
     {
-        private readonly IHubContext<Monitor, IMonitorClient> _logContext;
+        private readonly IHubContext<Monitor> _logContext;
 
-        public RealtimeLogger(IHubContext<Monitor, IMonitorClient> hubContext)
+        public RealtimeLogger(IHubContext<Monitor> hubContext)
         {
             _logContext = hubContext;
         }
@@ -33,10 +27,10 @@ namespace JabbR.Infrastructure
                     switch (type)
                     {
                         case LogType.Message:
-                            await _logContext.Clients.All.LogMessage(formatted);
+                            await _logContext.Clients.All.logMessage(formatted);
                             break;
                         case LogType.Error:
-                            await _logContext.Clients.All.LogError(formatted);
+                            await _logContext.Clients.All.logError(formatted);
                             break;
                     }
                 }
