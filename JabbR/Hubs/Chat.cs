@@ -693,7 +693,7 @@ namespace JabbR
                 {
                     var userViewModel = new UserViewModel(user);
 
-                    Clients.OthersInGroup(room.Name).leave(userViewModel, room.Name);
+                    Clients.OthersInGroup(room.Name).SendAsync("Leave", userViewModel, room.Name);
                 }
             }
         }
