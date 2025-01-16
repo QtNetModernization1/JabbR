@@ -7,6 +7,7 @@ using System.Threading;
 
 using Nancy;
 using Nancy.Bootstrapper;
+using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
 using Nancy.Bootstrappers.Ninject;
@@ -28,6 +29,14 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
+        }
+
+        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
+        {
+            return new DefaultNancyEnvironmentConfigurator(
+                new DefaultNancyEnvironment(),
+                new[] { new DefaultNancyEnvironmentConfigurations() }
+            );
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
