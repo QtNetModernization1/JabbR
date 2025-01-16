@@ -1,15 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 
 using JabbR.Services;
 using Nancy;
-using Nancy.Authentication;
+using Nancy.SimpleAuthentication;
+using SimpleAuthentication.Core;
 
 namespace JabbR.Nancy
 {
-    public class JabbRAuthenticationCallbackProvider
+    public class JabbRAuthenticationCallbackProvider : IAuthenticationCallbackProvider
     {
         private readonly IJabbrRepository _repository;
 
@@ -18,7 +19,7 @@ namespace JabbR.Nancy
             _repository = repository;
         }
 
-        public dynamic Process(NancyModule nancyModule, dynamic model)
+        public dynamic Process(NancyModule nancyModule, AuthenticateCallbackData model)
         {
             Response response;
 
@@ -28,36 +29,36 @@ namespace JabbR.Nancy
             }
             else
             {
-                response = nancyModule.Response.AsRedirect("~/");
+                response = nancyModule.AsRedirectQueryStringOrDefault("~/");
 
-                if (nancyModule.Context.CurrentUser != null)
+                if (nancyModule.IsAuthenticated())
                 {
-                    response = nancyModule.Response.AsRedirect("~/account/#identityProviders");
+                    response = nancyModule.AsRedirectQueryStringOrDefault("~/account/#identityProviders");
                 }
             }
 
             if (model.Exception != null)
             {
-                nancyModule.ViewBag.ErrorMessage = model.Exception.Message;
+                nancyModule.Request.AddAlertMessage("error", model.Exception.Message);
             }
             else
             {
+                UserInformation information = model.AuthenticatedClient.UserInformation;
                 var claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, model.Id));
-                claims.Add(new Claim(ClaimTypes.AuthenticationMethod, model.ProviderName));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, information.Id));
+                claims.Add(new Claim(ClaimTypes.AuthenticationMethod, model.AuthenticatedClient.ProviderName));
 
-                if (!String.IsNullOrEmpty(model.UserName))
+                if (!String.IsNullOrEmpty(information.UserName))
                 {
-                    claims.Add(new Claim(ClaimTypes.Name, model.UserName));
+                    claims.Add(new Claim(ClaimTypes.Name, information.UserName));
                 }
 
-                if (!String.IsNullOrEmpty(model.Email))
+                if (!String.IsNullOrEmpty(information.Email))
                 {
-                    claims.Add(new Claim(ClaimTypes.Email, model.Email));
+                    claims.Add(new Claim(ClaimTypes.Email, information.Email));
                 }
 
-                var identity = new ClaimsIdentity(claims, "JabbR");
-                nancyModule.Context.CurrentUser = new ClaimsPrincipal(identity);
+                nancyModule.SignIn(claims);
             }
 
             return response;
@@ -65,8 +66,7 @@ namespace JabbR.Nancy
 
         public dynamic OnRedirectToAuthenticationProviderError(NancyModule nancyModule, string errorMessage)
         {
-            nancyModule.ViewBag.ErrorMessage = errorMessage;
-            return nancyModule.Response.AsRedirect("~/error");
+            return null;
         }
     }
 }
