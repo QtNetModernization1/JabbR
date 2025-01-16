@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using JabbR.WebApi.Model;
 using System.Text.Json;
+using System.Text;
 
 namespace JabbR.Infrastructure
 {
@@ -43,7 +44,11 @@ namespace JabbR.Infrastructure
         /// <returns>HttpResponseMessage that wraps the given payload</returns>
         public static HttpResponseMessage CreateJabbrSuccessMessage<T>(this HttpRequestMessage Request, HttpStatusCode statusCode, T data)
         {
-            var responseMessage = Request.CreateResponse(statusCode, data);
+            var json = JsonSerializer.Serialize(data);
+            var responseMessage = new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
             return AddResponseHeaders(Request, responseMessage, null);
         }
 
