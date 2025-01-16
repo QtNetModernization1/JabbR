@@ -59,16 +59,6 @@ namespace JabbR.Nancy
             return environment;
         }
 
-        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
-        {
-            return new DefaultNancyEnvironmentConfigurator(
-                c => c.Tracing(
-                    enabled: false,
-                    displayErrorTraces: true
-                )
-            );
-        }
-
         private Response FlowPrincipal(NancyContext context)
         {
             if (context.Items.TryGetValue("OWIN_REQUEST_ENVIRONMENT", out var envObj) && envObj is IDictionary<string, object> env)
