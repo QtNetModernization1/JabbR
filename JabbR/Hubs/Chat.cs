@@ -288,22 +288,22 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override async Task OnReconnectedAsync()
+        public override Task OnReconnected()
         {
             _logger.Log("OnReconnected({0})", Context.ConnectionId);
 
             var userId = Context.User.GetUserId();
 
-            ChatUser user = await _repository.VerifyUserIdAsync(userId);
+            ChatUser user = _repository.VerifyUserId(userId);
 
             if (user == null)
             {
                 _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return;
+                return Task.CompletedTask;
             }
 
             // Make sure this client is being tracked
-            await _service.AddClientAsync(user, Context.ConnectionId, UserAgent);
+            _service.AddClient(user, Context.ConnectionId, UserAgent);
 
             var currentStatus = (UserStatus)user.Status;
 
@@ -313,7 +313,7 @@ namespace JabbR
 
                 // Mark the user as inactive
                 user.Status = (int)UserStatus.Inactive;
-                await _repository.CommitChangesAsync();
+                _repository.CommitChanges();
 
                 // If the user was offline that means they are not in the user list so we need to tell
                 // everyone the user is really in the room
@@ -324,7 +324,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    await Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -332,7 +332,9 @@ namespace JabbR
                 _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
             }
 
-            await CheckStatusAsync();
+            CheckStatus();
+
+            return Task.CompletedTask;
         }
 
         public override Task OnDisconnected()
