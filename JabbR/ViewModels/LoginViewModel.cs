@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using JabbR.Models;
 using JabbR.Services;
+using SimpleAuthentication;
 
 namespace JabbR.ViewModels
 {
     public class LoginViewModel
     {
-        public LoginViewModel(ApplicationSettings settings, IEnumerable<object> configuredProviders, IEnumerable<ChatUserIdentity> userIdentities)
+        public LoginViewModel(ApplicationSettings settings, IEnumerable<IAuthenticationProvider> configuredProviders, IEnumerable<ChatUserIdentity> userIdentities)
         {
             SocialDetails = new SocialLoginViewModel(configuredProviders, userIdentities);
             AllowUserRegistration = settings.AllowUserRegistration;
