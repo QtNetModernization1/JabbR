@@ -20,50 +20,45 @@ namespace JabbR.ContentProviders
     </div>
 </div>";
 
-        protected override System.Threading.Tasks.Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
+        protected override async Task<ContentProviderResult> GetCollapsibleContent(ContentProviderHttpRequest request)
         {
-            return ExtractFromResponse(request).Then(pageInfo =>
+            var pageInfo = await ExtractFromResponse(request);
+            if (pageInfo == null)
             {
-                if (pageInfo == null)
+                return null;
+            }
+
+            return new ContentProviderResult
+            {
+                Content = String.Format(ContentFormat, request.RequestUri.ToString(), pageInfo.ImageUrl, pageInfo.Description),
+                Title = pageInfo.Title
+            };
+        }
+
+        private async Task<XkcdContentProvider.XkcdComicInfo> ExtractFromResponse(ContentProviderHttpRequest request)
+        {
+            var response = await Http.GetAsync(request.RequestUri);
+            var comicInfo = new XkcdComicInfo();
+
+using (var responseStream = await response.Content.ReadAsStreamAsync())
+            {
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.Load(responseStream);
+                htmlDocument.OptionFixNestedTags = true;
+
+                var comic = htmlDocument.DocumentNode.SelectSingleNode("//div[@id='comic']/img");
+
+                if (comic == null)
                 {
                     return null;
                 }
 
-                return new ContentProviderResult
-                {
-                    Content = String.Format(ContentFormat, request.RequestUri.ToString(),  pageInfo.ImageUrl, pageInfo.Description),
-                    Title = pageInfo.Title
-                };
-            });
-        }
+                comicInfo.Title = comic.Attributes["alt"].Value;
+                comicInfo.ImageUrl = comic.Attributes["src"].Value;
+                comicInfo.Description = comic.Attributes["title"].Value;
+            }
 
-        private Task<XkcdContentProvider.XkcdComicInfo> ExtractFromResponse(ContentProviderHttpRequest request)
-        {
-            return Http.GetAsync(request.RequestUri).Then(response =>
-            {
-                var comicInfo = new XkcdComicInfo();
-
-                using (var responseStream = response.GetResponseStream())
-                {
-                    var htmlDocument = new HtmlDocument();
-                    htmlDocument.Load(responseStream);
-                    htmlDocument.OptionFixNestedTags = true;
-
-                    var comic = htmlDocument.DocumentNode.SelectSingleNode("//div[@id='comic']/img");
-                                            
-                    if (comic == null)
-                    {
-                        return null;
-                    }
-
-                    comicInfo.Title = comic.Attributes["alt"].Value;
-                    comicInfo.ImageUrl = comic.Attributes["src"].Value;
-                    comicInfo.Description = comic.Attributes["title"].Value;
-
-                }
-
-                return comicInfo;
-            });
+            return comicInfo;
         }
 
         public override bool IsValidContent(Uri uri)
@@ -77,7 +72,6 @@ namespace JabbR.ContentProviders
             public string Title { get; set; }
             public string ImageUrl { get; set; }
             public string Description { get; set; }
-
         }
     }
 }
