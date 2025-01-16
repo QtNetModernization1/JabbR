@@ -124,12 +124,13 @@ namespace JabbR
             OnUserInitialize(clientState, user, reconnecting);
         }
 
-        private async Task CheckStatus()
+        private Task CheckStatus()
         {
             if (OutOfSync)
             {
-                await Clients.Caller.SendAsync("outOfSync");
+                return Clients.Caller.SendAsync("outOfSync");
             }
+            return Task.CompletedTask;
         }
 
         private void OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
@@ -291,7 +292,7 @@ namespace JabbR
         }
 
         // This method is called when a client reconnects after a disconnection
-        public Task HandleReconnection()
+        public async Task HandleReconnection()
         {
             _logger.Log("HandleReconnection({0})", Context.ConnectionId);
 
@@ -302,7 +303,7 @@ namespace JabbR
             if (user == null)
             {
                 _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return Task.CompletedTask;
+                return;
             }
 
             // Make sure this client is being tracked
@@ -327,7 +328,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                    await Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -335,9 +336,7 @@ namespace JabbR
                 _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
             }
 
-            CheckStatus();
-
-            return Task.CompletedTask;
+            await CheckStatus();
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
