@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 using Ninject;
+using System.Security.Claims;
 
 namespace JabbR.Services
 {
@@ -95,14 +96,15 @@ namespace JabbR.Services
         private void UpdatePresence(ILogger logger, IJabbrRepository repo)
         {
             // Get all connections on this node and update the activity
-            foreach (var connection in _heartbeat.GetConnections())
+            foreach (var connection in _hubContext.Clients.All)
             {
-                if (!connection.IsAlive)
+                var connectionId = connection.GetType().GetProperty("ConnectionId")?.GetValue(connection) as string;
+                if (string.IsNullOrEmpty(connectionId))
                 {
                     continue;
                 }
 
-                ChatClient client = repo.GetClientById(connection.ConnectionId);
+                ChatClient client = repo.GetClientById(connectionId);
 
                 if (client != null)
                 {
@@ -110,7 +112,7 @@ namespace JabbR.Services
                 }
                 else
                 {
-                    EnsureClientConnected(logger, repo, connection);
+                    EnsureClientConnected(logger, repo, new HubCallerContext(_hubContext, connectionId));
                 }
             }
 
@@ -125,29 +127,15 @@ namespace JabbR.Services
                 return;
             }
 
-            string connectionData = context.GetHttpContext().Request.Query["connectionData"];
+            logger.Log("Connection {0} exists but isn't tracked.", context.ConnectionId);
 
-            if (String.IsNullOrEmpty(connectionData))
+            string userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
             {
+                logger.Log("Unable to find user id for connection {0}", context.ConnectionId);
                 return;
             }
-
-            var hubs = JsonConvert.DeserializeObject<HubConnectionData[]>(connectionData);
-
-            if (hubs.Length != 1)
-            {
-                return;
-            }
-
-            // We only care about the chat hub
-            if (!hubs[0].Name.Equals("chat", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
-
-            string userId = context.User.GetUserId();
 
             ChatUser user = repo.GetUserById(userId);
             if (user == null)
@@ -160,7 +148,7 @@ namespace JabbR.Services
             {
                 Id = context.ConnectionId,
                 User = user,
-                UserAgent = context.GetHttpContext().Request.Headers["User-Agent"],
+                UserAgent = context.GetHttpContext()?.Request.Headers["User-Agent"],
                 LastActivity = DateTimeOffset.UtcNow,
                 LastClientActivity = user.LastActivity
             };
