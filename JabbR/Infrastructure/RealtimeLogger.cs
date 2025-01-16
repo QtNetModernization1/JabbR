@@ -1,19 +1,18 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using JabbR.Hubs;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
     public class RealtimeLogger : ILogger
     {
-        private readonly IHubContext _logContext;
+        private readonly IHubContext<Monitor> _logContext;
 
-        public RealtimeLogger(IConnectionManager connectionManager)
+        public RealtimeLogger(IHubContext<Monitor> hubContext)
         {
-            _logContext = connectionManager.GetHubContext<Monitor>();
+            _logContext = hubContext;
         }
 
         public void Log(LogType type, string message)
