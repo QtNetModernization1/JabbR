@@ -1,6 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
-using Nancy;
 using Nancy.Security;
 
 namespace JabbR.Nancy
