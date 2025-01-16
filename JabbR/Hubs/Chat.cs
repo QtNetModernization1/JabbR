@@ -882,9 +882,9 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.User(toUser.Id).SendAsync("sendPrivateMessage", fromUser.Name, toUser.Name, messageText);
         }
 
-        void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
+        async void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
         {
-            Clients.User(user.Id).postNotification(message, room.Name);
+            await Clients.User(user.Id).SendAsync("postNotification", message, room.Name);
         }
 
         void INotificationService.ListRooms(ChatUser user)
