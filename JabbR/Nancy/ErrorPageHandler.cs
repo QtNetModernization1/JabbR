@@ -5,11 +5,10 @@ using JabbR.Services;
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
-using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : IStatusCodeHandler
+    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
         protected readonly IViewFactory ViewFactory;
@@ -42,24 +41,17 @@ namespace JabbR.Nancy
                 }
             }
 
-            var response = new Response
-            {
-                Contents = stream =>
-                {
-                    var view = ViewFactory.RenderView("errorPage", new
-                    {
-                        Error = statusCode,
-                        ErrorCode = (int)statusCode,
-                        SuggestRoomName = suggestRoomName
-                    });
-                    var writer = new StreamWriter(stream);
-                    writer.Write(view);
-                    writer.Flush();
-                },
-                ContentType = "text/html",
-                StatusCode = statusCode
-            };
+            var response = RenderView(
+                context, 
+                "errorPage", 
+                new 
+                { 
+                    Error = statusCode,
+                    ErrorCode = (int)statusCode,
+                    SuggestRoomName = suggestRoomName
+                });
 
+            response.StatusCode = statusCode;
             context.Response = response;
         }
     }
