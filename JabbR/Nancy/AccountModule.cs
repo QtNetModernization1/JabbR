@@ -8,6 +8,7 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Nancy;
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Nancy
 {
@@ -19,17 +20,18 @@ namespace JabbR.Nancy
                              IAuthenticationService authService,
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
-                             IEmailService emailService)
+                             IEmailService emailService,
+                             IHttpContextAccessor httpContextAccessor)
             : base("/account")
         {
             Get("/", _ =>
             {
-                if (!IsAuthenticated)
+                if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
                 return GetProfileView(authService, user);
             });
