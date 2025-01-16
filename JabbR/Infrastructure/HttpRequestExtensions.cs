@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using JabbR.WebApi.Model;
+using System.Text.Json;
 
 namespace JabbR.Infrastructure
 {
@@ -24,7 +25,11 @@ namespace JabbR.Infrastructure
         /// </returns>
         public static HttpResponseMessage CreateJabbrSuccessMessage<T>(this HttpRequestMessage request, HttpStatusCode statusCode, T data, string filenamePrefix)
         {
-            var responseMessage = request.CreateResponse(statusCode, data);
+            var json = JsonSerializer.Serialize(data);
+            var responseMessage = new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
             return AddResponseHeaders(request, responseMessage, filenamePrefix);
         }
         /// <summary>
