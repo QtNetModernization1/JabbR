@@ -204,15 +204,15 @@ namespace JabbR
                 // send it to everyone. The assumption is that the client has some ui
                 // that it wanted to update immediately showing the message and
                 // then when the actual message is roundtripped it would "solidify it".
-                Clients.Group(room.Name).addMessage(messageViewModel, room.Name);
+                Clients.Group(room.Name).AddMessage(messageViewModel, room.Name);
             }
             else
             {
                 // If the client did set an id then we need to give everyone the real id first
-                Clients.OthersInGroup(room.Name).addMessage(messageViewModel, room.Name);
+                Clients.OthersInGroup(room.Name).AddMessage(messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
-                Clients.Caller.replaceMessage(clientMessage.Id, messageViewModel, room.Name);
+                Clients.Caller.ReplaceMessage(clientMessage.Id, messageViewModel, room.Name);
             }
 
             // Add mentions
