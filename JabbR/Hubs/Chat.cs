@@ -1024,19 +1024,19 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await LeaveRoom(user, room);
         }
 
-        void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
+        async void INotificationService.OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
         {
             // Create the view model
             var userViewModel = new UserViewModel(user);
 
 
             // Tell the user's connected clients that the name changed
-            Clients.User(user.Id).userNameChanged(userViewModel);
+            await Clients.User(user.Id).SendAsync("UserNameChanged", userViewModel);
 
             // Notify all users in the rooms
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeUserName(oldUserName, userViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("ChangeUserName", oldUserName, userViewModel, room.Name);
             }
         }
 
