@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,7 +6,7 @@ using System.Text;
 using JabbR.Infrastructure;
 using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
-using PagedList;
+using PagedList.Core;
 using AntiXSS = Microsoft.Security.Application;
 
 namespace JabbR
