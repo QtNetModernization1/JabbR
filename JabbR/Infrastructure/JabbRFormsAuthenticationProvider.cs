@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using JabbR.Models;
 using JabbR.Services;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Infrastructure
 {
-    public class JabbRFormsAuthenticationProvider : ICookieAuthenticationProvider
+    public class JabbRFormsAuthenticationProvider : ITicketStore
     {
         private readonly IJabbrRepository _repository;
         private readonly IMembershipService _membershipService;
@@ -23,12 +22,37 @@ namespace JabbR.Infrastructure
             _membershipService = membershipService;
         }
 
-        public Task ValidateIdentity(CookieValidateIdentityContext context)
+        public Task<string> StoreAsync(AuthenticationTicket ticket)
         {
-            return TaskAsyncHelper.Empty;
+            // Implement storing the authentication ticket
+            throw new NotImplementedException();
         }
 
-        public void ResponseSignIn(CookieResponseSignInContext context)
+        public Task RenewAsync(string key, AuthenticationTicket ticket)
+        {
+            // Implement renewing the authentication ticket
+            throw new NotImplementedException();
+        }
+
+        public Task<AuthenticationTicket> RetrieveAsync(string key)
+        {
+            // Implement retrieving the authentication ticket
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            // Implement removing the authentication ticket
+            throw new NotImplementedException();
+        }
+
+        public async Task ValidateIdentityAsync(CookieValidateIdentityContext context)
+        {
+            // Implement identity validation logic
+            await Task.CompletedTask;
+        }
+
+        public async Task ResponseSignInAsync(HttpContext httpContext, AuthenticationScheme scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             var authResult = new AuthenticationResult
             {
@@ -110,7 +134,7 @@ namespace JabbR.Infrastructure
                                        cookieOptions);
         }
 
-        private static void AddClaim(CookieResponseSignInContext context, ChatUser user)
+        private static void AddClaim(ClaimsIdentity identity, ChatUser user)
         {
             // Do nothing if the user is banned
             if (user.IsBanned)
@@ -119,30 +143,28 @@ namespace JabbR.Infrastructure
             }
 
             // Add the jabbr id claim
-            context.Identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, user.Id));
+            identity.AddClaim(new Claim(JabbRClaimTypes.Identifier, user.Id));
 
             // Add the admin claim if the user is an Administrator
             if (user.IsAdmin)
             {
-                context.Identity.AddClaim(new Claim(JabbRClaimTypes.Admin, "true"));
+                identity.AddClaim(new Claim(JabbRClaimTypes.Admin, "true"));
             }
-
-            EnsurePersistentCookie(context);
         }
 
-        private static void EnsurePersistentCookie(CookieResponseSignInContext context)
+        private static void EnsurePersistentCookie(AuthenticationProperties properties)
         {
-            if (context.Properties == null)
+            if (properties == null)
             {
-                context.Properties = new AuthenticationProperties();
+                properties = new AuthenticationProperties();
             }
 
-            context.Properties.IsPersistent = true;
+            properties.IsPersistent = true;
         }
 
-        private ChatUser GetLoggedInUser(CookieResponseSignInContext context)
+        private ChatUser GetLoggedInUser(HttpContext context)
         {
-            var principal = context.Request.User as ClaimsPrincipal;
+            var principal = context.User as ClaimsPrincipal;
 
             if (principal != null)
             {
@@ -152,9 +174,10 @@ namespace JabbR.Infrastructure
             return null;
         }
 
-        public void ApplyRedirect(CookieApplyRedirectContext context)
+        public async Task ApplyRedirectAsync(RedirectContext<CookieAuthenticationOptions> context)
         {
             context.Response.Redirect(context.RedirectUri);
+            await Task.CompletedTask;
         }
     }
 }
