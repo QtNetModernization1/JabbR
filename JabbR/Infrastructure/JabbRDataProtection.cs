@@ -16,14 +16,21 @@ namespace JabbR.Infrastructure
             _cryptoService = cryptoService;
         }
 
-        public byte[] Protect(byte[] userData)
+        public byte[] Protect(byte[] plaintext)
         {
-            return _cryptoService.Protect(userData);
+            return _cryptoService.Protect(plaintext);
         }
 
         public byte[] Unprotect(byte[] protectedData)
         {
             return _cryptoService.Unprotect(protectedData);
+        }
+
+        public IDataProtector CreateProtector(string purpose)
+        {
+            // This method is not part of IDataProtector, but we'll keep it
+            // in case it's needed elsewhere in the codebase
+            return this;
         }
     }
 }
