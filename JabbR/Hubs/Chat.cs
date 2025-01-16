@@ -1093,7 +1093,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
         {
             bool isWelcomeCleared = String.IsNullOrWhiteSpace(room.Welcome);
             var parsedWelcome = room.Welcome ?? String.Empty;
-            Clients.User(user.Id).welcomeChanged(isWelcomeCleared, parsedWelcome);
+            Clients.User(user.Id).SendAsync("WelcomeChanged", isWelcomeCleared, parsedWelcome);
         }
 
         void INotificationService.GenerateMeme(ChatUser user, ChatRoom room, string message)
