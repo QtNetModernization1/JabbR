@@ -4,48 +4,44 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.AspNetCore.Owin;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
 namespace JabbR.Middleware
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-
     public class CustomAuthHandler
     {
-        private readonly AppFunc _next;
+        private readonly RequestDelegate _next;
 
-        public CustomAuthHandler(AppFunc next)
+        public CustomAuthHandler(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task Invoke(IDictionary<string, object> env)
+        public async Task Invoke(HttpContext context)
         {
-            var context = new OwinContext(env);
-
-            var claimsPrincipal = context.Request.User as ClaimsPrincipal;
+            var claimsPrincipal = context.User;
 
             if (claimsPrincipal != null &&
                 !(claimsPrincipal is WindowsPrincipal) &&
                 claimsPrincipal.Identity.IsAuthenticated &&
-                !claimsPrincipal.IsAuthenticated() &&
+                !claimsPrincipal.Identity.IsAuthenticated &&
                 claimsPrincipal.HasClaim(ClaimTypes.NameIdentifier))
             {
                 var identity = new ClaimsIdentity(claimsPrincipal.Claims, Constants.JabbRAuthType);
 
-                var providerName = claimsPrincipal.GetIdentityProvider();
+                var providerName = claimsPrincipal.FindFirst(ClaimTypes.AuthenticationMethod)?.Value;
 
-                if (String.IsNullOrEmpty(providerName))
+                if (string.IsNullOrEmpty(providerName))
                 {
                     // If there's no provider name just add custom as the name
                     identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, "Custom"));
                 }
 
-                context.Authentication.SignIn(identity);
+                await context.SignInAsync(Constants.JabbRAuthType, new ClaimsPrincipal(identity));
             }
 
-            await _next(env);
+            await _next(context);
         }
     }
 }
