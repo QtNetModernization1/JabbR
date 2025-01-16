@@ -703,14 +703,14 @@ namespace JabbR
             await Clients.Group(room.Name).SendAsync("updateActivity", userViewModel, room.Name);
         }
 
-        private void LeaveRoom(ChatUser user, ChatRoom room)
+        private async Task LeaveRoom(ChatUser user, ChatRoom room)
         {
             var userViewModel = new UserViewModel(user);
-            Clients.Group(room.Name).leave(userViewModel, room.Name);
+            await Clients.Group(room.Name).SendAsync("leave", userViewModel, room.Name);
 
             foreach (var client in user.ConnectedClients)
             {
-                Groups.Remove(client.Id, room.Name);
+                await Groups.RemoveFromGroupAsync(client.Id, room.Name);
             }
 
             OnRoomChanged(room);
