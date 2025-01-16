@@ -27,88 +27,87 @@ public class AccountModule : NancyModule
         : base("/account")
     {
         _httpContextAccessor = httpContextAccessor;
-
-        Get("/", _ =>
-        {
-            if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            Get("/", _ =>
             {
-                return HttpStatusCode.Forbidden;
-            }
-
-            ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            return GetProfileView(authService, user);
-        });
-
-        Get("/login", _ =>
-        {
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                return this.AsRedirectQueryStringOrDefault("~/");
-            }
-
-            return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-        });
-
-        Post("/login", param =>
-        {
-            if (!HasValidCsrfTokenOrSecHeader)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                return this.AsRedirectQueryStringOrDefault("~/");
-            }
-
-            string username = Request.Form.username;
-            string password = Request.Form.password;
-
-            if (String.IsNullOrEmpty(username))
-            {
-                this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
-            }
-
-            if (String.IsNullOrEmpty(password))
-            {
-                this.AddValidationError("password", LanguageResources.Authentication_PassRequired);
-            }
-
-            try
-            {
-                if (ModelValidationResult.IsValid)
+                if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
-                    IList<Claim> claims;
-                    if (authenticator.TryAuthenticateUser(username, password, out claims))
+                    return HttpStatusCode.Forbidden;
+                }
+
+                ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+                return GetProfileView(authService, user);
+            });
+
+            Get("/login", _ =>
+            {
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    return this.AsRedirectQueryStringOrDefault("~/");
+                }
+
+                return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
+            });
+
+            Post["/login"] = param =>
+            {
+                if (!HasValidCsrfTokenOrSecHeader)
+                {
+                    return HttpStatusCode.Forbidden;
+                }
+
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    return this.AsRedirectQueryStringOrDefault("~/");
+                }
+
+                string username = Request.Form.username;
+                string password = Request.Form.password;
+
+                if (String.IsNullOrEmpty(username))
+                {
+                    this.AddValidationError("username", LanguageResources.Authentication_NameRequired);
+                }
+
+                if (String.IsNullOrEmpty(password))
+                {
+                    this.AddValidationError("password", LanguageResources.Authentication_PassRequired);
+                }
+
+                try
+                {
+                    if (ModelValidationResult.IsValid)
                     {
-                        return this.SignIn(claims);
+                        IList<Claim> claims;
+                        if (authenticator.TryAuthenticateUser(username, password, out claims))
+                        {
+                            return this.SignIn(claims);
+                        }
                     }
                 }
-            }
-            catch
+                catch
+                {
+                    // Swallow the exception    
+                }
+
+                this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
+
+                return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
+            };
+
+            Post["/logout"] = _ =>
             {
-                // Swallow the exception
-            }
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    return HttpStatusCode.Forbidden;
+                }
 
-            this.AddValidationError("_FORM", LanguageResources.Authentication_GenericFailure);
+                var response = Response.AsJson(new { success = true });
 
-            return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-        });
+                this.SignOut();
 
-        Post("/logout", _ =>
-        {
-            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            var response = Response.AsJson(new { success = true });
-
-            this.SignOut();
-
-            return response;
-        });
+                return response;
+            };
 
             Get["/register"] = _ =>
             {
