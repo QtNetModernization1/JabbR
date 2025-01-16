@@ -189,7 +189,7 @@ namespace JabbR
             }
 
             // Update activity *after* ensuring the user, this forces them to be active
-            UpdateActivity(user, room);
+            await UpdateActivity(user, room);
 
             // Create a true unique id and save the message to the db
             string id = Guid.NewGuid().ToString("d");
