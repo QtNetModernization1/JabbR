@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
 using Nancy.Security;
 
@@ -10,14 +9,20 @@ namespace JabbR.Nancy
         public ClaimsPrincipalUserIdentity(ClaimsPrincipal claimsPrincipal)
         {
             ClaimsPrincipal = claimsPrincipal;
-            UserName = claimsPrincipal.Identity?.Name ?? string.Empty;
-            Claims = claimsPrincipal.Claims.Select(c => c.Value).ToList();
         }
 
-        public ClaimsPrincipal ClaimsPrincipal { get; }
+        public ClaimsPrincipal ClaimsPrincipal { get; private set; }
 
-        public IEnumerable<string> Claims { get; }
+        public IEnumerable<string> Claims
+        {
+            get;
+            set;
+        }
 
-        public string UserName { get; }
+        public string UserName
+        {
+            get;
+            set;
+        }
     }
 }
