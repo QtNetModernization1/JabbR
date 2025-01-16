@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -8,55 +9,48 @@ namespace JabbR.Infrastructure
 {
     public static class Http
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
         private const string _userAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)";
 
-        public static Task<dynamic> GetJsonAsync(string url)
+        static Http()
         {
-            var task = GetAsync(url, webRequest =>
-            {
-                webRequest.Accept = "application/json";
-            });
-
-            return task.Then(response =>
-            {
-                using (var reader = new StreamReader(response.GetResponseStream()))
-                {
-                    return JsonConvert.DeserializeObject(reader.ReadToEnd());
-                }
-            });
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(_userAgent);
         }
 
-        public static async Task<HttpWebResponse> GetAsync(Uri uri, Action<HttpWebRequest> init = null)
+        public static async Task<dynamic> GetJsonAsync(string url)
         {
-            var request = (HttpWebRequest)HttpWebRequest.Create(uri);
-            request.UserAgent = _userAgent;
-            if (init != null)
+            var response = await GetAsync(url, request =>
             {
-                init(request);
+                request.Headers.Accept.ParseAdd("application/json");
+            });
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject(content);
+        }
+
+        public static async Task<HttpResponseMessage> GetAsync(Uri uri, Action<HttpRequestMessage> init = null)
+        {
+using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                init?.Invoke(request);
+                return await _httpClient.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             }
-
-            return (HttpWebResponse)await request.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> init = null)
+        public static Task<HttpResponseMessage> GetAsync(string url, Action<HttpRequestMessage> init = null)
         {
             return GetAsync(new Uri(url), init);
         }
 
-        public static Task<TResult> GetJsonAsync<TResult>(string url)
+        public static async Task<TResult> GetJsonAsync<TResult>(string url)
         {
-            var task = GetAsync(url, webRequest =>
+            var response = await GetAsync(url, request =>
             {
-                webRequest.Accept = "application/json";
+                request.Headers.Accept.ParseAdd("application/json");
             });
 
-            return task.Then(response =>
-            {
-                using (var reader = new StreamReader(response.GetResponseStream()))
-                {
-                    return JsonConvert.DeserializeObject<TResult>(reader.ReadToEnd());
-                }
-            });
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<TResult>(content);
         }
     }
 }
