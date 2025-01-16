@@ -874,12 +874,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             Clients.Group(room.Name).SendAsync("sendMeMessage", user.Name, content, room.Name);
         }
 
-        void INotificationService.SendPrivateMessage(ChatUser fromUser, ChatUser toUser, string messageText)
+        async void INotificationService.SendPrivateMessage(ChatUser fromUser, ChatUser toUser, string messageText)
         {
             // Send a message to the sender and the sendee
-            Clients.User(fromUser.Id).sendPrivateMessage(fromUser.Name, toUser.Name, messageText);
+            await Clients.User(fromUser.Id).SendAsync("sendPrivateMessage", fromUser.Name, toUser.Name, messageText);
 
-            Clients.User(toUser.Id).sendPrivateMessage(fromUser.Name, toUser.Name, messageText);
+            await Clients.User(toUser.Id).SendAsync("sendPrivateMessage", fromUser.Name, toUser.Name, messageText);
         }
 
         void INotificationService.PostNotification(ChatRoom room, ChatUser user, string message)
