@@ -260,9 +260,9 @@ public class AccountModule : NancyModule
                 return HttpStatusCode.BadRequest;
             };
 
-            Post["/newpassword"] = _ =>
+            Post("/newpassword", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!ValidateAntiForgeryToken())
                 {
                     return HttpStatusCode.Forbidden;
                 }
@@ -299,7 +299,7 @@ public class AccountModule : NancyModule
                 }
 
                 return GetProfileView(authService, user);
-            };
+            });
 
             Post("/changepassword", _ =>
             {
