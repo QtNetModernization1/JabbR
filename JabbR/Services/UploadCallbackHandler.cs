@@ -44,13 +44,13 @@ public UploadCallbackHandler(UploadProcessor processor,
                 if (result == null)
                 {
                     string messageContent = String.Format(LanguageResources.UploadFailed, Path.GetFileName(file));
-                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                    await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                     return;
                 }
                 else if (result.UploadTooLarge)
                 {
                     string messageContent = String.Format(LanguageResources.UploadTooLarge, Path.GetFileName(file), (result.MaxUploadSize / 1048576f).ToString("0.00"));
-                    _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                    await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                     return;
                 }
 
@@ -63,14 +63,14 @@ public UploadCallbackHandler(UploadProcessor processor,
             catch (Exception ex)
             {
                 string messageContent = String.Format(LanguageResources.UploadFailedException, Path.GetFileName(file), ex.Message);
-                _hubContext.Clients.Client(connectionId).postMessage(messageContent, "error", roomName);
+                await _hubContext.Clients.Client(connectionId).SendAsync("postMessage", messageContent, "error", roomName);
                 return;
             }
 
             var messageViewModel = new MessageViewModel(message);
 
             // Notify all clients for the uploaded url
-            _hubContext.Clients.Group(roomName).addMessage(messageViewModel, roomName);
+            await _hubContext.Clients.Group(roomName).SendAsync("addMessage", messageViewModel, roomName);
 
             _resourceProcessor.ProcessUrls(new[] { result.Url }, _hubContext.Clients, roomName, message.Id);
         }
