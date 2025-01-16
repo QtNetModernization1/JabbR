@@ -961,12 +961,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             OnRoomChanged(room);
         }
 
-        void INotificationService.LogOut(ChatUser user, string clientId)
+        async void INotificationService.LogOut(ChatUser user, string clientId)
         {
             foreach (var client in user.ConnectedClients)
             {
                 DisconnectClient(client.Id);
-                Clients.Client(client.Id).logOut();
+                await Clients.Client(client.Id).SendAsync("logOut");
             }
         }
 
