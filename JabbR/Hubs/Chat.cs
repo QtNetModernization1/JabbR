@@ -288,9 +288,10 @@ namespace JabbR
             return new UserViewModel(user);
         }
 
-        public override Task OnReconnected()
+        // This method is called when a client reconnects after a disconnection
+        public Task HandleReconnection()
         {
-            _logger.Log("OnReconnected({0})", Context.ConnectionId);
+            _logger.Log("HandleReconnection({0})", Context.ConnectionId);
 
             var userId = Context.User.GetUserId();
 
