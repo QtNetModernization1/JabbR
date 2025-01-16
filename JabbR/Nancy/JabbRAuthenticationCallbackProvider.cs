@@ -23,15 +23,15 @@ namespace JabbR.Nancy
 
             if (model.ReturnUrl != null)
             {
-                response = nancyModule.Redirect("~" + model.ReturnUrl);
+                response = nancyModule.Response.AsRedirect("~" + model.ReturnUrl);
             }
             else
             {
-                response = nancyModule.Redirect("~/");
+                response = nancyModule.Response.AsRedirect("~/");
 
                 if (nancyModule.Context.CurrentUser != null)
                 {
-                    response = nancyModule.Redirect("~/account/#identityProviders");
+                    response = nancyModule.Response.AsRedirect("~/account/#identityProviders");
                 }
             }
 
@@ -65,7 +65,7 @@ namespace JabbR.Nancy
         public dynamic OnRedirectToAuthenticationProviderError(NancyModule nancyModule, string errorMessage)
         {
             nancyModule.ViewBag.ErrorMessage = errorMessage;
-            return nancyModule.Redirect("~/error");
+            return nancyModule.Response.AsRedirect("~/error");
         }
     }
 }
