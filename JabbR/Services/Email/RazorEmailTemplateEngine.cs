@@ -1,14 +1,14 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
+using Microsoft.CSharp;
 
 namespace JabbR.Services
 {
@@ -20,7 +20,8 @@ namespace JabbR.Services
 
         private const string NamespaceName = "JabbR.Views.EmailTemplates";
 
-        private static readonly RazorProjectEngine _razorEngine = CreateRazorEngine();
+        private static readonly string[] _referencedAssemblies = BuildReferenceList().ToArray();
+        private static readonly RazorTemplateEngine _razorEngine = CreateRazorEngine();
         private static readonly Dictionary<string, IDictionary<string, Type>> _typeMapping = new Dictionary<string, IDictionary<string, Type>>(StringComparer.OrdinalIgnoreCase);
         private static readonly ReaderWriterLockSlim _syncLock = new ReaderWriterLockSlim();
 
@@ -195,60 +196,35 @@ namespace JabbR.Services
 
         private static Assembly GenerateAssembly(params KeyValuePair<string, string>[] templates)
         {
-            var syntaxTrees = new List<SyntaxTree>();
+            var templateResults = templates.Select(pair => _razorEngine.GenerateCode(new StringReader(pair.Value), pair.Key, NamespaceName, pair.Key + ".cs")).ToList();
 
-            foreach (var template in templates)
+            if (templateResults.Any(result => result.ParserErrors.Any()))
             {
-                var projectItem = new StringProjectItem(template.Key, template.Value);
-                var document = _razorEngine.Process(projectItem);
-                var csharpDocument = document.GetCSharpDocument();
+                var parseExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, templateResults.SelectMany(r => r.ParserErrors).Select(e => e.Location + ":" + Environment.NewLine + e.Message).ToArray());
 
-                if (csharpDocument.Diagnostics.Any(d => d.Severity == RazorDiagnosticSeverity.Error))
+                throw new InvalidOperationException(parseExceptionMessage);
+            }
+
+            using (var codeProvider = new CSharpCodeProvider())
+            {
+                var compilerParameter = new CompilerParameters(_referencedAssemblies)
+                                            {
+                                                IncludeDebugInformation = false,
+                                                GenerateInMemory = true,
+                                                CompilerOptions = "/optimize"
+                                            };
+
+                var compilerResults = codeProvider.CompileAssemblyFromDom(compilerParameter, templateResults.Select(r => r.GeneratedCode).ToArray());
+
+                if (compilerResults.Errors.HasErrors)
                 {
-                    var errors = string.Join(Environment.NewLine, csharpDocument.Diagnostics.Select(d => d.ToString()));
-                    throw new InvalidOperationException($"Razor compilation errors:{Environment.NewLine}{errors}");
+                    var compileExceptionMessage = String.Join(Environment.NewLine + Environment.NewLine, compilerResults.Errors.OfType<CompilerError>().Where(ce => !ce.IsWarning).Select(e => e.FileName + ":" + Environment.NewLine + e.ErrorText).ToArray());
+
+                    throw new InvalidOperationException(compileExceptionMessage);
                 }
 
-                syntaxTrees.Add(CSharpSyntaxTree.ParseText(csharpDocument.GeneratedCode));
+                return compilerResults.CompiledAssembly;
             }
-
-            var compilation = CSharpCompilation.Create("DynamicAssembly")
-                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                .AddReferences(
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(EmailTemplate).Assembly.Location)
-                )
-                .AddSyntaxTrees(syntaxTrees);
-
-using (var ms = new MemoryStream())
-            {
-                var result = compilation.Emit(ms);
-
-                if (!result.Success)
-                {
-                    var errors = string.Join(Environment.NewLine, result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.ToString()));
-                    throw new InvalidOperationException($"C# compilation errors:{Environment.NewLine}{errors}");
-                }
-
-                ms.Seek(0, SeekOrigin.Begin);
-                return Assembly.Load(ms.ToArray());
-            }
-        }
-
-        private class StringProjectItem : RazorProjectItem
-        {
-            private readonly string _content;
-
-            public StringProjectItem(string filePath, string content)
-            {
-                FilePath = filePath;
-                _content = content;
-            }
-
-            public override string BasePath => "/";
-            public override string FilePath { get; }
-            public override bool Exists => true;
-            public override Stream Read() => new MemoryStream(System.Text.Encoding.UTF8.GetBytes(_content));
         }
 
         private static dynamic CreateModel(object model)
@@ -271,24 +247,21 @@ using (var ms = new MemoryStream())
             return new DynamicModel(propertyMap);
         }
 
-        private static RazorProjectEngine CreateRazorEngine()
+        private static RazorTemplateEngine CreateRazorEngine()
         {
-            return RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("."), builder =>
-            {
-                builder.SetNamespace(NamespaceName);
-                builder.SetBaseType(typeof(EmailTemplate).FullName);
-                builder.ConfigureClass((document, classNode) =>
-                {
-                    classNode.ClassName = Path.GetFileNameWithoutExtension(document.Source.FilePath);
-                });
-                builder.AddDefaultImports(
-                    "System",
-                    "System.Collections",
-                    "System.Collections.Generic",
-                    "System.Dynamic",
-                    "System.Linq"
-                );
-            });
+            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
+                           {
+                               DefaultBaseClass = typeof(EmailTemplate).FullName,
+                               DefaultNamespace = NamespaceName
+                           };
+
+            host.NamespaceImports.Add("System");
+            host.NamespaceImports.Add("System.Collections");
+            host.NamespaceImports.Add("System.Collections.Generic");
+            host.NamespaceImports.Add("System.Dynamic");
+            host.NamespaceImports.Add("System.Linq");
+
+            return new RazorTemplateEngine(host);
         }
 
         private static IEnumerable<string> BuildReferenceList()
