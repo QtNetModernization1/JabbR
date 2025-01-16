@@ -949,12 +949,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             OnRoomChanged(room);
         }
 
-        void INotificationService.UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
+        async void INotificationService.UnCloseRoom(IEnumerable<ChatUser> users, ChatRoom room)
         {
             // notify all members of room that it is now re-opened
             foreach (var user in users)
             {
-                Clients.User(user.Id).roomUnClosed(room.Name);
+                await Clients.User(user.Id).SendAsync("roomUnClosed", room.Name);
             }
 
             // notify everyone to update their lobby
