@@ -1072,12 +1072,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             var userViewModel = new UserViewModel(user);
 
             // Update the calling client
-            Clients.User(user.Id).flagChanged(isFlagCleared, userViewModel.Country);
+            Clients.User(user.Id).SendAsync("flagChanged", isFlagCleared, userViewModel.Country);
 
             // Tell all users in rooms to change the flag
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeFlag(userViewModel, room.Name);
+                Clients.Group(room.Name).SendAsync("changeFlag", userViewModel, room.Name);
             }
         }
 
