@@ -23,7 +23,7 @@ namespace JabbR.Nancy
 
         public HomeModule(ApplicationSettings settings,
                           IJabbrConfiguration configuration,
-                          IConnectionManager connectionManager,
+                          IHubContext<Chat> hubContext,
                           IJabbrRepository jabbrRepository)
         {
             Get["/"] = _ =>
@@ -83,9 +83,8 @@ namespace JabbR.Nancy
 
                 try
                 {
-                    var hubContext = connectionManager.GetHubContext<Chat>();
-                    await (Task)hubContext.Clients.Client("doesn't exist").noMethodCalledThis();
-                    
+                    await hubContext.Clients.Client("doesn't exist").SendAsync("noMethodCalledThis");
+
                     signalrStatus.SetOK();
                 }
                 catch (Exception ex)
