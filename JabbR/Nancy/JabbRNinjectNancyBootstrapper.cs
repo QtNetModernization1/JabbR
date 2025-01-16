@@ -57,19 +57,6 @@ namespace JabbR.Nancy
             return environment;
         }
 
-        protected override INancyEnvironmentConfigurator GetEnvironmentConfigurator()
-        {
-            return new DefaultNancyEnvironmentConfigurator(
-                configuration =>
-                {
-                    var environment = new DefaultNancyEnvironment();
-                    RegisterNancyEnvironment(GetApplicationContainer(), environment);
-                    return environment;
-                },
-                new[] { new DefaultNancyEnvironmentConfigurator() }
-            );
-        }
-
         private Response FlowPrincipal(NancyContext context)
         {
             var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
