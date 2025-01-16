@@ -12,18 +12,21 @@ using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Nancy
 {
-    public class AccountModule : NancyModule
+public class AccountModule : NancyModule
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public AccountModule(ApplicationSettings applicationSettings,
+                         IMembershipService membershipService,
+                         IJabbrRepository repository,
+                         IAuthenticationService authService,
+                         IChatNotificationService notificationService,
+                         IUserAuthenticator authenticator,
+                         IEmailService emailService,
+                         IHttpContextAccessor httpContextAccessor)
+        : base("/account")
     {
-        public AccountModule(ApplicationSettings applicationSettings,
-                             IMembershipService membershipService,
-                             IJabbrRepository repository,
-                             IAuthenticationService authService,
-                             IChatNotificationService notificationService,
-                             IUserAuthenticator authenticator,
-                             IEmailService emailService,
-                             IHttpContextAccessor httpContextAccessor)
-            : base("/account")
-        {
+        _httpContextAccessor = httpContextAccessor;
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -38,7 +41,7 @@ namespace JabbR.Nancy
 
             Get("/login", _ =>
             {
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -53,7 +56,7 @@ namespace JabbR.Nancy
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -94,7 +97,7 @@ namespace JabbR.Nancy
 
             Post["/logout"] = _ =>
             {
-                if (!IsAuthenticated)
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
@@ -108,12 +111,12 @@ namespace JabbR.Nancy
 
             Get["/register"] = _ =>
             {
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
 
-                bool requirePassword = !Principal.Identity.IsAuthenticated;
+                bool requirePassword = !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
 
                 if (requirePassword &&
                     !applicationSettings.AllowUserRegistration)
@@ -133,7 +136,7 @@ namespace JabbR.Nancy
                     return HttpStatusCode.Forbidden;
                 }
 
-                bool requirePassword = !Principal.Identity.IsAuthenticated;
+                bool requirePassword = !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
 
                 if (requirePassword &&
                     !applicationSettings.AllowUserRegistration)
@@ -141,7 +144,7 @@ namespace JabbR.Nancy
                     return HttpStatusCode.NotFound;
                 }
 
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return this.AsRedirectQueryStringOrDefault("~/");
                 }
@@ -378,12 +381,12 @@ namespace JabbR.Nancy
 
             Get["/requestresetpassword"] = _ =>
             {
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return Response.AsRedirect("~/account/#changePassword");
                 }
 
-                if (!Principal.Identity.IsAuthenticated &&
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
@@ -400,12 +403,12 @@ namespace JabbR.Nancy
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (IsAuthenticated)
+                if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return Response.AsRedirect("~/account/#changePassword");
                 }
 
-                if (!Principal.Identity.IsAuthenticated &&
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated &&
                     !applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
                 {
