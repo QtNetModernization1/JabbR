@@ -82,20 +82,6 @@ namespace JabbR.Nancy
             return null;
         }
 
-        public class ClaimsPrincipalUserIdentity : IUserIdentity
-        {
-            private readonly ClaimsPrincipal _principal;
-
-            public ClaimsPrincipalUserIdentity(ClaimsPrincipal principal)
-            {
-                _principal = principal;
-            }
-
-            public string UserName => _principal.Identity?.Name;
-
-            public IEnumerable<string> Claims => _principal.Claims.Select(c => c.Value);
-        }
-
         private Response SetCulture(NancyContext ctx)
         {
             Thread.CurrentThread.CurrentCulture = ctx.Culture;
