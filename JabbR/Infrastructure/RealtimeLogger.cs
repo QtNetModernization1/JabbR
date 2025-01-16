@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Infrastructure
 {
+    public interface IMonitorClient
+    {
+        Task LogMessage(string message);
+        Task LogError(string message);
+    }
+
     public class RealtimeLogger : ILogger
     {
         private readonly IHubContext<Monitor> _logContext;
@@ -27,10 +33,10 @@ namespace JabbR.Infrastructure
                     switch (type)
                     {
                         case LogType.Message:
-                            await _logContext.Clients.All.logMessage(formatted);
+                            await _logContext.Clients.All.SendAsync("LogMessage", formatted);
                             break;
                         case LogType.Error:
-                            await _logContext.Clients.All.logError(formatted);
+                            await _logContext.Clients.All.SendAsync("LogError", formatted);
                             break;
                     }
                 }
