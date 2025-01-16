@@ -766,17 +766,17 @@ namespace JabbR
             var isOwner = user.OwnedRooms.Contains(room);
 
             // Tell all clients to join this room
-            Clients.User(user.Id).joinRoom(roomViewModel);
+            await Clients.User(user.Id).SendAsync("joinRoom", roomViewModel);
 
             // Tell the people in this room that you've joined
-            Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+            await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
 
             // Notify users of the room count change
             OnRoomChanged(room);
 
             foreach (var client in user.ConnectedClients)
             {
-                Groups.Add(client.Id, room.Name);
+                await Groups.AddToGroupAsync(client.Id, room.Name);
             }
         }
 
