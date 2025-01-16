@@ -205,12 +205,12 @@ namespace JabbR
                 // send it to everyone. The assumption is that the client has some ui
                 // that it wanted to update immediately showing the message and
                 // then when the actual message is roundtripped it would "solidify it".
-                await Clients.Group(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("AddMessage", messageViewModel, room.Name);
             }
             else
             {
                 // If the client did set an id then we need to give everyone the real id first
-                await Clients.OthersInGroup(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
+                await Clients.OthersInGroup(room.Name).SendAsync("AddMessage", messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
                 await Clients.Caller.SendAsync("replaceMessage", clientMessage.Id, messageViewModel, room.Name);
@@ -516,7 +516,7 @@ namespace JabbR
             _repository.Add(chatMessage);
             _repository.CommitChanges();
 
-            Clients.Group(room.Name).addMessage(new MessageViewModel(chatMessage), room.Name);
+            Clients.Group(room.Name).AddMessage(new MessageViewModel(chatMessage), room.Name);
 
             if (executeContentProviders)
             {
