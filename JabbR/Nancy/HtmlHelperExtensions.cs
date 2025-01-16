@@ -110,8 +110,9 @@ namespace JabbR
             }
 
             var errorsForField =
-                validationResult.Errors.Where(
-                    x => x.MemberNames.Any(y => y.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase)));
+                validationResult.Errors
+                    .Where(x => x.Key.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
+                    .SelectMany(x => x.Value);
 
             return errorsForField;
         }
