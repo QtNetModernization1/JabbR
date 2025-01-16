@@ -1233,9 +1233,9 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             }
         }
 
-        void INotificationService.UnbanUser(ChatUser targetUser)
+        async void INotificationService.UnbanUser(ChatUser targetUser)
         {
-            Clients.Caller.unbanUser(new
+            await Clients.Caller.SendAsync("unbanUser", new
             {
                 Name = targetUser.Name
             });
