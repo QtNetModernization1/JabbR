@@ -267,7 +267,7 @@ public class AccountModule : NancyModule
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (!IsAuthenticated)
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
