@@ -232,12 +232,12 @@ public class AccountModule : NancyModule
 
             Post("/unlink", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!ValidateAntiForgeryToken())
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                if (!IsAuthenticated)
+                if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
