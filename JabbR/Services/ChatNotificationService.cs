@@ -1,19 +1,18 @@
-﻿using System;
+using System;
 using System.Linq;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JabbR.Services
 {
     public class ChatNotificationService : IChatNotificationService
     {
-        private readonly IConnectionManager _connectionManager;
+        private readonly IHubContext<Chat> _hubContext;
 
-        public ChatNotificationService(IConnectionManager connectionManager)
+        public ChatNotificationService(IHubContext<Chat> hubContext)
         {
-            _connectionManager = connectionManager;
+            _hubContext = hubContext;
         }
 
         public void OnUserNameChanged(ChatUser user, string oldUserName, string newUserName)
@@ -24,13 +23,13 @@ namespace JabbR.Services
             // Tell the user's connected clients that the name changed
             foreach (var client in user.ConnectedClients)
             {
-                HubContext.Clients.Client(client.Id).userNameChanged(userViewModel);
+                _hubContext.Clients.Client(client.Id).SendAsync("userNameChanged", userViewModel);
             }
 
             // Notify all users in the rooms
             foreach (var room in user.Rooms)
             {
-                HubContext.Clients.Group(room.Name).changeUserName(oldUserName, userViewModel, room.Name);
+                _hubContext.Clients.Group(room.Name).SendAsync("changeUserName", oldUserName, userViewModel, room.Name);
             }
         }
 
@@ -38,21 +37,7 @@ namespace JabbR.Services
         {
             foreach (var client in mentionedUser.ConnectedClients)
             {
-                HubContext.Clients.Client(client.Id).updateUnreadNotifications(unread);
-            }
-        }
-
-        private IHubContext _hubContext;
-        private IHubContext HubContext
-        {
-            get
-            {
-                if (_hubContext == null)
-                {
-                    _hubContext = _connectionManager.GetHubContext<Chat>();
-                }
-
-                return _hubContext;
+                _hubContext.Clients.Client(client.Id).SendAsync("updateUnreadNotifications", unread);
             }
         }
     }
