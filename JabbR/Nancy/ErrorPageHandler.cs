@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
@@ -12,8 +12,8 @@ namespace JabbR.Nancy
     {
         private readonly IJabbrRepository _repository;
 
-        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
-            : base(factory)
+        public ErrorPageHandler(IViewFactory factory, INancyEnvironment environment, IJabbrRepository repository)
+            : base(factory, environment)
         {
             _repository = repository;
         }
