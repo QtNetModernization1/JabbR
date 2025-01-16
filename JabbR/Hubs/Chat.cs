@@ -991,9 +991,9 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             });
         }
 
-        void INotificationService.ShowHelp()
+        async void INotificationService.ShowHelp()
         {
-            Clients.Caller.showCommands();
+            await Clients.Caller.SendAsync("showCommands");
         }
 
         void INotificationService.Invite(ChatUser user, ChatUser targetUser, ChatRoom targetRoom)
