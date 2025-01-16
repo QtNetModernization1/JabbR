@@ -785,7 +785,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
     }
 }
 
-        void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
+        async void INotificationService.AllowUser(ChatUser targetUser, ChatRoom targetRoom)
         {
             // Build a viewmodel for the room
             var roomViewModel = new RoomViewModel
@@ -798,10 +798,10 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             };
 
             // Tell this client it's allowed.  Pass down a viewmodel so that we can add the room to the lobby.
-            Clients.User(targetUser.Id).allowUser(targetRoom.Name, roomViewModel);
+            await Clients.User(targetUser.Id).SendAsync("allowUser", targetRoom.Name, roomViewModel);
 
             // Tell the calling client the granting permission into the room was successful
-            Clients.Caller.userAllowed(targetUser.Name, targetRoom.Name);
+            await Clients.Caller.SendAsync("userAllowed", targetUser.Name, targetRoom.Name);
         }
 
         void INotificationService.UnallowUser(ChatUser targetUser, ChatRoom targetRoom, ChatUser callingUser)
