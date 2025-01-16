@@ -12,6 +12,7 @@ using Nancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Antiforgery;
 using IAuthenticationService = JabbR.Infrastructure.IAuthenticationService;
+using SimpleAuthentication;
 
 namespace JabbR.Nancy
 {
@@ -602,7 +603,8 @@ public class AccountModule : NancyModule
 
         private dynamic GetProfileView(JabbR.Infrastructure.IAuthenticationService authService, ChatUser user)
         {
-            return View["index", new ProfilePageViewModel(user, authService.GetProviders())];
+            var providers = authService.GetProviders().Select(p => new SimpleAuthentication.IAuthenticationProvider(p.Name, p.DisplayName)).ToList();
+            return View["index", new ProfilePageViewModel(user, providers)];
         }
 
         private LoginViewModel GetLoginViewModel(ApplicationSettings applicationSettings,
