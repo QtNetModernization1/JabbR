@@ -1,23 +1,29 @@
 using System.Security.Claims;
-using System.Security.Principal;
-using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JabbR.Infrastructure
 {
-    public class AuthorizeClaim : AuthorizeAttribute
+    public class NamedClaimRequirement : IAuthorizationRequirement
     {
-        private readonly string _claimType;
-        public AuthorizeClaim(string claimType)
+        public string ClaimType { get; }
+
+        public NamedClaimRequirement(string claimType)
         {
-            _claimType = claimType;
+            ClaimType = claimType;
         }
+    }
 
-        protected override bool UserAuthorized(IPrincipal user)
+    public class AuthorizeClaim : AuthorizationHandler<NamedClaimRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, NamedClaimRequirement requirement)
         {
-            var claimsPrincipal = user as ClaimsPrincipal;
+            if (context.User.HasClaim(c => c.Type == requirement.ClaimType))
+            {
+                context.Succeed(requirement);
+            }
 
-            return claimsPrincipal != null && claimsPrincipal.HasClaim(_claimType);
+            return Task.CompletedTask;
         }
     }
 }
