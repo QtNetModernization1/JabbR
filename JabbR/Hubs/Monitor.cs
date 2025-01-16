@@ -1,9 +1,10 @@
 using JabbR.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JabbR.Hubs
 {
-    [AuthorizeClaim(JabbRClaimTypes.Admin)]
+    [Authorize(Policy = "AdminPolicy")]
     public class Monitor : Hub
     {
     }
