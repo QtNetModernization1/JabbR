@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-using SimpleAuthentication.Core;
+using SimpleAuthentication;
 
 namespace JabbR.Infrastructure
 {
