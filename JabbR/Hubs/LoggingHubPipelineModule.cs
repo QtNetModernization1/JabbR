@@ -6,22 +6,28 @@ using Microsoft.Extensions.Logging;
 
 namespace JabbR.Hubs
 {
-    public class LoggingHubPipelineModule : HubPipelineModule
+    public class LoggingHubFilter : IHubFilter
     {
-        private readonly ILogger<LoggingHubPipelineModule> _logger;
+        private readonly ILogger<LoggingHubFilter> _logger;
 
-        public LoggingHubPipelineModule(ILogger<LoggingHubPipelineModule> logger)
+        public LoggingHubFilter(ILogger<LoggingHubFilter> logger)
         {
             _logger = logger;
         }
 
-        public override Task OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext context)
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
-            _logger.LogError(exceptionContext.Error, "{UserId}: Failure while invoking '{MethodName}'.",
-                context.Hub.Context.User?.Identity?.Name ?? "Unknown",
-                context.MethodDescriptor.Name);
-
-            return base.OnIncomingError(exceptionContext, context);
+            try
+            {
+                return await next(invocationContext);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{UserId}: Failure while invoking '{MethodName}'.",
+                    invocationContext.Context.User?.Identity?.Name ?? "Unknown",
+                    invocationContext.HubMethodName);
+                throw;
+            }
         }
     }
 }
