@@ -81,12 +81,14 @@ namespace JabbR.Nancy
 
         public static ClaimsPrincipal GetPrincipal(this NancyModule module)
         {
-            if (module.Context.CurrentUser == null || !module.Context.CurrentUser.IsAuthenticated)
+            var userIdentity = module.Context.CurrentUser as ClaimsPrincipalUserIdentity;
+
+            if (userIdentity == null)
             {
                 return null;
             }
 
-            return module.Context.CurrentUser as ClaimsPrincipal;
+            return userIdentity.ClaimsPrincipal;
         }
 
         public static bool IsAuthenticated(this NancyModule module)
