@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using JabbR.ContentProviders.Core;
 using JabbR.Models;
 using JabbR.UploadHandlers;
 using JabbR.ViewModels;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace JabbR.Services
 {
@@ -14,17 +14,17 @@ namespace JabbR.Services
     {
         private readonly UploadProcessor _processor;
         private readonly ContentProviderProcessor _resourceProcessor;
-        private readonly IHubContext<Chat> _hubContext;
+        private readonly IHubContext _hubContext;
         private readonly IChatService _service;
 
         public UploadCallbackHandler(UploadProcessor processor,
                                      ContentProviderProcessor resourceProcessor,
-                                     IHubContext<Chat> hubContext,
+                                     IConnectionManager connectionManager,
                                      IChatService service)
         {
             _processor = processor;
             _resourceProcessor = resourceProcessor;
-            _hubContext = hubContext;
+            _hubContext = connectionManager.GetHubContext<Chat>();
             _service = service;
         }
 
