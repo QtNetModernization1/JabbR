@@ -132,16 +132,16 @@ namespace JabbR
             }
         }
 
-        private async Task OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
+        private void OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
         {
             // Update the active room on the client (only if it's still a valid room)
             if (user.Rooms.Any(room => room.Name.Equals(clientState.ActiveRoom, StringComparison.OrdinalIgnoreCase)))
             {
                 // Update the active room on the client (only if it's still a valid room)
-                await Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom);
+                Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom);
             }
 
-            await LogOn(user, Context.ConnectionId, reconnecting);
+            LogOn(user, Context.ConnectionId, reconnecting);
         }
 
         public Task<bool> Send(string content, string roomName)
@@ -576,15 +576,15 @@ namespace JabbR
             Clients.User(user.Id).updateTabOrder(tabOrdering);
         }
 
-        private async Task LogOn(ChatUser user, string clientId, bool reconnecting)
+        private void LogOn(ChatUser user, string clientId, bool reconnecting)
         {
             if (!reconnecting)
             {
                 // Update the client state
-                await Clients.Caller.SendAsync("setId", user.Id);
-                await Clients.Caller.SendAsync("setName", user.Name);
-                await Clients.Caller.SendAsync("setHash", user.Hash);
-                await Clients.Caller.SendAsync("setUnreadNotifications", user.Notifications.Count(n => !n.Read));
+                Clients.Caller.id = user.Id;
+                Clients.Caller.name = user.Name;
+                Clients.Caller.hash = user.Hash;
+                Clients.Caller.unreadNotifications = user.Notifications.Count(n => !n.Read);
             }
 
             var rooms = new List<RoomViewModel>();
@@ -597,10 +597,10 @@ namespace JabbR
                 var isOwner = ownedRooms.Contains(room.Key);
 
                 // Tell the people in this room that you've joined
-                await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
+                Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
 
                 // Add the caller to the group so they receive messages
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Name);
+                Groups.Add(clientId, room.Name);
 
                 if (!reconnecting)
                 {
@@ -613,6 +613,7 @@ namespace JabbR
                     });
                 }
             }
+
 
             if (!reconnecting)
             {
@@ -629,7 +630,7 @@ namespace JabbR
                 }
 
                 // Initialize the chat with the rooms the user is in
-                await Clients.Caller.SendAsync("logOn", rooms, privateRooms, user.Preferences);
+                Clients.Caller.logOn(rooms, privateRooms, user.Preferences);
             }
         }
 
@@ -718,9 +719,9 @@ namespace JabbR
             OnRoomChanged(room);
         }
 
-        async Task INotificationService.LogOn(ChatUser user, string clientId)
+        void INotificationService.LogOn(ChatUser user, string clientId)
         {
-            await LogOn(user, clientId, reconnecting: true);
+            LogOn(user, clientId, reconnecting: true);
         }
 
         void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
