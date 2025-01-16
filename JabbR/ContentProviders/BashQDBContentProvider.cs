@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -42,7 +42,7 @@ namespace JabbR.ContentProviders
             {
                 var info = new PageInfo();
 
-                using (var responseStream = response.GetResponseStream())
+using (var responseStream = response.Content.ReadAsStream())
                 {
                     var htmlDocument = new HtmlDocument();
                     htmlDocument.Load(responseStream);
