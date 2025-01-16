@@ -11,6 +11,7 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace JabbR
@@ -1197,10 +1198,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
 
         private string GetCookieValue(string key)
         {
-            Cookie cookie;
-            Context.RequestCookies.TryGetValue(key, out cookie);
-            string value = cookie != null ? cookie.Value : null;
-            return value != null ? Uri.UnescapeDataString(value) : null;
+            var httpContext = Context.GetHttpContext();
+            if (httpContext != null && httpContext.Request.Cookies.TryGetValue(key, out string value))
+            {
+                return Uri.UnescapeDataString(value);
+            }
+            return null;
         }
 
         void INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, string reason)
