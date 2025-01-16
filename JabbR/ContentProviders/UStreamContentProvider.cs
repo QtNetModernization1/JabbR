@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,27 +25,23 @@ namespace JabbR.ContentProviders
             });
         }
 
-        private Task<string> ExtractIFrameCode(ContentProviderHttpRequest request)
+        private async Task<string> ExtractIFrameCode(ContentProviderHttpRequest request)
         {
-            return Http.GetAsync(request.RequestUri).Then(response =>
+            var response = await Http.GetAsync(request.RequestUri);
+using (var responseStream = await response.Content.ReadAsStreamAsync())
+using (var sr = new StreamReader(responseStream))
             {
-                using (var responseStream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(responseStream))
-                    {
-                        var iframeStr = sr.ReadToEnd();
+                var iframeStr = await sr.ReadToEndAsync();
 
-                        var matches = _extractEmbedCodeRegex.Match(iframeStr)
-                                            .Groups
-                                            .Cast<Group>()
-                                            .Skip(1)
-                                            .Select(g => g.Value)
-                                            .Where(v => !String.IsNullOrEmpty(v));
+                var matches = _extractEmbedCodeRegex.Match(iframeStr)
+                                    .Groups
+                                    .Cast<Group>()
+                                    .Skip(1)
+                                    .Select(g => g.Value)
+                                    .Where(v => !String.IsNullOrEmpty(v));
 
-                        return matches.FirstOrDefault() ?? String.Empty;
-                    }
-                }
-            });
+                return matches.FirstOrDefault() ?? String.Empty;
+            }
         }
 
         public override bool IsValidContent(Uri uri)
