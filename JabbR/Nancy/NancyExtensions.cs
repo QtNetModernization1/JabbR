@@ -9,7 +9,6 @@ using Nancy.Validation;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
-using Nancy.Security;
 
 
 namespace JabbR.Nancy
@@ -82,23 +81,19 @@ namespace JabbR.Nancy
 
         public static ClaimsPrincipal GetPrincipal(this NancyModule module)
         {
-            if (module.Context.CurrentUser == null)
+            var userIdentity = module.Context.CurrentUser as ClaimsPrincipalUserIdentity;
+
+            if (userIdentity == null)
             {
                 return null;
             }
 
-            if (module.Context.CurrentUser is ClaimsPrincipal claimsPrincipal)
-            {
-                return claimsPrincipal;
-            }
-
-            // If CurrentUser is not ClaimsPrincipal, create a new one based on the existing identity
-            return new ClaimsPrincipal(module.Context.CurrentUser);
+            return userIdentity.ClaimsPrincipal;
         }
 
         public static bool IsAuthenticated(this NancyModule module)
         {
-            return module.Context.CurrentUser != null && module.Context.CurrentUser.IsAuthenticated;
+            return module.GetPrincipal().IsAuthenticated();
         }
 
         public static Response AsRedirectQueryStringOrDefault(this NancyModule module, string defaultUrl)
