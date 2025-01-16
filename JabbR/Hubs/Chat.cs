@@ -327,7 +327,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
                 }
             }
             else
