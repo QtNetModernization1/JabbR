@@ -5,17 +5,18 @@ using JabbR.Services;
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
+using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
+    public class ErrorPageHandler : IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
-        protected readonly IViewFactory ViewFactory;
+        private readonly IViewFactory _viewFactory;
 
-        public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
+        public ErrorPageHandler(IViewFactory viewFactory, IJabbrRepository repository)
         {
-            ViewFactory = factory;
+            _viewFactory = viewFactory;
             _repository = repository;
         }
 
@@ -41,15 +42,14 @@ namespace JabbR.Nancy
                 }
             }
 
-            var response = RenderView(
-                context, 
-                "errorPage", 
-                new 
-                { 
+            var response = new ViewResponse(_viewFactory, "errorPage",
+                new
+                {
                     Error = statusCode,
                     ErrorCode = (int)statusCode,
                     SuggestRoomName = suggestRoomName
-                });
+                },
+                context);
 
             response.StatusCode = statusCode;
             context.Response = response;
