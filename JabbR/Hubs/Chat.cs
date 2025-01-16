@@ -12,16 +12,9 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace JabbR
 {
-    public interface INotificationService
-    {
-        Task LogOn(ChatUser user, string clientId);
-        // ... other interface methods ...
-    }
-
     [Authorize]
     public class Chat : Hub, INotificationService
     {
@@ -90,12 +83,12 @@ namespace JabbR
             await base.OnConnectedAsync();
         }
 
-        public Task Join()
+        public void Join()
         {
-            return Join(reconnecting: false);
+            Join(reconnecting: false);
         }
 
-        public async Task Join(bool reconnecting)
+        public void Join(bool reconnecting)
         {
             // Get the client state
             var userId = Context.User.GetUserId();
@@ -128,7 +121,7 @@ namespace JabbR
 
             ClientState clientState = GetClientState();
 
-            await OnUserInitialize(clientState, user, reconnecting);
+            OnUserInitialize(clientState, user, reconnecting);
         }
 
         private async Task CheckStatus()
@@ -139,7 +132,7 @@ namespace JabbR
             }
         }
 
-        private async Task OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
+        private void OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
         {
             // Update the active room on the client (only if it's still a valid room)
             if (user.Rooms.Any(room => room.Name.Equals(clientState.ActiveRoom, StringComparison.OrdinalIgnoreCase)))
@@ -148,7 +141,7 @@ namespace JabbR
                 Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom).Wait();
             }
 
-            await LogOn(user, Context.ConnectionId, reconnecting);
+            LogOn(user, Context.ConnectionId, reconnecting);
         }
 
         public Task<bool> Send(string content, string roomName)
@@ -333,8 +326,8 @@ namespace JabbR
                 {
                     var isOwner = user.OwnedRooms.Contains(room);
 
-                // Tell the people in this room that you've joined
-                await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
+                    // Tell the people in this room that you've joined
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -583,7 +576,7 @@ namespace JabbR
             Clients.User(user.Id).updateTabOrder(tabOrdering);
         }
 
-        private async Task LogOn(ChatUser user, string clientId, bool reconnecting)
+        private void LogOn(ChatUser user, string clientId, bool reconnecting)
         {
             if (!reconnecting)
             {
@@ -725,9 +718,9 @@ namespace JabbR
             OnRoomChanged(room);
         }
 
-        async Task INotificationService.LogOn(ChatUser user, string clientId)
+        void INotificationService.LogOn(ChatUser user, string clientId)
         {
-            await LogOn(user, clientId, reconnecting: true);
+            LogOn(user, clientId, reconnecting: true);
         }
 
         void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
