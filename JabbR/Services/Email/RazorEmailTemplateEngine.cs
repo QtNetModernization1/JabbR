@@ -9,7 +9,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace JabbR.Services
 {
@@ -250,12 +249,19 @@ namespace JabbR.Services
 
         private static RazorTemplateEngine CreateRazorEngine()
         {
-            var engine = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("."), b => {
-                b.SetNamespace(NamespaceName);
-                b.SetBaseType(typeof(EmailTemplate).FullName);
-            });
+            var host = new RazorEngineHost(new CSharpRazorCodeLanguage())
+                           {
+                               DefaultBaseClass = typeof(EmailTemplate).FullName,
+                               DefaultNamespace = NamespaceName
+                           };
 
-            return new RazorTemplateEngine(engine);
+            host.NamespaceImports.Add("System");
+            host.NamespaceImports.Add("System.Collections");
+            host.NamespaceImports.Add("System.Collections.Generic");
+            host.NamespaceImports.Add("System.Dynamic");
+            host.NamespaceImports.Add("System.Linq");
+
+            return new RazorTemplateEngine(host);
         }
 
         private static IEnumerable<string> BuildReferenceList()
