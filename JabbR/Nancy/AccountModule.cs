@@ -613,9 +613,9 @@ public class AccountModule : NancyModule
         {
             ChatUser user = null;
 
-            if (IsAuthenticated)
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                user = repository.GetUserById(Principal.GetUserId());
+                user = repository.GetUserById(_httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             }
 
             var viewModel = new LoginViewModel(applicationSettings, authService.GetProviders(), user != null ? user.Identities : null);
