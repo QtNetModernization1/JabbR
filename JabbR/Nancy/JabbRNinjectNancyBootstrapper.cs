@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
-using System.Linq;
 
 using Nancy;
 using Nancy.Bootstrapper;
