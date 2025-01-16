@@ -1040,7 +1040,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             }
         }
 
-        void INotificationService.ChangeAfk(ChatUser user)
+        async void INotificationService.ChangeAfk(ChatUser user)
         {
             // Create the view model
             var userViewModel = new UserViewModel(user);
@@ -1048,11 +1048,11 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // Tell all users in rooms to change the note
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeAfk(userViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("changeAfk", userViewModel, room.Name);
             }
         }
 
-        void INotificationService.ChangeNote(ChatUser user)
+        async void INotificationService.ChangeNote(ChatUser user)
         {
             // Create the view model
             var userViewModel = new UserViewModel(user);
@@ -1060,7 +1060,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // Tell all users in rooms to change the note
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeNote(userViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("changeNote", userViewModel, room.Name);
             }
         }
 
