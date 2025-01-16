@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using JabbR.Services;
-using Microsoft.Owin.Security.DataProtection;
+using Microsoft.AspNetCore.DataProtection;
+
 
 namespace JabbR.Infrastructure
 {
