@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Web.Http.Dependencies;
+using Microsoft.Extensions.DependencyInjection;
 using Ninject;
 using Ninject.Syntax;
 
 
 namespace JabbR.Infrastructure
 {
-    public class NinjectDependencyScope : IDependencyScope
+    public class NinjectDependencyScope : IServiceScope
     {
         private IResolutionRoot resolver;
 
@@ -28,34 +28,37 @@ namespace JabbR.Infrastructure
             resolver = null;
         }
 
-        public object GetService(Type serviceType)
+        public IServiceProvider ServiceProvider => new NinjectServiceProvider(resolver);
+
+        private class NinjectServiceProvider : IServiceProvider
         {
-            if (resolver == null)
-                throw new ObjectDisposedException("this", "This scope has already been disposed");
+            private readonly IResolutionRoot _resolver;
 
-            return resolver.TryGet(serviceType);
-        }
+            public NinjectServiceProvider(IResolutionRoot resolver)
+            {
+                _resolver = resolver;
+            }
 
-        public IEnumerable<object> GetServices(Type serviceType)
-        {
-            if (resolver == null)
-                throw new ObjectDisposedException("this", "This scope has already been disposed");
+            public object GetService(Type serviceType)
+            {
+                if (_resolver == null)
+                    throw new ObjectDisposedException("this", "This scope has already been disposed");
 
-            return resolver.GetAll(serviceType);
+                return _resolver.TryGet(serviceType);
+            }
         }
     }
 
-    public class NinjectWebApiDependencyResolver : NinjectDependencyScope, IDependencyResolver
+    public class NinjectWebApiDependencyResolver : IServiceScopeFactory
     {
         private IKernel kernel;
 
         public NinjectWebApiDependencyResolver(IKernel kernel)
-            : base(kernel)
         {
             this.kernel = kernel;
         }
 
-        public IDependencyScope BeginScope()
+        public IServiceScope CreateScope()
         {
             return new NinjectDependencyScope(kernel.BeginBlock());
         }
