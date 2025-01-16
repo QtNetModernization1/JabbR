@@ -76,7 +76,7 @@ namespace JabbR
                 return new NonEncodedHtmlString(String.Empty);
             }
 
-            return new NonEncodedHtmlString(errorsForField.First().GetMessage(propertyName));
+            return new NonEncodedHtmlString(errorsForField.First().ErrorMessage);
         }
 
         public static IHtmlString AlertMessages<TModel>(this HtmlHelpers<TModel> htmlHelper)
