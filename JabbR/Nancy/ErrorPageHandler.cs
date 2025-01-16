@@ -11,10 +11,11 @@ namespace JabbR.Nancy
     public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
+        protected readonly IViewFactory ViewFactory;
 
         public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
-            : base(factory)
         {
+            ViewFactory = factory;
             _repository = repository;
         }
 
@@ -41,14 +42,14 @@ namespace JabbR.Nancy
             }
 
             var response = RenderView(
-                "errorPage",
-                new
-                {
+                context, 
+                "errorPage", 
+                new 
+                { 
                     Error = statusCode,
                     ErrorCode = (int)statusCode,
                     SuggestRoomName = suggestRoomName
-                },
-                context);
+                });
 
             response.StatusCode = statusCode;
             context.Response = response;
