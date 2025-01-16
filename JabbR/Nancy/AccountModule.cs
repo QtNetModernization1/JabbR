@@ -31,6 +31,20 @@ public class AccountModule : NancyModule
     {
         _httpContextAccessor = httpContextAccessor;
         _antiforgery = antiforgery;
+
+        // Add this method to validate antiforgery token
+        bool ValidateAntiForgeryToken()
+        {
+            try
+            {
+                _antiforgery.ValidateRequestAsync(_httpContextAccessor.HttpContext).GetAwaiter().GetResult();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -289,7 +303,7 @@ public class AccountModule : NancyModule
 
             Post("/changepassword", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!ValidateAntiForgeryToken())
                 {
                     return HttpStatusCode.Forbidden;
                 }
