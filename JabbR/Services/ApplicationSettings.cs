@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -99,10 +99,10 @@ namespace JabbR.Services
 
         private static byte[] GenerateRandomBytes(int n = 32)
         {
-            using (var cryptoProvider = new RNGCryptoServiceProvider())
+using (var randomNumberGenerator = System.Security.Cryptography.RandomNumberGenerator.Create())
             {
                 var bytes = new byte[n];
-                cryptoProvider.GetBytes(bytes);
+                randomNumberGenerator.GetBytes(bytes);
                 return bytes;
             }
         }
