@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 using JabbR.Services;
 
@@ -11,10 +11,11 @@ namespace JabbR.Nancy
     public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
+        protected readonly IViewFactory ViewFactory;
 
         public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
-            : base(factory)
         {
+            ViewFactory = factory;
             _repository = repository;
         }
 
