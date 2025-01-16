@@ -299,7 +299,7 @@ namespace JabbR
             if (user == null)
             {
                 _logger.Log("Reconnect failed user {0}:{1} doesn't exist.", userId, Context.ConnectionId);
-                return TaskAsyncHelper.Empty;
+                return Task.CompletedTask;
             }
 
             // Make sure this client is being tracked
@@ -334,7 +334,7 @@ namespace JabbR
 
             CheckStatus();
 
-            return base.OnReconnected();
+            return Task.CompletedTask;
         }
 
         public override Task OnDisconnected()
