@@ -230,7 +230,7 @@ public class AccountModule : NancyModule
                 return View["register"];
             };
 
-            Post["/unlink"] = param =>
+            Post("/unlink", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -263,7 +263,7 @@ public class AccountModule : NancyModule
                 }
 
                 return HttpStatusCode.BadRequest;
-            };
+            });
 
             Post("/newpassword", _ =>
             {
