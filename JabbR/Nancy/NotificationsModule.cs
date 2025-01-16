@@ -14,16 +14,16 @@ namespace JabbR.Nancy
 {
     public class NotificationsModule : JabbRModule
     {
-        public NotificationsModule(IJabbrRepository repository, 
-                                   IChatService chatService, 
+        public NotificationsModule(IJabbrRepository repository,
+                                   IChatService chatService,
                                    IChatNotificationService notificationService)
             : base("/notifications")
         {
-            Get["/"] = _ =>
+            Get("/", _ =>
             {
                 if (!IsAuthenticated)
                 {
-                    return Response.AsRedirect(String.Format("~/account/login?returnUrl={0}", HttpUtility.UrlEncode(Request.Path)));
+                    return Response.AsRedirect(String.Format("~/account/login?returnUrl={0}", HttpUtility.UrlEncode(Request.Url.Path)));
                 }
 
                 var request = this.Bind<NotificationRequestModel>();
@@ -40,16 +40,16 @@ namespace JabbR.Nancy
                 };
 
                 return View["index", viewModel];
-            };
+            });
 
-            Post["/markasread"] = _ =>
+            Post("/markasread", _ =>
             {
                 if (!IsAuthenticated)
                 {
                     return HttpStatusCode.Forbidden;
                 }
 
-                int notificationId = Request.Form.notificationId;
+                int notificationId = Request.Form["notificationId"];
 
                 Notification notification = repository.GetNotificationById(notificationId);
 
@@ -73,9 +73,9 @@ namespace JabbR.Nancy
                 var response = Response.AsJson(new { success = true });
 
                 return response;
-            };
+            });
 
-            Post["/markallasread"] = _ =>
+            Post("/markallasread", _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -102,7 +102,7 @@ namespace JabbR.Nancy
                 var response = Response.AsJson(new { success = true });
 
                 return response;
-            };
+            });
         }
 
         private static void UpdateUnreadCountInChat(IJabbrRepository repository, IChatNotificationService notificationService,
