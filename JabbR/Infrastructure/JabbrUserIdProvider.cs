@@ -1,17 +1,18 @@
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace JabbR.Infrastructure
 {
     public class JabbrUserIdProvider : IUserIdProvider
     {
-        public string GetUserId(IRequest request)
+        public string GetUserId(HubConnectionContext connection)
         {
-            if (request.User == null)
+            if (connection.User == null)
             {
                 return null;
             }
 
-            return request.User.GetUserId();
+            return connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }
