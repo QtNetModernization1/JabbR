@@ -11,7 +11,6 @@ using Nancy.Configuration;
 using Nancy.Owin;
 using Nancy.Security;
 using Nancy.Bootstrappers.Ninject;
-using Nancy.Configuration;
 
 using Ninject;
 using Ninject.Extensions.ChildKernel;
@@ -56,16 +55,6 @@ namespace JabbR.Nancy
             var environment = new DefaultNancyEnvironment();
             RegisterNancyEnvironment(GetApplicationContainer(), environment);
             return environment;
-        }
-
-        protected override Func<INancyEnvironment> GetEnvironmentConfigurator()
-        {
-            return () =>
-            {
-                var environment = new DefaultNancyEnvironment();
-                RegisterNancyEnvironment(GetApplicationContainer(), environment);
-                return environment;
-            };
         }
 
         private Response FlowPrincipal(NancyContext context)
