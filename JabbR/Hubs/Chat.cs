@@ -1251,9 +1251,9 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Caller.SendAsync("listUsers", users);
         }
 
-        void INotificationService.CheckBanned(ChatUser user)
+        async void INotificationService.CheckBanned(ChatUser user)
         {
-            Clients.Caller.checkBanned(new
+            await Clients.Caller.SendAsync("checkBanned", new
             {
                 Name = user.Name,
                 IsBanned = user.IsBanned
