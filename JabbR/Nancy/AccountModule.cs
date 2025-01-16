@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Claims;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.Services;
@@ -278,8 +277,7 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                ChatUser user = repository.GetUserById(userId);
+                ChatUser user = repository.GetUserById(Principal.GetUserId());
 
                 try
                 {
@@ -331,8 +329,7 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                ChatUser user = repository.GetUserById(userId);
+                ChatUser user = repository.GetUserById(Principal.GetUserId());
 
                 try
                 {
