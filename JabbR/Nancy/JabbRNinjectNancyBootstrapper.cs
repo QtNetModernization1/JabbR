@@ -14,6 +14,7 @@ using Nancy.Bootstrappers.Ninject;
 
 using Ninject;
 using Ninject.Extensions.ChildKernel;
+using Microsoft.AspNetCore.Http;
 
 namespace JabbR.Nancy
 {
@@ -59,19 +60,18 @@ namespace JabbR.Nancy
 
         private Response FlowPrincipal(NancyContext context)
         {
-            var env = Get<IDictionary<string, object>>(context.Items, NancyOwinHost.RequestEnvironmentKey);
-            if (env != null)
+            if (context.Environment.ContainsKey("Microsoft.AspNetCore.Http.HttpContext"))
             {
-                var principal = Get<IPrincipal>(env, "server.User") as ClaimsPrincipal;
+                var httpContext = (HttpContext)context.Environment["Microsoft.AspNetCore.Http.HttpContext"];
+                var principal = httpContext.User;
                 if (principal != null)
                 {
                     context.CurrentUser = new ClaimsPrincipalUserIdentity(principal);
                 }
 
-                var appMode = Get<string>(env, "host.AppMode");
+                var appMode = httpContext.RequestServices.GetService(typeof(IHostEnvironment)) as IHostEnvironment;
 
-                if (!String.IsNullOrEmpty(appMode) &&
-                    appMode.Equals("development", StringComparison.OrdinalIgnoreCase))
+                if (appMode != null && appMode.IsDevelopment())
                 {
                     context.Items["_debugMode"] = true;
                 }
@@ -91,14 +91,6 @@ namespace JabbR.Nancy
             return null;
         }
 
-        private static T Get<T>(IDictionary<string, object> env, string key)
-        {
-            object value;
-            if (env.TryGetValue(key, out value))
-            {
-                return (T)value;
-            }
-            return default(T);
-        }
+        // Remove the Get<T> method as it's no longer needed
     }
 }
