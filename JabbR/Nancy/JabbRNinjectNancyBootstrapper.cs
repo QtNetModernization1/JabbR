@@ -33,15 +33,6 @@ namespace JabbR.Nancy
             return _kernel;
         }
 
-        protected override Func<IKernel, INancyEnvironment, Task<INancyEnvironment>> GetEnvironmentConfigurator()
-        {
-            return async (kernel, environment) =>
-            {
-                environment.Tracing(enabled: false, displayErrorTraces: true);
-                return environment;
-            };
-        }
-
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);
