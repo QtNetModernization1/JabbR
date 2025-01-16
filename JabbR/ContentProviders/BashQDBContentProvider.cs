@@ -66,7 +66,7 @@ using (var responseStream = response.Content.ReadAsStream())
                     SanitizeHtml(quote);
 
                     info.Quote = quote.InnerHtml;
-                    info.PageURL = response.ResponseUri.AbsoluteUri;
+                    info.PageURL = response.RequestMessage.RequestUri.AbsoluteUri;
                     info.QuoteNumber = title.InnerHtml;
                 }
 
