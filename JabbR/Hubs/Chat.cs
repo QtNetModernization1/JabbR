@@ -1241,14 +1241,14 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             });
         }
 
-        void INotificationService.CheckBanned()
+        async void INotificationService.CheckBanned()
         {
             // Get all users that are banned
             var users = _repository.Users.Where(u => u.IsBanned)
                                          .Select(u => u.Name)
                                          .OrderBy(u => u);
 
-            Clients.Caller.listUsers(users);
+            await Clients.Caller.SendAsync("listUsers", users);
         }
 
         void INotificationService.CheckBanned(ChatUser user)
