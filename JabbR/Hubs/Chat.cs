@@ -273,12 +273,12 @@ namespace JabbR
             }
         }
 
-        private void UpdateUnreadMentions(ChatUser mentionedUser)
+        private async Task UpdateUnreadMentions(ChatUser mentionedUser)
         {
             var unread = _repository.GetUnreadNotificationsCount(mentionedUser);
 
-            Clients.User(mentionedUser.Id)
-                   .updateUnreadNotifications(unread);
+            await Clients.User(mentionedUser.Id)
+                   .SendAsync("updateUnreadNotifications", unread);
         }
 
         public UserViewModel GetUserInfo()
