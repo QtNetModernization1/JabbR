@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Claims;
@@ -7,11 +7,11 @@ using System.Threading;
 
 using Nancy;
 using Nancy.Bootstrapper;
-using Nancy.Bootstrappers.Ninject;
 using Nancy.Owin;
 using Nancy.Security;
 
 using Ninject;
+using Ninject.Extensions.ChildKernel;
 
 namespace JabbR.Nancy
 {
