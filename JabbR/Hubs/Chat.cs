@@ -18,11 +18,6 @@ namespace JabbR
     [Authorize]
     public class Chat : Hub, INotificationService
     {
-        private interface INotificationService
-        {
-            Task LogOn(ChatUser user, string clientId);
-            // ... other interface methods ...
-        }
         private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
 
         private readonly IJabbrRepository _repository;
@@ -332,7 +327,7 @@ namespace JabbR
                     var isOwner = user.OwnedRooms.Contains(room);
 
                     // Tell the people in this room that you've joined
-                    await Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner);
+                    Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
                 }
             }
             else
@@ -581,7 +576,7 @@ namespace JabbR
             Clients.User(user.Id).updateTabOrder(tabOrdering);
         }
 
-        private async Task LogOn(ChatUser user, string clientId, bool reconnecting)
+        private void LogOn(ChatUser user, string clientId, bool reconnecting)
         {
             if (!reconnecting)
             {
@@ -723,9 +718,9 @@ namespace JabbR
             OnRoomChanged(room);
         }
 
-        async Task INotificationService.LogOn(ChatUser user, string clientId)
+        void INotificationService.LogOn(ChatUser user, string clientId)
         {
-            await LogOn(user, clientId, reconnecting: true);
+            LogOn(user, clientId, reconnecting: true);
         }
 
         void INotificationService.KickUser(ChatUser targetUser, ChatRoom room, ChatUser callingUser, string reason)
