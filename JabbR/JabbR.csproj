@@ -54,6 +54,7 @@ xcopy /s /y /R "$(SolutionDir)packages\Nancy.Viewengines.Razor.0.20.0\lib\Net40\
     <None Include="Scripts\jquery-2.0.3.intellisense.js" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="PagedList.Mvc" Version="4.5.0" />
     <PackageReference Include="SimpleAuthentication" Version="0.1.0" />
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
