@@ -13,25 +13,6 @@ namespace JabbR.Nancy
 {
     public class AccountModule : NancyModule
     {
-        private class RouteBuilder
-        {
-            private NancyModule _module;
-
-            public RouteBuilder(NancyModule module)
-            {
-                _module = module;
-            }
-
-            public dynamic this[string path]
-            {
-                set
-                {
-                    _module.Get(path, _ => value(_));
-                    _module.Post(path, _ => value(_));
-                }
-            }
-        }
-
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
                              IJabbrRepository repository,
@@ -41,9 +22,7 @@ namespace JabbR.Nancy
                              IEmailService emailService)
             : base("/account")
         {
-            var compatGet = new RouteBuilder(this);
-            var compatPost = new RouteBuilder(this);
-            compatGet["/"] = _ =>
+            Get["/"] = _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -55,7 +34,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             };
 
-            compatGet["/login"] = _ =>
+            Get["/login"] = _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -65,7 +44,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            compatPost["/login"] = param =>
+            Post["/login"] = param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -111,7 +90,7 @@ namespace JabbR.Nancy
                 return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
             };
 
-            compatPost["/logout"] = _ =>
+            Post["/logout"] = _ =>
             {
                 if (!IsAuthenticated)
                 {
@@ -125,7 +104,7 @@ namespace JabbR.Nancy
                 return response;
             };
 
-            compatGet["/register"] = _ =>
+            Get["/register"] = _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -145,7 +124,7 @@ namespace JabbR.Nancy
                 return View["register"];
             };
 
-            compatPost["/create"] = _ =>
+            Post["/create"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -224,7 +203,7 @@ namespace JabbR.Nancy
                 return View["register"];
             };
 
-            compatPost["/unlink"] = param =>
+            Post["/unlink"] = param =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -258,7 +237,7 @@ namespace JabbR.Nancy
                 return HttpStatusCode.BadRequest;
             };
 
-            compatPost["/newpassword"] = _ =>
+            Post["/newpassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -299,7 +278,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             };
 
-            compatPost["/changepassword"] = _ =>
+            Post["/changepassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -351,7 +330,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             };
 
-            compatPost["/changeusername"] = _ =>
+            Post["/changeusername"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -395,7 +374,7 @@ namespace JabbR.Nancy
                 return GetProfileView(authService, user);
             };
 
-            compatGet["/requestresetpassword"] = _ =>
+            Get["/requestresetpassword"] = _ =>
             {
                 if (IsAuthenticated)
                 {
@@ -412,7 +391,7 @@ namespace JabbR.Nancy
                 return View["requestresetpassword"];
             };
 
-            compatPost["/requestresetpassword"] = _ =>
+            Post["/requestresetpassword"] = _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -471,7 +450,7 @@ namespace JabbR.Nancy
                 return View["requestresetpassword"];
             };
 
-            compatGet["/resetpassword/{id}"] = parameters =>
+            Get["/resetpassword/{id}"] = parameters =>
             {
                 if (!applicationSettings.AllowUserResetPassword ||
                     string.IsNullOrWhiteSpace(applicationSettings.EmailSender))
@@ -503,7 +482,7 @@ namespace JabbR.Nancy
                 }
             };
 
-            compatPost["/resetpassword/{id}"] = parameters =>
+            Post["/resetpassword/{id}"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
