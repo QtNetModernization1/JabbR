@@ -12,7 +12,6 @@ using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace JabbR
 {
@@ -205,15 +204,15 @@ namespace JabbR
                 // send it to everyone. The assumption is that the client has some ui
                 // that it wanted to update immediately showing the message and
                 // then when the actual message is roundtripped it would "solidify it".
-                await Clients.Group(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
+                Clients.Group(room.Name).addMessage(messageViewModel, room.Name);
             }
             else
             {
                 // If the client did set an id then we need to give everyone the real id first
-                await Clients.OthersInGroup(room.Name).SendAsync("addMessage", messageViewModel, room.Name);
+                Clients.OthersInGroup(room.Name).addMessage(messageViewModel, room.Name);
 
                 // Now tell the caller to replace the message
-                await Clients.Caller.SendAsync("replaceMessage", clientMessage.Id, messageViewModel, room.Name);
+                Clients.Caller.replaceMessage(clientMessage.Id, messageViewModel, room.Name);
             }
 
             // Add mentions
