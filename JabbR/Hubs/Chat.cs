@@ -1206,7 +1206,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             return null;
         }
 
-        void INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, string reason)
+        async Task INotificationService.BanUser(ChatUser targetUser, ChatUser callingUser, string reason)
         {
             var rooms = targetUser.Rooms.Select(x => x.Name).ToArray();
             var targetUserViewModel = new UserViewModel(targetUser);
@@ -1216,11 +1216,11 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             {
                 reason = null;
             }
-            
+
             // We send down room so that other clients can display that the user has been banned
             foreach (var room in rooms)
             {
-                Clients.Group(room).SendAsync("ban", targetUserViewModel, room, callingUserViewModel, reason);
+                await Clients.Group(room).SendAsync("ban", targetUserViewModel, room, callingUserViewModel, reason);
             }
 
             foreach (var client in targetUser.ConnectedClients)
@@ -1228,7 +1228,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
                 foreach (var room in rooms)
                 {
                     // Remove the user from this the room group so he doesn't get the general ban message
-                    Groups.Remove(client.Id, room);
+                    await Groups.RemoveFromGroupAsync(client.Id, room);
                 }
             }
         }
