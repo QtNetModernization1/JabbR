@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.Services;
@@ -202,19 +203,20 @@ public class AccountModule : NancyModule
                         else
                         {
                             // Add the required claims to this identity
-                            var identity = Principal.Identity as ClaimsIdentity;
+                            var user = _httpContextAccessor.HttpContext.User;
+                            var identity = user.Identity as ClaimsIdentity;
 
-                            if (!Principal.HasClaim(ClaimTypes.Name))
+                            if (!user.HasClaim(c => c.Type == ClaimTypes.Name))
                             {
                                 identity.AddClaim(new Claim(ClaimTypes.Name, username));
                             }
 
-                            if (!Principal.HasClaim(ClaimTypes.Email))
+                            if (!user.HasClaim(c => c.Type == ClaimTypes.Email))
                             {
                                 identity.AddClaim(new Claim(ClaimTypes.Email, email));
                             }
 
-                            return this.SignIn(Principal.Claims);
+                            return this.SignIn(user.Claims);
                         }
                     }
                 }
@@ -239,7 +241,8 @@ public class AccountModule : NancyModule
                 }
 
                 string provider = Request.Form.provider;
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ChatUser user = repository.GetUserById(userId);
 
                 if (user.Identities.Count == 1 && !user.HasUserNameAndPasswordCredentials())
                 {
@@ -277,7 +280,8 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ChatUser user = repository.GetUserById(userId);
 
                 try
                 {
@@ -329,7 +333,8 @@ public class AccountModule : NancyModule
 
                 ValidatePassword(password, confirmPassword);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ChatUser user = repository.GetUserById(userId);
 
                 try
                 {
@@ -370,7 +375,8 @@ public class AccountModule : NancyModule
 
                 ValidateUsername(username, confirmUsername);
 
-                ChatUser user = repository.GetUserById(Principal.GetUserId());
+                var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ChatUser user = repository.GetUserById(userId);
                 string oldUsername = user.Name;
 
                 try
