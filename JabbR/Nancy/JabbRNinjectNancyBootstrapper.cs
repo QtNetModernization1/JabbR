@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 
 using Nancy;
 using Nancy.Bootstrapper;
@@ -32,15 +31,6 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
-        }
-
-        protected override Func<IKernel, INancyEnvironment, Task<INancyEnvironment>> GetEnvironmentConfigurator()
-        {
-            return (kernel, environment) =>
-            {
-                environment.Tracing(enabled: false, displayErrorTraces: true);
-                return Task.FromResult(environment);
-            };
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
