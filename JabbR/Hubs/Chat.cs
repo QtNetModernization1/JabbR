@@ -852,12 +852,12 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.Caller.SendAsync("ownerRemoved", targetUser.Name, targetRoom.Name);
         }
 
-        void INotificationService.ChangeGravatar(ChatUser user)
+        async void INotificationService.ChangeGravatar(ChatUser user)
         {
-            Clients.Caller.hash = user.Hash;
+            await Clients.Caller.SendAsync("setHash", user.Hash);
 
             // Update the calling client
-            Clients.User(user.Id).gravatarChanged(user.Hash);
+            await Clients.User(user.Id).SendAsync("gravatarChanged", user.Hash);
 
             // Create the view model
             var userViewModel = new UserViewModel(user);
@@ -865,7 +865,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // Tell all users in rooms to change the gravatar
             foreach (var room in user.Rooms)
             {
-                Clients.Group(room.Name).changeGravatar(userViewModel, room.Name);
+                await Clients.Group(room.Name).SendAsync("changeGravatar", userViewModel, room.Name);
             }
         }
 
