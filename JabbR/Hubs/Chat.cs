@@ -216,7 +216,7 @@ namespace JabbR
             }
 
             // Add mentions
-            AddMentions(chatMessage);
+            await AddMentions(chatMessage);
 
             var urls = UrlExtractor.ExtractUrls(chatMessage.Content);
             if (urls.Count > 0)
@@ -227,7 +227,7 @@ namespace JabbR
             return true;
         }
 
-        private void AddMentions(ChatMessage message)
+        private async Task AddMentions(ChatMessage message)
         {
             var mentionedUsers = new List<ChatUser>();
             foreach (var userName in MentionExtractor.ExtractMentions(message.Content))
@@ -269,7 +269,7 @@ namespace JabbR
 
             foreach (var user in mentionedUsers)
             {
-                UpdateUnreadMentions(user);
+                await UpdateUnreadMentions(user);
             }
         }
 
