@@ -16,8 +16,6 @@ using Ninject;
 using Ninject.Extensions.ChildKernel;
 
 using Microsoft.AspNetCore.Http;
-using Nancy.Bootstrapper;
-using Nancy.Configuration;
 
 namespace JabbR.Nancy
 {
@@ -33,19 +31,6 @@ namespace JabbR.Nancy
         protected override IKernel GetApplicationContainer()
         {
             return _kernel;
-        }
-
-        protected override Func<IKernel, INancyEnvironment> GetEnvironmentConfigurator()
-        {
-            return kernel => ConfigureEnvironment(kernel);
-        }
-
-        private INancyEnvironment ConfigureEnvironment(IKernel kernel)
-        {
-            var environment = new DefaultNancyEnvironment();
-            environment.Tracing(enabled: false, displayErrorTraces: true);
-            RegisterNancyEnvironment(kernel, environment);
-            return environment;
         }
 
         protected override void ApplicationStartup(IKernel container, IPipelines pipelines)
