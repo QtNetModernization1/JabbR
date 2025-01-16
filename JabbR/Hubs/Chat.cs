@@ -124,12 +124,13 @@ namespace JabbR
             OnUserInitialize(clientState, user, reconnecting);
         }
 
-        private async Task CheckStatus()
+        private Task CheckStatus()
         {
             if (OutOfSync)
             {
-                await Clients.Caller.SendAsync("outOfSync");
+                return Clients.Caller.SendAsync("outOfSync");
             }
+            return Task.CompletedTask;
         }
 
         private void OnUserInitialize(ClientState clientState, ChatUser user, bool reconnecting)
@@ -335,7 +336,7 @@ namespace JabbR
                 _logger.Log("{0}:{1} reconnected after temporary network problem.", user.Name, Context.ConnectionId);
             }
 
-            CheckStatus();
+            await CheckStatus();
 
             return Task.CompletedTask;
         }
