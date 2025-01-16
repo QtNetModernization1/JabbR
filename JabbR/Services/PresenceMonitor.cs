@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
@@ -9,10 +9,8 @@ using System.Threading.Tasks;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Transports;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ninject;
 
@@ -25,16 +23,15 @@ namespace JabbR.Services
         private readonly TimeSpan _presenceCheckInterval = TimeSpan.FromMinutes(1);
 
         private readonly IKernel _kernel;
-        private readonly IHubContext _hubContext;
-        private readonly ITransportHeartbeat _heartbeat;
+        private readonly IHubContext<Chat> _hubContext;
+        private readonly IHubClients _clients;
 
         public PresenceMonitor(IKernel kernel,
-                               IConnectionManager connectionManager,
-                               ITransportHeartbeat heartbeat)
+                               IHubContext<Chat> hubContext)
         {
             _kernel = kernel;
-            _hubContext = connectionManager.GetHubContext<Chat>();
-            _heartbeat = heartbeat;
+            _hubContext = hubContext;
+            _clients = hubContext.Clients;
         }
 
         public void Start()
