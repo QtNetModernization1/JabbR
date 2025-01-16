@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace JabbR.Infrastructure
 {
-    public class JabbRDataProtection : IDataProtector
+    public class JabbRDataProtection : IDataProtectionProvider
     {
         private readonly ICryptoService _cryptoService;
         public JabbRDataProtection(ICryptoService cryptoService)
@@ -16,14 +16,29 @@ namespace JabbR.Infrastructure
             _cryptoService = cryptoService;
         }
 
-        public byte[] Protect(byte[] userData)
+        public IDataProtector CreateProtector(string purpose)
         {
-            return _cryptoService.Protect(userData);
+            return new JabbRDataProtector(_cryptoService);
         }
 
-        public byte[] Unprotect(byte[] protectedData)
+        private class JabbRDataProtector : IDataProtector
         {
-            return _cryptoService.Unprotect(protectedData);
+            private readonly ICryptoService _cryptoService;
+
+            public JabbRDataProtector(ICryptoService cryptoService)
+            {
+                _cryptoService = cryptoService;
+            }
+
+            public byte[] Protect(byte[] userData)
+            {
+                return _cryptoService.Protect(userData);
+            }
+
+            public byte[] Unprotect(byte[] protectedData)
+            {
+                return _cryptoService.Unprotect(protectedData);
+            }
         }
     }
 }
