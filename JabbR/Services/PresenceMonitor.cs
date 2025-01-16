@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
 using Ninject;
-using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace JabbR.Services
 {
@@ -96,9 +95,14 @@ namespace JabbR.Services
         private void UpdatePresence(ILogger logger, IJabbrRepository repo)
         {
             // Get all connections on this node and update the activity
-            foreach (var connectionId in GetAllActiveConnectionIds())
+            foreach (var connection in _heartbeat.GetConnections())
             {
-                ChatClient client = repo.GetClientById(connectionId);
+                if (!connection.IsAlive)
+                {
+                    continue;
+                }
+
+                ChatClient client = repo.GetClientById(connection.ConnectionId);
 
                 if (client != null)
                 {
@@ -106,32 +110,22 @@ namespace JabbR.Services
                 }
                 else
                 {
-                    EnsureClientConnected(logger, repo, _hubContext.Clients.Client(connectionId).GetHttpContext());
+                    EnsureClientConnected(logger, repo, connection);
                 }
             }
 
             repo.CommitChanges();
         }
 
-        private IEnumerable<string> GetAllActiveConnectionIds()
-        {
-            var hubLifetimeManager = (HubLifetimeManager<Chat>)_hubContext.Groups;
-            var connectionStore = (IConnectionStore)hubLifetimeManager.GetType()
-                .GetField("_connections", BindingFlags.NonPublic | BindingFlags.Instance)
-                ?.GetValue(hubLifetimeManager);
-
-            return connectionStore?.GetConnections().Select(c => c.ConnectionId) ?? Enumerable.Empty<string>();
-        }
-
         // This is an uber hack to make sure the db is in sync with SignalR
-        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, HttpContext context)
+        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, HubCallerContext context)
         {
             if (context == null)
             {
                 return;
             }
 
-            string connectionData = context.Request.Query["connectionData"];
+            string connectionData = context.GetHttpContext().Request.Query["connectionData"];
 
             if (String.IsNullOrEmpty(connectionData))
             {
@@ -151,9 +145,9 @@ namespace JabbR.Services
                 return;
             }
 
-            logger.Log("Connection exists but isn't tracked.");
+            logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
 
-            string userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string userId = context.User.GetUserId();
 
             ChatUser user = repo.GetUserById(userId);
             if (user == null)
@@ -164,9 +158,9 @@ namespace JabbR.Services
 
             var client = new ChatClient
             {
-                Id = context.Connection.Id,
+                Id = context.ConnectionId,
                 User = user,
-                UserAgent = context.Request.Headers["User-Agent"],
+                UserAgent = context.GetHttpContext().Request.Headers["User-Agent"],
                 LastActivity = DateTimeOffset.UtcNow,
                 LastClientActivity = user.LastActivity
             };
