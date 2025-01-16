@@ -113,7 +113,7 @@ public class AccountModule : NancyModule
                 return response;
             });
 
-            Get["/register"] = _ =>
+            Get("/register", _ =>
             {
                 if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
@@ -131,7 +131,7 @@ public class AccountModule : NancyModule
                 ViewBag.requirePassword = requirePassword;
 
                 return View["register"];
-            };
+            });
 
             Post["/create"] = _ =>
             {
