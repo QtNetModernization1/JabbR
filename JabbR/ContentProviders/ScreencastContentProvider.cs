@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using JabbR.ContentProviders.Core;
 using JabbR.Infrastructure;
-using Nancy.Helpers;
+using System.Web;
 
 namespace JabbR.ContentProviders
 {
