@@ -10,7 +10,7 @@ using JabbR.ViewModels;
 
 namespace JabbR.Nancy
 {
-    public class AccountModule : NancyModule
+    public class AccountModule
     {
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
@@ -19,8 +19,8 @@ namespace JabbR.Nancy
                              IChatNotificationService notificationService,
                              IUserAuthenticator authenticator,
                              IEmailService emailService)
+            : base("/account")
         {
-            this.ModulePath = "/account";
             Get["/"] = _ =>
             {
                 if (!IsAuthenticated)
