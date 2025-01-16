@@ -424,7 +424,7 @@ public class AccountModule : NancyModule
 
             Post("/requestresetpassword", _ =>
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!ValidateAntiForgeryToken())
                 {
                     return HttpStatusCode.Forbidden;
                 }
