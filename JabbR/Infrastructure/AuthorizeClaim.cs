@@ -1,6 +1,7 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JabbR.Infrastructure
 {
