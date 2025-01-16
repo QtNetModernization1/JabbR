@@ -1,22 +1,27 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 using JabbR.Infrastructure;
-using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace JabbR.Hubs
 {
     public class LoggingHubPipelineModule : HubPipelineModule
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LoggingHubPipelineModule> _logger;
 
-        public LoggingHubPipelineModule(ILogger logger)
+        public LoggingHubPipelineModule(ILogger<LoggingHubPipelineModule> logger)
         {
             _logger = logger;
         }
 
-        protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext context)
+        public override Task OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext context)
         {
-            _logger.LogError("{0}: Failure while invoking '{1}'.", context.Hub.Context.Request.User.GetUserId(), context.MethodDescriptor.Name);
-            _logger.Log(exceptionContext.Error);
+            _logger.LogError(exceptionContext.Error, "{UserId}: Failure while invoking '{MethodName}'.",
+                context.Hub.Context.User?.Identity?.Name ?? "Unknown",
+                context.MethodDescriptor.Name);
+
+            return base.OnIncomingError(exceptionContext, context);
         }
     }
 }
