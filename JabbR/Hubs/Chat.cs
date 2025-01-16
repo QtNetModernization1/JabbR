@@ -11,7 +11,6 @@ using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace JabbR
