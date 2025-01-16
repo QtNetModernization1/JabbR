@@ -9,6 +9,7 @@ using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Owin;
 using Nancy.Security;
+using Nancy.Bootstrappers.Ninject;
 
 using Ninject;
 using Ninject.Extensions.ChildKernel;
