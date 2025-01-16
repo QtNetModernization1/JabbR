@@ -618,7 +618,8 @@ public class AccountModule : NancyModule
                 user = repository.GetUserById(_httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             }
 
-            var viewModel = new LoginViewModel(applicationSettings, authService.GetProviders(), user != null ? user.Identities : null);
+            var providers = authService.GetProviders().Cast<SimpleAuthentication.IAuthenticationProvider>().ToList();
+            var viewModel = new LoginViewModel(applicationSettings, providers, user != null ? user.Identities : null);
             return viewModel;
         }
     }
