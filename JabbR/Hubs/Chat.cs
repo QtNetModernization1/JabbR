@@ -572,7 +572,7 @@ namespace JabbR
 
             _repository.CommitChanges();
 
-            Clients.User(user.Id).updateTabOrder(tabOrdering);
+            Clients.User(user.Id).SendAsync("updateTabOrder", tabOrdering);
         }
 
         private void LogOn(ChatUser user, string clientId, bool reconnecting)
