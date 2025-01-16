@@ -133,7 +133,7 @@ public class AccountModule : NancyModule
                 return View["register"];
             });
 
-            Post["/create"] = _ =>
+            Post["/create"] = parameters =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
