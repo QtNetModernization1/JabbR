@@ -138,7 +138,7 @@ namespace JabbR
             if (user.Rooms.Any(room => room.Name.Equals(clientState.ActiveRoom, StringComparison.OrdinalIgnoreCase)))
             {
                 // Update the active room on the client (only if it's still a valid room)
-                Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom);
+                Clients.Caller.SendAsync("setActiveRoom", clientState.ActiveRoom).Wait();
             }
 
             LogOn(user, Context.ConnectionId, reconnecting);
@@ -581,10 +581,10 @@ namespace JabbR
             if (!reconnecting)
             {
                 // Update the client state
-                Clients.Caller.id = user.Id;
-                Clients.Caller.name = user.Name;
-                Clients.Caller.hash = user.Hash;
-                Clients.Caller.unreadNotifications = user.Notifications.Count(n => !n.Read);
+                Clients.Caller.SendAsync("setId", user.Id).Wait();
+                Clients.Caller.SendAsync("setName", user.Name).Wait();
+                Clients.Caller.SendAsync("setHash", user.Hash).Wait();
+                Clients.Caller.SendAsync("setUnreadNotifications", user.Notifications.Count(n => !n.Read)).Wait();
             }
 
             var rooms = new List<RoomViewModel>();
@@ -597,10 +597,10 @@ namespace JabbR
                 var isOwner = ownedRooms.Contains(room.Key);
 
                 // Tell the people in this room that you've joined
-                Clients.Group(room.Name).addUser(userViewModel, room.Name, isOwner);
+                Clients.Group(room.Name).SendAsync("addUser", userViewModel, room.Name, isOwner).Wait();
 
                 // Add the caller to the group so they receive messages
-                Groups.Add(clientId, room.Name);
+                Groups.AddToGroupAsync(Context.ConnectionId, room.Name).Wait();
 
                 if (!reconnecting)
                 {
@@ -613,7 +613,6 @@ namespace JabbR
                     });
                 }
             }
-
 
             if (!reconnecting)
             {
@@ -630,7 +629,7 @@ namespace JabbR
                 }
 
                 // Initialize the chat with the rooms the user is in
-                Clients.Caller.logOn(rooms, privateRooms, user.Preferences);
+                Clients.Caller.SendAsync("logOn", rooms, privateRooms, user.Preferences).Wait();
             }
         }
 
