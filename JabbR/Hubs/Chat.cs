@@ -10,11 +10,12 @@ using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 
 namespace JabbR
 {
-    [AuthorizeClaim(JabbRClaimTypes.Identifier)]
+    [Authorize]
     public class Chat : Hub, INotificationService
     {
         private static readonly TimeSpan _disconnectThreshold = TimeSpan.FromSeconds(10);
