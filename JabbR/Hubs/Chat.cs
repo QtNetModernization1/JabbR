@@ -62,7 +62,8 @@ namespace JabbR
         {
             get
             {
-                string version = Context.QueryString["version"];
+                var httpContext = Context.GetHttpContext();
+                string version = httpContext?.Request.Query["version"];
 
                 if (String.IsNullOrEmpty(version))
                 {
