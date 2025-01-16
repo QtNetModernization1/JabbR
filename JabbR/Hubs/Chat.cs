@@ -1006,17 +1006,17 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.User(user.Id).SendAsync("sendInvite", user.Name, targetUser.Name, targetRoom.Name);
         }
 
-        void INotificationService.NudgeUser(ChatUser user, ChatUser targetUser)
+        async void INotificationService.NudgeUser(ChatUser user, ChatUser targetUser)
         {
             // Send a nudge message to the sender and the sendee
-            Clients.User(targetUser.Id).nudge(user.Name, targetUser.Name, null);
+            await Clients.User(targetUser.Id).SendAsync("nudge", user.Name, targetUser.Name, null);
 
-            Clients.User(user.Id).nudge(user.Name, targetUser.Name, null);
+            await Clients.User(user.Id).SendAsync("nudge", user.Name, targetUser.Name, null);
         }
 
-        void INotificationService.NudgeRoom(ChatRoom room, ChatUser user)
+        async void INotificationService.NudgeRoom(ChatRoom room, ChatUser user)
         {
-            Clients.Group(room.Name).nudge(user.Name, null, room.Name);
+            await Clients.Group(room.Name).SendAsync("nudge", user.Name, null, room.Name);
         }
 
         void INotificationService.LeaveRoom(ChatUser user, ChatRoom room)
