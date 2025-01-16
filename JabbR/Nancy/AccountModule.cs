@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,11 +7,10 @@ using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.Services;
 using JabbR.ViewModels;
-using Nancy;
 
 namespace JabbR.Nancy
 {
-    public class AccountModule : JabbRModule
+    public class AccountModule
     {
         public AccountModule(ApplicationSettings applicationSettings,
                              IMembershipService membershipService,
