@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Razor;
+using System.Web.Razor;
 using JabbR.Infrastructure;
 using Microsoft.CSharp;
 
