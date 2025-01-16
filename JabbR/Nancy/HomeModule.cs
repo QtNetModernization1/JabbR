@@ -17,18 +17,17 @@ using Nancy;
 
 namespace JabbR.Nancy
 {
-public class HomeModule : JabbRModule
-{
-    private static readonly Regex clientSideResourceRegex = new Regex("^(Client_.*|Chat_.*|Content_.*|Create_.*|LoadingMessage|Room.*)$");
-    private readonly NancyRouteHandler Get = new NancyRouteHandler();
-
-    public HomeModule(ApplicationSettings settings,
-                      IJabbrConfiguration configuration,
-                      IHubContext<Chat> hubContext,
-                      IJabbrRepository jabbrRepository)
+    public class HomeModule : JabbRModule
     {
-        Get["/"] = _ =>
+        private static readonly Regex clientSideResourceRegex = new Regex("^(Client_.*|Chat_.*|Content_.*|Create_.*|LoadingMessage|Room.*)$");
+
+        public HomeModule(ApplicationSettings settings,
+                          IJabbrConfiguration configuration,
+                          IHubContext<Chat> hubContext,
+                          IJabbrRepository jabbrRepository)
         {
+            Get["/"] = _ =>
+            {
                 if (IsAuthenticated)
                 {
                     var viewModel = new SettingsViewModel
@@ -71,8 +70,8 @@ public class HomeModule : JabbRModule
                 return View["monitor"];
             };
 
-        Get["/status", "runAsync"] = async (_, token) =>
-        {
+            Get["/status", runAsync: true] = async (_, token) =>
+            {
                 var model = new StatusViewModel();
 
                 // Try to send a message via SignalR
