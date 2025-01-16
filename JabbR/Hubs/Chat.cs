@@ -1220,7 +1220,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             // We send down room so that other clients can display that the user has been banned
             foreach (var room in rooms)
             {
-                Clients.Group(room).ban(targetUserViewModel, room, callingUserViewModel, reason);   
+                Clients.Group(room).SendAsync("ban", targetUserViewModel, room, callingUserViewModel, reason);
             }
 
             foreach (var client in targetUser.ConnectedClients)
