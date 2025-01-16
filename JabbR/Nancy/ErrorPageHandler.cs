@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Text.RegularExpressions;
 
 using JabbR.Services;
@@ -5,17 +7,18 @@ using JabbR.Services;
 using Nancy;
 using Nancy.ErrorHandling;
 using Nancy.ViewEngines;
+using Nancy.Responses;
 
 namespace JabbR.Nancy
 {
-    public class ErrorPageHandler : DefaultViewRenderer, IStatusCodeHandler
+    public class ErrorPageHandler : IStatusCodeHandler
     {
         private readonly IJabbrRepository _repository;
-        protected readonly IViewFactory ViewFactory;
+        private readonly IViewFactory _viewFactory;
 
         public ErrorPageHandler(IViewFactory factory, IJabbrRepository repository)
         {
-            ViewFactory = factory;
+            _viewFactory = factory;
             _repository = repository;
         }
 
@@ -41,17 +44,31 @@ namespace JabbR.Nancy
                 }
             }
 
-            var response = RenderView(
-                context, 
-                "errorPage", 
-                new 
-                { 
-                    Error = statusCode,
-                    ErrorCode = (int)statusCode,
-                    SuggestRoomName = suggestRoomName
-                });
+            var viewLocationContext = new ViewLocationContext { Context = context };
 
-            response.StatusCode = statusCode;
+            var response = new Response
+            {
+                Contents = stream =>
+                {
+                    var view = _viewFactory.RenderView(
+                        "errorPage",
+                        new
+                        {
+                            Error = statusCode,
+                            ErrorCode = (int)statusCode,
+                            SuggestRoomName = suggestRoomName
+                        },
+                        viewLocationContext);
+using (var writer = new StreamWriter(stream))
+                    {
+                        writer.Write(view);
+                        writer.Flush();
+                    }
+                },
+                ContentType = "text/html",
+                StatusCode = statusCode
+            };
+
             context.Response = response;
         }
     }
