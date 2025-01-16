@@ -887,13 +887,13 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
             await Clients.User(user.Id).SendAsync("postNotification", message, room.Name);
         }
 
-        void INotificationService.ListRooms(ChatUser user)
+        async void INotificationService.ListRooms(ChatUser user)
         {
             string userId = Context.User.GetUserId();
 
             var userModel = new UserViewModel(user);
 
-            Clients.Caller.showUsersRoomList(userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
+            await Clients.Caller.SendAsync("showUsersRoomList", userModel, user.Rooms.Allowed(userId).Select(r => r.Name));
         }
 
         void INotificationService.ListUsers()
