@@ -53,11 +53,13 @@ namespace JabbR
             var summaryBuilder = new StringBuilder();
 
             summaryBuilder.Append(@"<ul class=""validation-summary-errors"">");
-            foreach (var modelValidationError in validationResult.Errors)
+            foreach (var errorEntry in validationResult.Errors)
             {
-                foreach (var memberName in modelValidationError.MemberNames)
+                string memberName = errorEntry.Key;
+                var errors = errorEntry.Value;
+                foreach (var error in errors)
                 {
-                    summaryBuilder.AppendFormat("<li>{0}</li>", modelValidationError.GetMessage(memberName));
+                    summaryBuilder.AppendFormat("<li>{0}</li>", error.ErrorMessage);
                 }
             }
             summaryBuilder.Append(@"</ul>");
