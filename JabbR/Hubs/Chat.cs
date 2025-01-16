@@ -871,7 +871,7 @@ private async Task JoinRoomAsync(ChatUser user, ChatRoom room)
 
         void INotificationService.OnSelfMessage(ChatRoom room, ChatUser user, string content)
         {
-            Clients.Group(room.Name).sendMeMessage(user.Name, content, room.Name);
+            Clients.Group(room.Name).SendAsync("sendMeMessage", user.Name, content, room.Name);
         }
 
         void INotificationService.SendPrivateMessage(ChatUser fromUser, ChatUser toUser, string messageText)
