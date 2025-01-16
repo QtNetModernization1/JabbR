@@ -19,6 +19,13 @@ public class AccountModule : NancyModule
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IAntiforgery _antiforgery;
+    private readonly ApplicationSettings _applicationSettings;
+    private readonly IMembershipService _membershipService;
+    private readonly IJabbrRepository _repository;
+    private readonly IAuthenticationService _authService;
+    private readonly IChatNotificationService _notificationService;
+    private readonly IUserAuthenticator _authenticator;
+    private readonly IEmailService _emailService;
 
     public AccountModule(ApplicationSettings applicationSettings,
                          IMembershipService membershipService,
@@ -33,6 +40,13 @@ public class AccountModule : NancyModule
     {
         _httpContextAccessor = httpContextAccessor;
         _antiforgery = antiforgery;
+        _applicationSettings = applicationSettings;
+        _membershipService = membershipService;
+        _repository = repository;
+        _authService = authService;
+        _notificationService = notificationService;
+        _authenticator = authenticator;
+        _emailService = emailService;
 
         // Add this method to validate antiforgery token
         bool ValidateAntiForgeryToken()
