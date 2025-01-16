@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 using JabbR.Infrastructure;
 using JabbR.Models;
 using JabbR.ViewModels;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
 using Newtonsoft.Json;
 using Ninject;
-using ILogger = JabbR.Infrastructure.ILogger;
 
 namespace JabbR.Services
 {
@@ -25,15 +26,16 @@ namespace JabbR.Services
 
         private readonly IKernel _kernel;
         private readonly IHubContext _hubContext;
-private readonly IHubClients _clients;
+        private readonly ITransportHeartbeat _heartbeat;
 
-public PresenceMonitor(IKernel kernel,
-                               IHubContext<Chat> hubContext)
-{
-    _kernel = kernel;
-    _hubContext = hubContext;
-    _clients = hubContext.Clients;
-}
+        public PresenceMonitor(IKernel kernel,
+                               IConnectionManager connectionManager,
+                               ITransportHeartbeat heartbeat)
+        {
+            _kernel = kernel;
+            _hubContext = connectionManager.GetHubContext<Chat>();
+            _heartbeat = heartbeat;
+        }
 
         public void Start()
         {
@@ -95,31 +97,88 @@ public PresenceMonitor(IKernel kernel,
         private void UpdatePresence(ILogger logger, IJabbrRepository repo)
         {
             // Get all connections on this node and update the activity
-// In ASP.NET Core SignalR, we don't have direct access to connections.
-// We'll need to modify our approach to handle client activity.
-// For now, we'll skip this part and focus on other aspects of the migration.
-logger.Log("Client activity check skipped due to SignalR changes");
+            foreach (var connection in _heartbeat.GetConnections())
+            {
+                if (!connection.IsAlive)
+                {
+                    continue;
+                }
+
+                ChatClient client = repo.GetClientById(connection.ConnectionId);
+
+                if (client != null)
+                {
+                    client.LastActivity = DateTimeOffset.UtcNow;
+                }
+                else
+                {
+                    EnsureClientConnected(logger, repo, connection);
+                }
+            }
 
             repo.CommitChanges();
         }
 
         // This is an uber hack to make sure the db is in sync with SignalR
-private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, string connectionId)
-{
-    // In ASP.NET Core SignalR, we don't have direct access to the connection context.
-    // We'll need to modify our approach to get the necessary information.
-    logger.Log("Connection {0} exists but isn't tracked.", connectionId);
+        private void EnsureClientConnected(ILogger logger, IJabbrRepository repo, ITrackingConnection connection)
+        {
+            var contextField = connection.GetType().GetField("_context",
+                                          BindingFlags.NonPublic | BindingFlags.Instance);
+            if (contextField == null)
+            {
+                return;
+            }
 
-    // For now, we'll create a minimal ChatClient object
-    var client = new ChatClient
-    {
-        Id = connectionId,
-        LastActivity = DateTimeOffset.UtcNow,
-    };
+            var context = contextField.GetValue(connection) as HostContext;
 
-    repo.Add(client);
-    repo.CommitChanges();
-}
+            if (context == null)
+            {
+                return;
+            }
+
+            string connectionData = context.Request.QueryString["connectionData"];
+
+            if (String.IsNullOrEmpty(connectionData))
+            {
+                return;
+            }
+
+            var hubs = JsonConvert.DeserializeObject<HubConnectionData[]>(connectionData);
+
+            if (hubs.Length != 1)
+            {
+                return;
+            }
+
+            // We only care about the chat hub
+            if (!hubs[0].Name.Equals("chat", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            logger.Log("Connection {0} exists but isn't tracked.", connection.ConnectionId);
+
+            string userId = context.Request.User.GetUserId();
+
+            ChatUser user = repo.GetUserById(userId);
+            if (user == null)
+            {
+                logger.Log("Unable to find user with id {0}", userId);
+                return;
+            }
+
+            var client = new ChatClient
+            {
+                Id = connection.ConnectionId,
+                User = user,
+                UserAgent = context.Request.Headers["User-Agent"],
+                LastActivity = DateTimeOffset.UtcNow,
+                LastClientActivity = user.LastActivity
+            };
+
+            repo.Add(client);
+            repo.CommitChanges();
+        }
 
         private static void RemoveZombies(ILogger logger, IJabbrRepository repo)
         {
