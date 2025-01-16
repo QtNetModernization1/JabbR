@@ -405,7 +405,7 @@ public class AccountModule : NancyModule
                 return GetProfileView(authService, user);
             });
 
-            Get["/requestresetpassword"] = _ =>
+            Get("/requestresetpassword", _ =>
             {
                 if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
@@ -420,9 +420,9 @@ public class AccountModule : NancyModule
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
-            Post["/requestresetpassword"] = _ =>
+            Post("/requestresetpassword", _ =>
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
@@ -479,7 +479,7 @@ public class AccountModule : NancyModule
                 }
 
                 return View["requestresetpassword"];
-            };
+            });
 
             Get("/resetpassword/{id}", parameters =>
             {
