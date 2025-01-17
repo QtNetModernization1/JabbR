@@ -70,7 +70,7 @@ namespace JabbR.Nancy
             {
                 if (env.TryGetValue("server.User", out var userObj) && userObj is ClaimsPrincipal principal)
                 {
-                    context.CurrentUser = new ClaimsPrincipalUserIdentity(principal);
+                    context.CurrentUser = principal;
                 }
 
                 if (env.TryGetValue("host.AppMode", out var appModeObj) && appModeObj is string appMode)
