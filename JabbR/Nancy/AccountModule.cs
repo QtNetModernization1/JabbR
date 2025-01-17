@@ -156,7 +156,7 @@ public class AccountModule : NancyModule
             // Existing Post["/create"] logic moved to a separate method
             object HandleCreatePost(dynamic _)
             {
-                if (!HasValidCsrfTokenOrSecHeader)
+                if (!ValidateAntiForgeryToken())
                 {
                     return HttpStatusCode.Forbidden;
                 }
