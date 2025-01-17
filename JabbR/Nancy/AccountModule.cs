@@ -48,55 +48,6 @@ public class AccountModule : NancyModule
                 return false;
             }
         }
-
-        Get("/", _ =>
-        {
-            if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            ChatUser user = repository.GetUserById(httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            return GetProfileView(authService, user);
-        });
-
-        Get("/login", _ =>
-        {
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                return this.AsRedirectQueryStringOrDefault("~/");
-            }
-
-            return View["login", GetLoginViewModel(applicationSettings, repository, authService)];
-        });
-
-        Post("/login", param =>
-        {
-            // ... (keep the existing login post logic)
-        });
-
-        Post("/logout", _ =>
-        {
-            // ... (keep the existing logout post logic)
-        });
-
-        Get("/register", _ =>
-        {
-            // ... (keep the existing register get logic)
-        });
-
-        Post("/create", _ =>
-        {
-            if (!ValidateAntiForgeryToken())
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            // ... (keep the rest of the existing create post logic)
-        });
-
-// ... (continue with the rest of the route definitions using the same pattern)
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
