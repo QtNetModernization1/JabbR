@@ -48,6 +48,9 @@ public class AccountModule : NancyModule
                 return false;
             }
         }
+
+        // Wrapper method for Post["/create"]
+        Post("/create", parameters => HandleCreatePost(parameters));
             Get("/", _ =>
             {
                 if (!httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -150,7 +153,8 @@ public class AccountModule : NancyModule
                 return View["register"];
             });
 
-            Post["/create"] = _ =>
+            // Existing Post["/create"] logic moved to a separate method
+            object HandleCreatePost(dynamic _)
             {
                 if (!HasValidCsrfTokenOrSecHeader)
                 {
